@@ -1,0 +1,30 @@
+逐步修复指南（避免触发器错误）
+
+步骤1：执行第一句
+ALTER TABLE study_plans DISABLE ROW LEVEL SECURITY;
+
+步骤2：逐个删除策略
+DROP POLICY IF EXISTS "Users can view their own study plans" ON study_plans;
+
+步骤3：执行第二句策略
+DROP POLICY IF EXISTS "Users can create their own study plans" ON study_plans;
+
+步骤4：执行第三句策略  
+DROP POLICY IF EXISTS "Users can update their own study plans" ON study_plans;
+
+步骤5：执行第四句策略
+DROP POLICY IF EXISTS "Users can delete their own study plans" ON study_plans;
+
+步骤6：删除其他策略（如果有）
+DROP POLICY IF EXISTS "Anyone can view study plans" ON study_plans;
+DROP POLICY IF EXISTS "Anyone can create study plans" ON study_plans;
+DROP POLICY IF EXISTS "Anyone can update study plans" ON study_plans;
+DROP POLICY IF EXISTS "Anyone can delete study plans" ON study_plans;
+
+步骤7：验证修复
+SELECT 
+    schemaname,
+    tablename,
+    rowsecurity as "RLS状态(false=正常)"
+FROM pg_tables 
+WHERE tablename = 'study_plans';

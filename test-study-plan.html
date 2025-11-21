@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>学习计划功能测试</title>
+</head>
+<body>
+    <h1>学习计划功能测试步骤</h1>
+    
+    <h2>步骤1：设置用户登录状态</h2>
+    <p>在浏览器控制台中执行：</p>
+    <pre>
+localStorage.setItem('currentUser', JSON.stringify({
+    id: 'b6c871eb-717c-4a40-859b-b639cf8ccd08', 
+    username: 'admin',
+    nickname: 'admin'
+}));
+    </pre>
+    
+    <h2>步骤2：刷新页面</h2>
+    <p>刷新学习计划页面，确保用户已登录</p>
+    
+    <h2>步骤3：创建学习计划</h2>
+    <ol>
+        <li>点击"创建新的学习计划"按钮</li>
+        <li>填写计划标题（必填）</li>
+        <li>选择开始日期和目标日期</li>
+        <li>点击"创建计划"按钮</li>
+    </ol>
+    
+    <h2>预期结果</h2>
+    <ul>
+        <li>✅ 弹窗应该立即关闭</li>
+        <li>✅ 显示绿色成功提示</li>
+        <li>✅ 回到学习计划列表</li>
+        <li>✅ 新创建的计划出现在列表中</li>
+    </ul>
+    
+    <h2>如果出现问题，请检查控制台输出：</h2>
+    <ul>
+        <li>🔄 开始关闭弹窗...</li>
+        <li>弹窗状态 - 前: true/false</li>
+        <li>弹窗状态 - 后: true/false</li>
+        <li>当前计划数量: 数字</li>
+        <li>📝 正在创建学习计划...</li>
+    </ul>
+    
+    <a href="http://localhost:3004/study-plan" target="_blank">打开学习计划页面</a>
+</body>
+</html>

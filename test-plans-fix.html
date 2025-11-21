@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习计划测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .plan-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .plan-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .plan-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-in-progress {
+            background: #cce5ff;
+            color: #0066cc;
+        }
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 学习计划修复测试</h1>
+        
+        <div id="status"></div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="setUserInfo()">设置用户信息</button>
+            <button class="btn btn-success" onclick="testDatabaseConnection()">测试数据库连接</button>
+            <button class="btn" onclick="loadStudyPlans()">加载学习计划</button>
+            <button class="btn" onclick="openEduMatch()">打开 EduMatch</button>
+        </div>
+
+        <div id="connectionStatus"></div>
+        <div id="plansContainer"></div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
+
+        const supabaseUrl = 'https://aonlahundnkxuyxfsmcy.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmxhaHVuZG5reHV5eGZzbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjYwNTUsImV4cCI6MjA3ODY0MjA1NX0.IQswPG1NkJKht83isjWJk5nzuhymzETAf81_71kXaVE';
+        
+        let supabase = null;
+        let currentUser = null;
+
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function updateConnectionStatus(message) {
+            const connectionDiv = document.getElementById('connectionStatus');
+            connectionDiv.innerHTML = `<div class="status info">${message}</div>`;
+        }
+
+        function displayPlans(plans) {
+            const container = document.getElementById('plansContainer');
+            
+            if (!plans || plans.length === 0) {
+                container.innerHTML = '<div class="status warning">没有找到学习计划</div>';
+                return;
+            }
+
+            let html = '<h3>📚 学习计划列表：</h3>';
+            html += '<div class="plan-grid">';
+            
+            plans.forEach((plan, index) => {
+                const statusClass = plan.status === 'in_progress' ? 'status-in-progress' : 'status-completed';
+                const statusText = plan.status === 'in_progress' ? '进行中' : '已完成';
+                
+                html += `
+                    <div class="plan-card">
+                        <div class="plan-title">${plan.title}</div>
+                        <div class="plan-meta">描述: ${plan.description || '无'}</div>
+                        <div class="plan-meta">进度: ${plan.progress}%</div>
+                        <div class="plan-meta">开始: ${plan.start_date}</div>
+                        <div class="plan-meta">目标: ${plan.target_date}</div>
+                        <div class="plan-meta">每日: ${plan.daily_hours}小时</div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        window.setUserInfo = function() {
+            currentUser = {
+                id: 'b6c871eb-717c-4a40-859b-b639cf8ccd08',
+                username: 'admin',
+                email: 'admin@edumatch.com',
+                nickname: '管理员'
+            };
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateStatus('✅ 用户信息已设置！用户ID: ' + currentUser.id, 'success');
+        };
+
+        window.testDatabaseConnection = async function() {
+            try {
+                updateConnectionStatus('🔄 正在测试数据库连接...');
+                
+                if (!supabase) {
+                    supabase = createClient(supabaseUrl, supabaseKey);
+                }
+                
+                const { data, error } = await supabase.from('_test_connection').select('*').limit(1);
+                updateConnectionStatus('✅ 数据库连接正常！', 'success');
+                
+            } catch (error) {
+                updateConnectionStatus('❌ 数据库连接失败: ' + error.message, 'error');
+            }
+        };
+
+        window.loadStudyPlans = async function() {
+            try {
+                updateStatus('🔄 正在加载学习计划...');
+                
+                if (!supabase) {
+                    supabase = createClient(supabaseUrl, supabaseKey);
+                }
+                
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                const userId = currentUser.id || 'b6c871eb-717c-4a40-859b-b639cf8ccd08';
+                
+                const { data, error } = await supabase
+                    .from('study_plans')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+                
+                if (error) {
+                    updateStatus('❌ 加载失败: ' + error.message, 'error');
+                    console.error('详细错误:', error);
+                    return;
+                }
+                
+                updateStatus(`✅ 成功加载 ${data.length} 个学习计划！`, 'success');
+                displayPlans(data);
+                
+            } catch (error) {
+                updateStatus('❌ 加载失败: ' + error.message, 'error');
+            }
+        };
+
+        window.openEduMatch = function() {
+            window.open('http://localhost:3006/study-plan', '_blank');
+        };
+
+        // 页面加载时检查状态
+        window.onload = function() {
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                currentUser = JSON.parse(storedUser);
+                updateStatus('✅ 已找到用户信息，可以直接加载学习计划', 'success');
+            } else {
+                updateStatus('⚠️ 需要先设置用户信息', 'warning');
+            }
+        };
+    </script>
+</body>
+</html>
