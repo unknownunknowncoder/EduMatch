@@ -337,18 +337,20 @@ const loadMyResources = async () => {
     const client = supabaseService.getClient()
     let currentUserId = 'demo-user-id'
     
-    // 获取admin用户的真实ID
-    const { data: adminUser, error: adminError } = await client
-      .from('users')
-      .select('id')
-      .eq('username', 'admin')
-      .single()
-    
-    if (adminUser && !adminError) {
-      currentUserId = adminUser.id
-      console.log('个人中心使用admin用户ID:', currentUserId)
-    } else {
-      console.error('无法获取admin用户ID，将显示空列表')
+    // 使用Supabase服务的方法获取admin用户
+    try {
+      const adminUser = await supabaseService.getUserByUsername('admin')
+      
+      if (adminUser) {
+        currentUserId = adminUser.id
+        console.log('个人中心使用admin用户ID:', currentUserId)
+      } else {
+        console.error('admin用户不存在，将显示空列表')
+        myResources.value = []
+        return
+      }
+    } catch (error) {
+      console.error('获取admin用户失败:', error)
       myResources.value = []
       return
     }
@@ -410,13 +412,9 @@ const updateNickname = async () => {
       }
     } else {
       // 如果没有本地用户信息，获取admin用户
-      const { data: adminUser, error: adminError } = await client
-        .from('users')
-        .select('id')
-        .eq('username', 'admin')
-        .single()
+      const adminUser = await supabaseService.getUserByUsername('admin')
       
-      if (adminUser && !adminError) {
+      if (adminUser) {
         currentUserId = adminUser.id
       } else {
         alert('无法获取用户信息')
@@ -424,8 +422,36 @@ const updateNickname = async () => {
       }
     }
     
-    // 更新昵称到数据库
-    await supabaseService.updateUserNickname(currentUserId, nicknameInput.value.trim())
+    // 尝试更新昵称到数据库
+    try {
+      await supabaseService.updateUserNickname(currentUserId, nicknameInput.value.trim())
+    } catch (dbError: any) {
+      // 如果nickname列不存在，使用username作为替代方案
+      if (dbError.message && dbError.message.includes('nickname')) {
+        console.log('nickname列不存在，暂时更新username')
+        const { error: updateError } = await client
+          .from('users')
+          .update({ username: nicknameInput.value.trim() })
+          .eq('id', currentUserId)
+        
+        if (updateError) {
+          throw new Error('数据库中缺少nickname列，且username更新失败: ' + updateError.message)
+        }
+        
+        // 同时更新本地存储中的用户名
+        if (currentUser) {
+          const user = JSON.parse(currentUser)
+          user.username = nicknameInput.value.trim()
+          user.nickname = nicknameInput.value.trim() // 本地存储中保存昵称
+          localStorage.setItem('currentUser', JSON.stringify(user))
+        }
+        
+        alert('用户名更新成功！（数据库中暂无昵称列，已更新用户名作为替代）')
+        nicknameInput.value = ''
+        return
+      }
+      throw dbError
+    }
     
     alert('昵称更新成功！')
     
@@ -440,7 +466,7 @@ const updateNickname = async () => {
     
   } catch (error) {
     console.error('更新昵称失败:', error)
-    alert('昵称更新失败: ' + (error instanceof Error ? error.message : '未知错误'))
+    alert('更新失败: ' + (error instanceof Error ? error.message : '未知错误'))
   }
 }
 
@@ -475,21 +501,23 @@ const updatePassword = async () => {
       }
     } else {
       // 如果没有本地用户信息，尝试获取admin用户
-      const { data: adminUser, error: adminError } = await client
-        .from('users')
-        .select('id, username, password_hash')
-        .eq('username', 'admin')
-        .single()
-      
-      if (adminUser && !adminError) {
-        // 验证当前密码
-        const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, adminUser.password_hash)
-        if (!isCurrentPasswordValid) {
-          alert('当前密码不正确')
+      try {
+        const adminUser = await supabaseService.getUserByUsername('admin')
+        
+        if (adminUser) {
+          // 验证当前密码
+          const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, adminUser.password_hash)
+          if (!isCurrentPasswordValid) {
+            alert('当前密码不正确')
+            return
+          }
+          currentUserId = adminUser.id
+        } else {
+          alert('无法获取用户信息')
           return
         }
-        currentUserId = adminUser.id
-      } else {
+      } catch (error) {
+        console.error('获取admin用户失败:', error)
         alert('无法获取用户信息')
         return
       }
@@ -497,20 +525,22 @@ const updatePassword = async () => {
     
     // 如果是通过localStorage获取的用户，需要先验证当前密码
     if (currentUser) {
-      const { data: userData, error: userError } = await client
-        .from('users')
-        .select('password_hash')
-        .eq('id', currentUserId)
-        .single()
-      
-      if (userError || !userData) {
-        alert('无法获取用户信息')
-        return
-      }
-      
-      const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, userData.password_hash)
-      if (!isCurrentPasswordValid) {
-        alert('当前密码不正确')
+      try {
+        const userData = await supabaseService.getUserById(currentUserId)
+        
+        if (!userData) {
+          alert('无法获取用户信息')
+          return
+        }
+        
+        const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, userData.password_hash)
+        if (!isCurrentPasswordValid) {
+          alert('当前密码不正确')
+          return
+        }
+      } catch (error) {
+        console.error('获取用户数据失败:', error)
+        alert('获取用户信息失败')
         return
       }
     }

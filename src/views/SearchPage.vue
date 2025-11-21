@@ -177,111 +177,17 @@
       </div>
     </header>
 
-    <!-- 搜索结果 -->
+    <!-- 搜索结果区域 - 暂时不显示搜索结果 -->
     <main class="container mx-auto px-4 py-6">
-      <!-- 搜索统计 -->
-      <div v-if="hasSearched" class="mb-6 flex justify-between items-center">
-        <p class="text-gray-600 dark:text-gray-400">
-          找到 <span class="font-semibold">{{ filteredResources.length }}</span> 个相关结果
-        </p>
-        <div class="flex items-center space-x-2">
-          <span class="text-sm text-gray-500 dark:text-gray-400">排序:</span>
-          <select v-model="sortBy" class="bg-transparent border-0 text-sm focus:outline-none">
-            <option value="relevance">相关性</option>
-            <option value="rating">评分</option>
-            <option value="date">最新</option>
-            <option value="views">人气</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- 加载状态 -->
-      <div v-if="isLoading" class="flex flex-col items-center justify-center py-16">
-        <svg class="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <p class="text-gray-500 dark:text-gray-400">正在搜索...</p>
-      </div>
-
-      <!-- 搜索结果 -->
-      <div v-else-if="filteredResources.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <ResourceCard
-          v-for="(resource, index) in paginatedResources"
-          :key="resource.id"
-          :resource="resource"
-          :rank="index + 1"
-          @click="navigateToResource(resource.id)"
-        />
-      </div>
-
-      <!-- 无结果 -->
-      <div v-else-if="hasSearched && filteredResources.length === 0" class="flex flex-col items-center justify-center py-16 text-center">
-        <Search class="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-        <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
-          没有找到相关结果
-        </h3>
-        <p class="text-gray-500 dark:text-gray-500">
-          尝试调整搜索关键词或筛选条件
-        </p>
-      </div>
-
       <!-- 初始状态 -->
-      <div v-if="!hasSearched" class="flex flex-col items-center justify-center py-16 text-center">
+      <div class="flex flex-col items-center justify-center py-16 text-center">
         <Search class="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
         <h3 class="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
           搜索学习资源
         </h3>
-        <p class="text-gray-500 dark:text-gray-500 mb-6">
+        <p class="text-gray-500 dark:text-gray-500">
           输入关键词或选择筛选条件，然后点击搜索按钮
         </p>
-        
-        <!-- 热门搜索建议 -->
-        <div class="flex flex-wrap justify-center gap-2">
-          <button
-            v-for="suggestion in searchSuggestions"
-            :key="suggestion"
-            @click="searchQuery = suggestion; handleSearch()"
-            class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full text-sm transition-colors"
-          >
-            {{ suggestion }}
-          </button>
-        </div>
-      </div>
-
-      <!-- 分页 -->
-      <div v-if="hasSearched && totalPages > 1" class="flex justify-center mt-8">
-        <div class="flex space-x-2">
-          <button
-            @click="currentPage--"
-            :disabled="currentPage === 1"
-            class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            上一页
-          </button>
-          
-          <button
-            v-for="page in visiblePages"
-            :key="page"
-            @click="currentPage = page"
-            :class="[
-              'px-3 py-2 rounded-lg transition-colors',
-              currentPage === page
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-            ]"
-          >
-            {{ page }}
-          </button>
-          
-          <button
-            @click="currentPage++"
-            :disabled="currentPage === totalPages"
-            class="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            下一页
-          </button>
-        </div>
       </div>
     </main>
   </div>

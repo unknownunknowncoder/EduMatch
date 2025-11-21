@@ -121,16 +121,13 @@
           <div 
             v-for="(post, index) in (showSearchResults ? filteredPosts : posts)"
             :key="post.id"
-            class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer group"
-            @click="viewPostDetail(post.id)"
+            class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg"
           >
             <!-- 帖子内容 -->
             <div class="p-6">
               <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
-                  <h3 
-                    class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
-                  >
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     {{ post.title }}
                   </h3>
                   <p class="text-gray-600 dark:text-gray-400 line-clamp-3">
@@ -140,7 +137,7 @@
                 
                 <!-- 点赞按钮 -->
                 <button 
-                  @click.stop="toggleLike(post)"
+                  @click="toggleLike(post)"
                   :disabled="isLiking"
                   class="ml-4 flex flex-col items-center space-y-1 text-gray-500 hover:text-red-500 transition-colors disabled:opacity-50"
                 >
@@ -307,10 +304,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
-
-const router = useRouter()
 
 // 响应式数据
 const posts = ref<any[]>([])
@@ -399,12 +393,6 @@ const performSearch = async () => {
   }
 }
 
-// 查看帖子详情
-const viewPostDetail = (postId: string) => {
-  console.log('📖 查看帖子详情，ID:', postId)
-  router.push(`/post/${postId}`)
-}
-
 // 格式化日期
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -476,37 +464,18 @@ const loadPosts = async () => {
   
   isLoading.value = true
   try {
-    // 确保数据库已初始化
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
-    
-    if (!client) {
-      console.error('数据库客户端初始化失败')
-      return
-    }
-    
-    console.log('🔄 开始加载帖子...')
+    const client = await dbStore.getClient()
     const { data, error } = await client
       .from('community_posts')
       .select('*')
       .order('created_at', { ascending: false })
     
-    if (error) {
-      console.error('❌ 加载帖子失败:', error)
-      console.error('错误详情:', error.details, error.hint)
-      return
-    }
+    if (error) return
     
     posts.value = data || []
-    console.log('✅ 成功加载帖子数量:', posts.value.length)
-    console.log('📄 帖子列表:', posts.value)
     
   } catch (error) {
-    console.error('❌ 加载帖子异常:', error)
+    // 加载失败处理
   } finally {
     isLoading.value = false
   }
@@ -515,27 +484,12 @@ const loadPosts = async () => {
 // 加载热门标签
 const loadPopularTags = async () => {
   try {
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('标签加载：数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
-    
-    if (!client) {
-      console.error('标签加载：数据库客户端初始化失败')
-      return
-    }
-    
-    console.log('🏷️ 开始加载热门标签...')
+    const client = await dbStore.getClient()
     const { data, error } = await client
       .from('community_posts')
       .select('tags')
     
-    if (error) {
-      console.error('❌ 加载标签失败:', error)
-      return
-    }
+    if (error) return
     
     const tagCount: any = {}
     data?.forEach((post: any) => {
@@ -551,10 +505,8 @@ const loadPopularTags = async () => {
       .sort((a: any, b: any) => b.count - a.count)
       .slice(0, 10)
       
-    console.log('✅ 热门标签加载完成:', popularTags.value)
-      
   } catch (error) {
-    console.error('❌ 加载标签异常:', error)
+    // 加载失败处理
   }
 }
 
@@ -566,39 +518,20 @@ const createPost = async () => {
   
   isSubmitting.value = true
   try {
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('创建帖子：数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
-    
-    if (!client) {
-      console.error('创建帖子：数据库客户端初始化失败')
-      return
-    }
-    
-    console.log('💾 开始创建帖子:', newPost.value)
+    const client = await dbStore.getClient()
     const { data, error } = await client
       .from('community_posts')
       .insert([{
         title: newPost.value.title,
         content: newPost.value.content,
-        category: newPost.value.category || '学习经验',
+        category: newPost.value.category,
         tags: newPost.value.tags,
         author: '当前用户',
-        likes_count: 0,
-        views_count: 0,
-        comments_count: 0
+        likes_count: 0
       }])
       .select()
     
-    if (error) {
-      console.error('❌ 创建帖子失败:', error)
-      throw error
-    }
-    
-    console.log('✅ 帖子创建成功:', data)
+    if (error) throw error
     
     // 添加到帖子列表
     if (data && data[0]) {
@@ -608,11 +541,8 @@ const createPost = async () => {
     // 关闭弹窗
     closeCreatePostModal()
     
-    // 重新加载热门标签
-    loadPopularTags()
-    
   } catch (error) {
-    console.error('❌ 发布帖子异常:', error)
+    // 发布失败处理
   } finally {
     isSubmitting.value = false
   }
@@ -658,27 +588,10 @@ const handleGlobalKeyup = (event: KeyboardEvent) => {
 }
 
 // 初始化
-onMounted(async () => {
-  console.log('🚀 CommunityPage 组件挂载')
-  
-  // 等待数据库初始化
-  console.log('⏳ 等待数据库初始化...')
-  await new Promise(resolve => setTimeout(resolve, 2000)) // 等待2秒确保数据库初始化
-  
-  // 检查数据库连接状态
-  if (dbStore.isConnected) {
-    console.log('✅ 数据库已连接，开始加载数据')
-  } else {
-    console.log('⚠️ 数据库未连接，尝试重新连接')
-    await dbStore.reconnect()
-  }
-  
-  // 加载数据
-  await loadPosts()
-  await loadPopularTags()
-  
+onMounted(() => {
+  loadPosts()
+  loadPopularTags()
   document.addEventListener('keyup', handleGlobalKeyup)
-  console.log('🎉 CommunityPage 初始化完成')
 })
 
 onUnmounted(() => {

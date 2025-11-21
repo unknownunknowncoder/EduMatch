@@ -16,7 +16,7 @@
         <SidebarNavigation />
         
         <!-- 主内容区域 -->
-        <main class="flex-1">
+        <main class="flex-1 ml-64">
           <RouterView />
         </main>
       </div>

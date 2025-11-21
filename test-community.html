@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社区帖子测试</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .post {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .loading {
+            color: #666;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>社区帖子测试页面</h1>
+        
+        <div>
+            <button @click="testConnection">测试数据库连接</button>
+            <button @click="loadPosts">加载帖子</button>
+            <button @click="createSamplePost">创建示例帖子</button>
+        </div>
+
+        <div v-if="status" :class="status.type">
+            <p>{{ status.message }}</p>
+        </div>
+
+        <div v-if="posts.length > 0">
+            <h3>帖子列表 ({{ posts.length }} 条)</h3>
+            <div v-for="post in posts" :key="post.id" class="post">
+                <h4>{{ post.title }}</h4>
+                <p><strong>作者:</strong> {{ post.author }}</p>
+                <p><strong>分类:</strong> {{ post.category }}</p>
+                <p><strong>内容:</strong> {{ post.content }}</p>
+                <p><strong>标签:</strong> {{ Array.isArray(post.tags) ? post.tags.join(', ') : post.tags }}</p>
+                <p><strong>点赞数:</strong> {{ post.likes_count }}</p>
+                <p><strong>创建时间:</strong> {{ formatDate(post.created_at) }}</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    supabase: null,
+                    posts: [],
+                    status: null
+                };
+            },
+            mounted() {
+                this.initSupabase();
+            },
+            methods: {
+                initSupabase() {
+                    try {
+                        this.supabase = createClient(
+                            'https://aonlahundnkxuyxfsmcy.supabase.co',
+                            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmxhaHVuZG5reHV5eGZzbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjYwNTUsImV4cCI6MjA3ODY0MjA1NX0.IQswPG1NkJKht83isjWJk5nzuhymzETAf81_71kXaVE'
+                        );
+                        this.showStatus('success', 'Supabase 客户端初始化成功');
+                    } catch (error) {
+                        this.showStatus('error', 'Supabase 客户端初始化失败: ' + error.message);
+                    }
+                },
+                
+                async testConnection() {
+                    if (!this.supabase) {
+                        this.showStatus('error', 'Supabase 客户端未初始化');
+                        return;
+                    }
+
+                    try {
+                        // 测试连接
+                        const { data, error } = await this.supabase
+                            .from('community_posts')
+                            .select('count')
+                            .limit(1);
+
+                        if (error) {
+                            this.showStatus('error', '数据库连接测试失败: ' + error.message);
+                        } else {
+                            this.showStatus('success', '数据库连接测试成功');
+                        }
+                    } catch (error) {
+                        this.showStatus('error', '连接测试出错: ' + error.message);
+                    }
+                },
+
+                async loadPosts() {
+                    if (!this.supabase) {
+                        this.showStatus('error', 'Supabase 客户端未初始化');
+                        return;
+                    }
+
+                    this.showStatus('loading', '正在加载帖子...');
+
+                    try {
+                        const { data, error } = await this.supabase
+                            .from('community_posts')
+                            .select('*')
+                            .order('created_at', { ascending: false })
+                            .limit(10);
+
+                        if (error) {
+                            this.showStatus('error', '加载帖子失败: ' + error.message);
+                            console.error('详细错误:', error);
+                        } else {
+                            this.posts = data || [];
+                            this.showStatus('success', `成功加载 ${this.posts.length} 条帖子`);
+                        }
+                    } catch (error) {
+                        this.showStatus('error', '加载帖子出错: ' + error.message);
+                        console.error('详细错误:', error);
+                    }
+                },
+
+                async createSamplePost() {
+                    if (!this.supabase) {
+                        this.showStatus('error', 'Supabase 客户端未初始化');
+                        return;
+                    }
+
+                    this.showStatus('loading', '正在创建示例帖子...');
+
+                    try {
+                        const samplePost = {
+                            title: '测试帖子 - ' + new Date().toLocaleTimeString(),
+                            content: '这是一个测试帖子，用于验证数据库连接和 CRUD 操作。',
+                            category: '测试',
+                            tags: ['测试', 'Vue', '前端'],
+                            author: '测试用户',
+                            likes_count: 0,
+                            views_count: 0,
+                            comments_count: 0,
+                            user_id: 'b6c871eb-717c-4a40-859b-b639cf8ccd08'
+                        };
+
+                        const { data, error } = await this.supabase
+                            .from('community_posts')
+                            .insert([samplePost])
+                            .select();
+
+                        if (error) {
+                            this.showStatus('error', '创建帖子失败: ' + error.message);
+                            console.error('详细错误:', error);
+                        } else {
+                            this.showStatus('success', '帖子创建成功');
+                            // 重新加载帖子列表
+                            this.loadPosts();
+                        }
+                    } catch (error) {
+                        this.showStatus('error', '创建帖子出错: ' + error.message);
+                        console.error('详细错误:', error);
+                    }
+                },
+
+                showStatus(type, message) {
+                    this.status = { type, message };
+                    // 3秒后自动清除状态信息
+                    setTimeout(() => {
+                        this.status = null;
+                    }, 3000);
+                },
+
+                formatDate(dateString) {
+                    if (!dateString) return '未知';
+                    return new Date(dateString).toLocaleString('zh-CN');
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

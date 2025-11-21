@@ -1,5 +1,5 @@
 <template>
-  <aside class="hidden md:block w-64 bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 min-h-screen">
+  <aside class="hidden md:block fixed left-0 top-0 w-64 h-screen bg-white dark:bg-gray-800 shadow-sm border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
     <div class="p-6">
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">EduMatch</h1>
       
@@ -35,7 +35,6 @@ import {
   BookOpen, 
   History,
   Heart,
-  Settings,
   Calendar
 } from 'lucide-vue-next'
 
@@ -62,17 +61,12 @@ const navigationItems = [
     icon: Users
   },
   {
-    name: '个人中心',
-    path: '/profile',
-    icon: User
-  },
-  {
     name: '学习记录',
     path: '/history',
     icon: History
   },
   {
-    name: '我的收藏',
+    name: '点赞收藏',
     path: '/liked',
     icon: Heart
   },
@@ -82,9 +76,9 @@ const navigationItems = [
     icon: Calendar
   },
   {
-    name: '系统设置',
-    path: '/settings',
-    icon: Settings
+    name: '个人中心',
+    path: '/profile',
+    icon: User
   }
 ]
 

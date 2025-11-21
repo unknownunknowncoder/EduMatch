@@ -121,8 +121,13 @@ export const useDatabaseStore = defineStore('database', () => {
     return supabaseService.removeFromFavorites(userId, resourceId)
   }
 
+  // 获取数据库客户端
+  const getClient = async () => {
+    return dbService.getClient()
+  }
+
   // 重新连接数据库
-  async function reconnect() {
+  const reconnect = async () => {
     await dbService.init()
   }
 
@@ -136,6 +141,7 @@ export const useDatabaseStore = defineStore('database', () => {
 
     // 方法
     executeQuery,
+    getClient,
     getUsers,
     createUser,
     getUserByUsername,

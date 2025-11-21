@@ -12,7 +12,7 @@
     </div>
 
     <!-- 学习计划概览 -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md">
         <div class="flex items-center justify-between mb-4">
           <div class="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-lg">
@@ -37,19 +37,6 @@
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">已完成</h3>
         <p class="text-2xl font-bold text-green-600 dark:text-green-400">{{ plans.completed }}</p>
         <p class="text-sm text-gray-500 dark:text-gray-400">个学习计划</p>
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md">
-        <div class="flex items-center justify-between mb-4">
-          <div class="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-lg">
-            <svg class="h-6 w-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </div>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">学习时长</h3>
-        <p class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ plans.totalHours }}</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400">累计小时</p>
       </div>
     </div>
 
@@ -139,7 +126,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-4 text-sm">
+            <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span class="text-gray-500 dark:text-gray-400">开始时间</span>
                 <div class="font-medium">{{ plan.startDate }}</div>
@@ -147,10 +134,6 @@
               <div>
                 <span class="text-gray-500 dark:text-gray-400">目标时间</span>
                 <div class="font-medium">{{ plan.targetDate }}</div>
-              </div>
-              <div>
-                <span class="text-gray-500 dark:text-gray-400">每日时长</span>
-                <div class="font-medium">{{ plan.dailyHours }}小时</div>
               </div>
             </div>
           </div>
@@ -203,24 +186,7 @@
             ></textarea>
           </div>
 
-          <!-- 学习时长 -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              每日学习时长
-            </label>
-            <div class="flex items-center space-x-2">
-              <input
-                v-model.number="newPlan.dailyHours"
-                type="number"
-                min="0.5"
-                max="12"
-                step="0.5"
-                class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                placeholder="2"
-              />
-              <span class="text-gray-600 dark:text-gray-400">小时</span>
-            </div>
-          </div>
+
 
           <!-- 关联学习资源 -->
           <div>
@@ -319,15 +285,13 @@ const showCreatePlanModal = ref(false)
 
 const plans = ref({
   inProgress: 0,
-  completed: 0,
-  totalHours: 0
+  completed: 0
 })
 
 // 新建学习计划表单数据
 const newPlan = ref({
   title: '',
   description: '',
-  dailyHours: 2,
   startDate: '',
   targetDate: '',
   resourceName: '',
@@ -344,7 +308,7 @@ const currentPlans = ref<StudyPlan[]>([
     status: 'in_progress',
     startDate: '2025-11-20',
     targetDate: '2025-11-28',
-    dailyHours: 2,
+
     resourceName: 'c语言零基础',
     resourceUrl: ''
   },
@@ -356,7 +320,7 @@ const currentPlans = ref<StudyPlan[]>([
     status: 'in_progress',
     startDate: '2025-11-20',
     targetDate: '2025-11-28',
-    dailyHours: 2,
+
     resourceName: '',
     resourceUrl: ''
   },
@@ -368,7 +332,7 @@ const currentPlans = ref<StudyPlan[]>([
     status: 'in_progress',
     startDate: '2025-11-20',
     targetDate: '2025-11-28',
-    dailyHours: 2,
+
     resourceName: 'Java官方教程',
     resourceUrl: 'https://docs.oracle.com/javase/tutorial/'
   },
@@ -380,7 +344,7 @@ const currentPlans = ref<StudyPlan[]>([
     status: 'in_progress',
     startDate: '2025-11-20',
     targetDate: '2025-11-28',
-    dailyHours: 2,
+
     resourceName: 'Spring Boot教程',
     resourceUrl: 'https://spring.io/guides'
   },
@@ -392,7 +356,7 @@ const currentPlans = ref<StudyPlan[]>([
     status: 'in_progress',
     startDate: '2025-11-20',
     targetDate: '2025-11-28',
-    dailyHours: 2,
+
     resourceName: '',
     resourceUrl: ''
   },
@@ -404,7 +368,7 @@ const currentPlans = ref<StudyPlan[]>([
     status: 'in_progress',
     startDate: '2025-11-20',
     targetDate: '2025-11-28',
-    dailyHours: 2,
+
     resourceName: '',
     resourceUrl: ''
   },
@@ -416,7 +380,7 @@ const currentPlans = ref<StudyPlan[]>([
     status: 'in_progress',
     startDate: '2025-11-20',
     targetDate: '2025-11-28',
-    dailyHours: 2,
+
     resourceName: '',
     resourceUrl: ''
   }
@@ -501,12 +465,10 @@ const loadDatabasePlans = async () => {
 const updateStats = () => {
   const inProgress = currentPlans.value.filter(p => p.status === 'in_progress').length
   const completed = currentPlans.value.filter(p => p.status === 'completed').length
-  const totalHours = currentPlans.value.reduce((sum, p) => sum + (p.dailyHours || 0), 0)
   
   plans.value = {
     inProgress: inProgress,
-    completed: completed,
-    totalHours: totalHours
+    completed: completed
   }
 }
 
@@ -575,7 +537,6 @@ const handleCreatePlan = async () => {
       status: 'in_progress',
       start_date: newPlan.value.startDate,
       target_date: newPlan.value.targetDate,
-      daily_hours: newPlan.value.dailyHours,
       resource_name: newPlan.value.resourceName,
       resource_url: newPlan.value.resourceUrl,
       created_at: new Date().toISOString(),
@@ -613,7 +574,6 @@ const handleCreatePlan = async () => {
       status: createdPlan.status || 'in_progress',
       startDate: createdPlan.start_date || newPlan.value.startDate,
       targetDate: createdPlan.target_date || newPlan.value.targetDate,
-      dailyHours: createdPlan.daily_hours || newPlan.value.dailyHours,
       resourceName: createdPlan.resource_name || newPlan.value.resourceName,
       resourceUrl: createdPlan.resource_url || newPlan.value.resourceUrl
     }
@@ -639,7 +599,6 @@ const handleCreatePlan = async () => {
     newPlan.value = {
       title: '',
       description: '',
-      dailyHours: 2,
       startDate: '',
       targetDate: '',
       resourceName: '',
@@ -660,7 +619,6 @@ const closeCreatePlanModal = () => {
   newPlan.value = {
     title: '',
     description: '',
-    dailyHours: 2,
     startDate: '',
     targetDate: '',
     resourceName: '',
