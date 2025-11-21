@@ -34,61 +34,78 @@
       </div>
 
       <!-- 平台特色标签 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      <div class="grid grid-cols-3 gap-3 mb-8">
         <!-- 智能匹配 -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default">
-          <div class="flex items-center mb-4">
-            <BookOpen class="h-8 w-8 text-blue-500 mr-3" />
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">智能匹配</h3>
+        <!-- 智能匹配 -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 py-10 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default h-full flex flex-col">
+          <div class="flex flex-col items-center justify-center mb-3 text-center">
+            <BookOpen class="h-7 w-7 text-blue-500 mb-2" />
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">智能匹配</h3>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">
-            基于AI算法精准推荐最适合您的学习资源，让学习更高效
+          <p class="text-gray-600 dark:text-gray-400 text-base flex-grow leading-tight text-center px-2">
+            基于AI算法精准推荐最适合您的学习资源
           </p>
         </div>
 
         <!-- 海量资源 -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default">
-          <div class="flex items-center mb-4">
-            <PlusCircle class="h-8 w-8 text-green-500 mr-3" />
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">海量资源</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 py-10 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default h-full flex flex-col">
+          <div class="flex flex-col items-center justify-center mb-3 text-center">
+            <PlusCircle class="h-7 w-7 text-green-500 mb-2" />
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">海量资源</h3>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">
-            涵盖各领域的优质学习资料，从基础入门到高级进阶全覆盖
+          <p class="text-gray-600 dark:text-gray-400 text-base flex-grow leading-tight text-center px-2">
+            涵盖各领域的优质学习资料，从基础到高级进阶
           </p>
         </div>
 
-
-
         <!-- 社区互动 -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default">
-          <div class="flex items-center mb-4">
-            <BarChart3 class="h-8 w-8 text-orange-500 mr-3" />
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">社区互动</h3>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 py-10 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default h-full flex flex-col">
+          <div class="flex flex-col items-center justify-center mb-3 text-center">
+            <BarChart3 class="h-7 w-7 text-orange-500 mb-2" />
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">社区互动</h3>
           </div>
-          <p class="text-gray-600 dark:text-gray-400 text-sm">
+          <p class="text-gray-600 dark:text-gray-400 text-base flex-grow leading-tight text-center px-2">
             与学习者交流分享，在互助社区中共同成长进步
           </p>
         </div>
-      </div>
 
-      <!-- 推荐资源 -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">推荐资源</h3>
-          <button
-            @click="navigateTo('/search')"
-            class="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            查看全部
-          </button>
+        <!-- 个性化学习 -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 py-10 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default h-full flex flex-col">
+          <div class="flex flex-col items-center justify-center mb-3 text-center">
+            <User class="h-7 w-7 text-purple-500 mb-2" />
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">个性化学习</h3>
+          </div>
+          <p class="text-gray-600 dark:text-gray-400 text-base flex-grow leading-tight text-center px-2">
+            根据个人学习进度和偏好，定制专属学习路径
+          </p>
         </div>
 
-        <!-- 空状态：不显示任何模拟数据 -->
-        <div class="text-center py-12">
-          <BookOpen class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-          <p class="text-gray-500 dark:text-gray-400">暂无推荐资源</p>
+        <!-- 学习追踪 -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 py-10 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default h-full flex flex-col">
+          <div class="flex flex-col items-center justify-center mb-3 text-center">
+            <TrendingUp class="h-7 w-7 text-teal-500 mb-2" />
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">学习追踪</h3>
+          </div>
+          <p class="text-gray-600 dark:text-gray-400 text-base flex-grow leading-tight text-center px-2">
+            实时记录学习进度，数据分析助您持续提升
+          </p>
         </div>
+
+        <!-- 优质内容 -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-1 py-10 hover:shadow-lg hover:scale-105 transition-all duration-300 cursor-default h-full flex flex-col">
+          <div class="flex flex-col items-center justify-center mb-3 text-center">
+            <Award class="h-7 w-7 text-yellow-500 mb-2" />
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">优质内容</h3>
+          </div>
+          <p class="text-gray-600 dark:text-gray-400 text-base flex-grow leading-tight text-center px-2">
+            精选高质量学习资源，每一份内容都严格审核
+          </p>
+        </div>
+
+
       </div>
+
+
 
   </div>
 </template>
@@ -99,7 +116,10 @@ import {
   BookOpen, 
   PlusCircle, 
   BarChart3,
-  Search
+  Search,
+  User,
+  TrendingUp,
+  Award
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -111,4 +131,6 @@ const navigateTo = (path: string) => {
 const navigateToSearch = () => {
   router.push('/search')
 }
+
+
 </script>

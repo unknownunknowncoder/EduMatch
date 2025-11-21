@@ -29,63 +29,11 @@
           </div>
         </div>
 
-        <!-- 统计信息 -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ stats.totalHours }}</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">学习时长</div>
-          </div>
-          <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ stats.completedCourses }}</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">完成课程</div>
-          </div>
-          <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">{{ stats.streakDays }}</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">连续天数</div>
-          </div>
-          <div class="text-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ stats.achievements }}</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">获得成就</div>
-          </div>
-        </div>
+
       </div>
     </div>
 
-    <!-- 学习进度 -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
-      <div class="p-6 border-b border-gray-100 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-          <svg class="h-5 w-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-          </svg>
-          学习进度
-        </h3>
-      </div>
-      
-      <div class="p-6">
-        <div class="space-y-4">
-          <div 
-            v-for="course in currentCourses"
-            :key="course.id"
-            class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg"
-          >
-            <div class="flex items-center flex-1">
-              <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-4">
-                <span class="text-blue-600 dark:text-blue-400 font-bold">{{ course.title.charAt(0) }}</span>
-              </div>
-              <div>
-                <h4 class="font-medium text-gray-900 dark:text-white">{{ course.title }}</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ course.description }}</p>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-semibold text-blue-600 dark:text-blue-400">{{ course.progress }}%</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">{{ course.completedLessons }}/{{ course.totalLessons }} 课时</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- 我的资源 -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
@@ -160,47 +108,142 @@
       </div>
     </div>
 
-    <!-- 最近活动 -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <!-- 系统设置 -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
       <div class="p-6 border-b border-gray-100 dark:border-gray-700">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-          <svg class="h-5 w-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <svg class="h-5 w-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
-          最近活动
+          系统设置
         </h3>
       </div>
       
-      <div class="p-6">
+      <!-- 账户管理 -->
+      <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+        <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">账户管理</h4>
         <div class="space-y-4">
-          <div 
-            v-for="activity in recentActivities"
-            :key="activity.id"
-            class="flex items-center justify-between p-4 border border-gray-100 dark:border-gray-700 rounded-lg"
-          >
-            <div class="flex items-center">
-              <div :class="`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${getActivityColor(activity.type)}`">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="getActivityIcon(activity.type)"></path>
-                </svg>
-              </div>
+          <!-- 编辑昵称 -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
               <div>
-                <p class="font-medium text-gray-900 dark:text-white">{{ activity.title }}</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ activity.description }}</p>
+                <h3 class="font-medium text-gray-900 dark:text-white">编辑昵称</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">修改你在平台上的显示名称</p>
               </div>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
             </div>
-            <div class="text-right">
-              <div class="text-sm text-gray-500 dark:text-gray-400">{{ activity.time }}</div>
+            <div class="flex gap-3">
+              <input 
+                v-model="nicknameInput"
+                type="text" 
+                placeholder="输入新昵称"
+                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+              >
+              <button 
+                @click="updateNickname"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                更新昵称
+              </button>
+            </div>
+          </div>
+
+          <!-- 修改密码 -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-medium text-gray-900 dark:text-white">修改密码</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">定期更换密码保护账户安全</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+            <div class="space-y-3">
+              <input 
+                v-model="passwordForm.currentPassword"
+                type="password" 
+                placeholder="当前密码"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+              >
+              <input 
+                v-model="passwordForm.newPassword"
+                type="password" 
+                placeholder="新密码"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+              >
+              <input 
+                v-model="passwordForm.confirmPassword"
+                type="password" 
+                placeholder="确认新密码"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
+              >
+              <button 
+                @click="updatePassword"
+                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                修改密码
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- 账户操作 -->
+      <div class="p-6">
+        <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">账户操作</h4>
+        <div class="space-y-4">
+          <!-- 切换账号 -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-medium text-gray-900 dark:text-white">切换账号</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">退出当前账号并登录其他账号</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <button 
+              @click="switchAccount"
+              class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+            >
+              切换账号
+            </button>
+          </div>
+
+          <!-- 退出登录 -->
+          <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-medium text-red-900 dark:text-red-100">退出登录</h3>
+                <p class="text-sm text-red-600 dark:text-red-300">安全退出当前账号</p>
+              </div>
+              <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+            </div>
+            <button 
+              @click="logout"
+              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+            >
+              退出登录
+            </button>
+          </div>
+        </div>
+      </div>
+
+
     </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import { supabaseService } from '@/services/supabase'
@@ -211,29 +254,9 @@ interface UserInfo {
   avatar?: string
 }
 
-interface Stats {
-  totalHours: number
-  completedCourses: number
-  streakDays: number
-  achievements: number
-}
 
-interface Course {
-  id: number
-  title: string
-  description: string
-  progress: number
-  completedLessons: number
-  totalLessons: number
-}
 
-interface Activity {
-  id: number
-  type: 'course' | 'achievement' | 'study'
-  title: string
-  description: string
-  time: string
-}
+
 
 interface MyResource {
   id: string
@@ -260,46 +283,23 @@ const userInfo: UserInfo = {
   email: 'demo@example.com'
 }
 
-const stats: Stats = {
-  totalHours: 0,
-  completedCourses: 0,
-  streakDays: 0,
-  achievements: 0
-}
+// 账户管理状态
+const nicknameInput = ref('')
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
 
-const currentCourses: Course[] = []
 
-const recentActivities: Activity[] = []
+
+
 
 const userAvatar = computed(() => {
   return userInfo.name.charAt(0).toUpperCase()
 })
 
-const getActivityColor = (type: string) => {
-  switch (type) {
-    case 'course':
-      return 'bg-blue-500'
-    case 'achievement':
-      return 'bg-yellow-500'
-    case 'study':
-      return 'bg-green-500'
-    default:
-      return 'bg-gray-500'
-  }
-}
 
-const getActivityIcon = (type: string) => {
-  switch (type) {
-    case 'course':
-      return 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'
-    case 'achievement':
-      return 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 01-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 01.806-1.946 3.42 3.42 0 013.138-3.138z'
-    case 'study':
-      return 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
-    default:
-      return 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-  }
-}
 
 const getResourceTypeColor = (type: string) => {
   const colors: Record<string, string> = {
@@ -386,6 +386,172 @@ const loadMyResources = async () => {
     myResources.value = []
   } finally {
     isLoadingResources.value = false
+  }
+}
+
+// 更新昵称
+const updateNickname = async () => {
+  if (!nicknameInput.value.trim()) {
+    alert('请输入新昵称')
+    return
+  }
+  
+  try {
+    // 获取当前用户ID
+    const client = supabaseService.getClient()
+    let currentUserId = 'demo-user-id'
+    
+    // 从localStorage获取当前用户信息
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      if (user.id) {
+        currentUserId = user.id
+      }
+    } else {
+      // 如果没有本地用户信息，获取admin用户
+      const { data: adminUser, error: adminError } = await client
+        .from('users')
+        .select('id')
+        .eq('username', 'admin')
+        .single()
+      
+      if (adminUser && !adminError) {
+        currentUserId = adminUser.id
+      } else {
+        alert('无法获取用户信息')
+        return
+      }
+    }
+    
+    // 更新昵称到数据库
+    await supabaseService.updateUserNickname(currentUserId, nicknameInput.value.trim())
+    
+    alert('昵称更新成功！')
+    
+    // 更新本地存储中的用户信息
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      user.nickname = nicknameInput.value.trim()
+      localStorage.setItem('currentUser', JSON.stringify(user))
+    }
+    
+    nicknameInput.value = ''
+    
+  } catch (error) {
+    console.error('更新昵称失败:', error)
+    alert('昵称更新失败: ' + (error instanceof Error ? error.message : '未知错误'))
+  }
+}
+
+// 修改密码
+const updatePassword = async () => {
+  if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+    alert('请填写所有密码字段')
+    return
+  }
+  
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    alert('新密码和确认密码不一致')
+    return
+  }
+  
+  if (passwordForm.newPassword.length < 6) {
+    alert('新密码长度至少为6位')
+    return
+  }
+  
+  try {
+    // 获取当前用户ID
+    const client = supabaseService.getClient()
+    let currentUserId = 'demo-user-id'
+    
+    // 从localStorage获取当前用户信息
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      if (user.id) {
+        currentUserId = user.id
+      }
+    } else {
+      // 如果没有本地用户信息，尝试获取admin用户
+      const { data: adminUser, error: adminError } = await client
+        .from('users')
+        .select('id, username, password_hash')
+        .eq('username', 'admin')
+        .single()
+      
+      if (adminUser && !adminError) {
+        // 验证当前密码
+        const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, adminUser.password_hash)
+        if (!isCurrentPasswordValid) {
+          alert('当前密码不正确')
+          return
+        }
+        currentUserId = adminUser.id
+      } else {
+        alert('无法获取用户信息')
+        return
+      }
+    }
+    
+    // 如果是通过localStorage获取的用户，需要先验证当前密码
+    if (currentUser) {
+      const { data: userData, error: userError } = await client
+        .from('users')
+        .select('password_hash')
+        .eq('id', currentUserId)
+        .single()
+      
+      if (userError || !userData) {
+        alert('无法获取用户信息')
+        return
+      }
+      
+      const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, userData.password_hash)
+      if (!isCurrentPasswordValid) {
+        alert('当前密码不正确')
+        return
+      }
+    }
+    
+    // 更新密码
+    await supabaseService.updateUserPassword(currentUserId, passwordForm.newPassword)
+    
+    alert('密码修改成功！')
+    
+    // 清空表单
+    passwordForm.currentPassword = ''
+    passwordForm.newPassword = ''
+    passwordForm.confirmPassword = ''
+    
+  } catch (error) {
+    console.error('修改密码失败:', error)
+    alert('密码修改失败: ' + (error instanceof Error ? error.message : '未知错误'))
+  }
+}
+
+// 切换账号
+const switchAccount = () => {
+  if (confirm('确定要切换账号吗？这将退出当前账号并跳转到登录页面。')) {
+    // 清除本地存储的用户信息
+    localStorage.removeItem('userToken')
+    localStorage.removeItem('userInfo')
+    
+    // 跳转到登录页面
+    router.push('/login')
+  }
+}
+
+// 退出登录
+const logout = () => {
+  if (confirm('确定要退出登录吗？')) {
+    // 清除本地存储的用户信息
+    localStorage.removeItem('userToken')
+    localStorage.removeItem('userInfo')
+    
+    // 跳转到登录页面
+    router.push('/login')
   }
 }
 
