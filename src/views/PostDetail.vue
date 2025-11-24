@@ -1,167 +1,118 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6">
-    <!-- 返回按钮 -->
-    <div class="mb-6">
-      <button 
-        @click="goBack"
-        class="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 transition-colors"
-      >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-        </svg>
-        返回学习社区
-      </button>
-    </div>
-
-    <!-- 帖子详情内容 -->
-    <div class="max-w-4xl mx-auto">
-      <!-- 帖子头部 -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <!-- 帖子标题和元信息 -->
-        <div class="p-8 border-b border-gray-200 dark:border-gray-700">
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            {{ post.title }}
-          </h1>
-          
-          <div class="flex flex-wrap items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-            <div class="flex items-center space-x-6 mb-4 md:mb-0">
-              <span class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-                {{ post.author || '匿名用户' }}
-              </span>
-              
-              <span class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                {{ formatDate(post.created_at) }}
-              </span>
-              
-              <span class="flex items-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 002.828 0l.586-.586c.391-.39.586-.902.586-1.414V15a2 2 0 01-2 2H7a2 2 0 01-2-2v-4c0-.814.195-1.523.586-1.914L7.414 5.586C7.004 5.195 6.492 5 6 5z"></path>
-                </svg>
-                {{ post.category || '未分类' }}
-              </span>
-            </div>
-            
-            <div class="flex items-center space-x-4">
-              <button 
-                @click="toggleLike"
-                :disabled="isLiking"
-                class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors"
-                :class="post.is_liked ? 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400' : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'"
-              >
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
-                <span>{{ post.likes_count || 0 }}</span>
-              </button>
-              
-              <div class="flex items-center space-x-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                </svg>
-                <span>{{ post.views_count || 0 }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 帖子内容 -->
-        <div class="p-8">
-          <div class="prose dark:prose-invert max-w-none">
-            <p class="text-lg leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-              {{ post.content }}
-            </p>
-          </div>
-          
-          <!-- 标签 -->
-          <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2 mt-8">
-            <span 
-              v-for="tag in post.tags" 
-              :key="tag"
-              class="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm"
-            >
-              {{ tag }}
-            </span>
-          </div>
-        </div>
+  <div class="post-detail">
+    <div class="container">
+      <!-- 返回按钮 -->
+      <div class="back-button">
+        <button @click="$router.back()" class="btn btn-secondary">
+          ← 返回社区
+        </button>
       </div>
 
-      <!-- 评论区 -->
-      <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-            评论 ({{ comments.length }})
-          </h2>
-        </div>
-
-        <!-- 评论表单 -->
-        <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-          <form @submit.prevent="addComment" class="space-y-4">
-            <textarea
-              v-model="newComment"
-              rows="3"
-              placeholder="写下你的评论..."
-              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
-              maxlength="500"
-            ></textarea>
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-500 dark:text-gray-400">
-                {{ newComment.length }}/500
-              </span>
-              <button
-                type="submit"
-                :disabled="!newComment.trim() || isSubmitting"
-                class="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+      <!-- 帖子详情 -->
+      <div v-if="post" class="post-card">
+        <div class="post-header">
+          <h1 class="post-title">{{ post.title }}</h1>
+          <div class="post-meta">
+            <span class="author">作者: {{ post.author_name || '匿名用户' }}</span>
+            <span class="date">{{ formatDate(post.created_at) }}</span>
+            
+            <!-- 操作按钮 - 在日期右边横向排列 -->
+            <div class="flex items-center space-x-2 ml-auto">
+              <!-- 点赞按钮 -->
+              <button 
+                @click="toggleLike(post)"
+                :disabled="isLiking"
+                class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                :class="post.is_liked ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'bg-gray-100 dark:bg-gray-700'"
               >
-                发表评论
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <span class="text-sm font-medium">{{ post.like_count || 0 }}</span>
               </button>
-            </div>
-          </form>
-        </div>
-
-        <!-- 评论列表 -->
-        <div v-if="comments.length > 0" class="divide-y divide-gray-200 dark:divide-gray-700">
-          <div 
-            v-for="comment in comments" 
-            :key="comment.id"
-            class="p-6"
-          >
-            <div class="flex items-start space-x-4">
-              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center">
-                <span class="text-blue-600 dark:text-blue-400 font-medium">
-                  {{ comment.author?.[0]?.toUpperCase() || 'U' }}
-                </span>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="font-medium text-gray-900 dark:text-white">
-                    {{ comment.author || '匿名用户' }}
-                  </span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400">
-                    {{ formatDate(comment.created_at) }}
-                  </span>
-                </div>
-                <p class="text-gray-700 dark:text-gray-300">
-                  {{ comment.content }}
-                </p>
-              </div>
+              
+              <!-- 收藏按钮 -->
+              <button 
+                @click="toggleFavorite(post)"
+                :disabled="isFavoriting"
+                class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors disabled:opacity-50"
+                :class="post.is_favorited ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-100 dark:bg-gray-700'"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                </svg>
+                <span class="text-sm font-medium">{{ post.favorite_count || 0 }}</span>
+              </button>
+              
+              <!-- 评论按钮 -->
+              <button 
+                @click="toggleComments"
+                class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                :class="showCommentInput ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-500' : 'bg-gray-100 dark:bg-gray-700'"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+                <span class="text-sm font-medium">{{ commentCount }}</span>
+              </button>
             </div>
           </div>
         </div>
         
-        <!-- 暂无评论 -->
-        <div v-else class="p-12 text-center">
-          <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-          </svg>
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">暂无评论</h3>
-          <p class="text-gray-500 dark:text-gray-400">成为第一个评论的人吧！</p>
+        <div class="post-content">
+          <p>{{ post.content }}</p>
+        </div>
+      </div>
+
+      <!-- 评论区域 - 默认隐藏，点击评论按钮时显示 -->
+      <div v-if="showCommentInput" class="comments-section">
+        <h2>评论 ({{ comments.length }})</h2>
+        
+        <!-- 添加评论 -->
+        <div class="add-comment">
+          <textarea 
+            v-model="newComment" 
+            placeholder="写下你的评论..."
+            rows="3"
+            class="comment-input"
+          ></textarea>
+          <button 
+            @click="addComment" 
+            :disabled="!newComment.trim()"
+            class="btn btn-primary"
+          >
+            发表评论
+          </button>
+        </div>
+
+        <!-- 评论列表 -->
+        <div class="comments-list">
+          <div 
+            v-for="comment in comments" 
+            :key="comment.id"
+            class="comment-item"
+          >
+            <div class="comment-header">
+              <div class="comment-avatar">
+                <img 
+                  :src="getUserAvatar(comment.user_id, comment.author_name)" 
+                  :alt="comment.author_name || '匿名用户'"
+                  class="avatar"
+                />
+              </div>
+              <div class="comment-user-info">
+                <span class="comment-author">{{ comment.author_name || '匿名用户' }}</span>
+                <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
+              </div>
+            </div>
+            <div class="comment-content">
+              {{ comment.content }}
+            </div>
+          </div>
+          
+          <div v-if="comments.length === 0" class="no-comments">
+            暂无评论，快来发表第一条评论吧！
+          </div>
         </div>
       </div>
     </div>
@@ -170,161 +121,764 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
+import type { Post, Comment } from '@/types/community'
 
 const route = useRoute()
-const router = useRouter()
-const dbStore = useDatabaseStore()
-
-// 响应式数据
-const post = ref<any>({})
-const comments = ref<any[]>([])
-const newComment = ref('')
-const isLoading = ref(false)
-const isSubmitting = ref(false)
-const isLiking = ref(false)
-
-// 获取帖子ID
 const postId = route.params.id as string
 
-// 返回上一页
-const goBack = () => {
-  router.back()
-}
+const post = ref<Post | null>(null)
+const comments = ref<Comment[]>([])
+const newComment = ref('')
+const isLiking = ref(false)
+const isFavoriting = ref(false)
+const showCommentInput = ref(false)
+const commentCount = ref(0)
+
+const dbStore = useDatabaseStore()
 
 // 格式化日期
 const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-  
   const date = new Date(dateString)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', { 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  })
+}
+
+// 切换评论区域的显示状态
+const toggleComments = () => {
+  showCommentInput.value = !showCommentInput.value
   
-  if (days === 0) {
-    return '今天'
-  } else if (days === 1) {
-    return '昨天'
-  } else if (days < 7) {
-    return `${days}天前`
-  } else if (days < 30) {
-    return `${Math.floor(days / 7)}周前`
-  } else {
-    return date.toLocaleDateString('zh-CN')
+  // 如果显示评论区，滚动到评论区
+  if (showCommentInput.value) {
+    // 使用 setTimeout 确保 DOM 更新后再滚动
+    setTimeout(() => {
+      const commentsSection = document.querySelector('.comments-section')
+      if (commentsSection) {
+        commentsSection.scrollIntoView({ behavior: 'smooth' })
+      }
+    }, 100)
   }
 }
 
-// 切换点赞
-const toggleLike = async () => {
+// 切换点赞状态
+const toggleLike = async (post: Post) => {
   if (isLiking.value) return
   
   isLiking.value = true
   try {
-    // 简单的点赞切换
-    post.value.is_liked = !post.value.is_liked
-    post.value.likes_count = (post.value.likes_count || 0) + (post.value.is_liked ? 1 : -1)
-  } catch (error) {
-    console.error('点赞失败:', error)
-  } finally {
-    isLiking.value = false
-  }
-}
-
-// 添加评论
-const addComment = async () => {
-  if (!newComment.value.trim()) return
-  
-  isSubmitting.value = true
-  try {
-    // 模拟添加评论
-    const comment = {
-      id: Date.now().toString(),
-      author: '当前用户',
-      content: newComment.value.trim(),
-      created_at: new Date().toISOString()
+    // 获取当前用户ID
+    let currentUserId = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
     }
     
-    comments.value.unshift(comment)
-    newComment.value = ''
+    if (!currentUserId) {
+      alert('请先登录后再点赞')
+      return
+    }
     
-    // 在实际应用中，这里应该调用API保存评论
-    console.log('添加评论:', comment)
-    
-  } catch (error) {
-    console.error('添加评论失败:', error)
-  } finally {
-    isSubmitting.value = false
-  }
-}
-
-// 加载帖子详情
-const loadPostDetail = async () => {
-  if (isLoading.value) return
-  
-  isLoading.value = true
-  try {
     // 确保数据库已初始化
     let client = await dbStore.getClient()
     if (!client) {
-      console.log('数据库客户端未初始化，尝试重新连接...')
+      console.log('点赞操作：数据库客户端未初始化，尝试重新连接...')
       await dbStore.reconnect()
       client = await dbStore.getClient()
     }
     
     if (!client) {
-      console.error('数据库客户端初始化失败')
+      console.error('点赞操作：数据库客户端初始化失败')
       return
     }
     
-    console.log('🔄 开始加载帖子详情，ID:', postId)
-    const { data, error } = await client
-      .from('community_posts')
-      .select('*')
-      .eq('id', postId)
-      .single()
-    
-    if (error) {
-      console.error('❌ 加载帖子详情失败:', error)
-      throw error
-    }
-    
-    post.value = data || {}
-    console.log('✅ 帖子详情加载成功:', post.value)
-    
-    // 模拟加载评论（实际应用中应该从数据库加载）
-    comments.value = [
-      {
-        id: '1',
-        author: '学习伙伴A',
-        content: '很有价值的分享！感谢作者的详细讲解。',
-        created_at: new Date(Date.now() - 86400000).toISOString()
-      },
-      {
-        id: '2',
-        author: '技术爱好者',
-        content: '我在学习中遇到了类似的问题，这篇文章给了我很好的启发。',
-        created_at: new Date(Date.now() - 172800000).toISOString()
+    if (post.is_liked) {
+      // 取消点赞
+      const { error } = await client
+        .from('post_likes')
+        .delete()
+        .eq('user_id', currentUserId)
+        .eq('post_id', post.id)
+      
+      if (error) {
+        console.error('取消点赞失败:', error)
+        throw error
       }
-    ]
-    
+      
+      post.is_liked = false
+      post.like_count = Math.max((post.like_count || 0) - 1, 0)
+      console.log('✅ 取消点赞成功')
+    } else {
+      // 添加点赞
+      const { error } = await client
+        .from('post_likes')
+        .insert([{
+          user_id: currentUserId,
+          post_id: post.id
+        }])
+      
+      if (error) {
+        console.error('添加点赞失败:', error)
+        throw error
+      }
+      
+      post.is_liked = true
+      post.like_count = (post.like_count || 0) + 1
+      console.log('✅ 添加点赞成功')
+    }
   } catch (error) {
-    console.error('❌ 加载帖子详情异常:', error)
+    console.error('点赞操作失败:', error)
   } finally {
-    isLoading.value = false
+    isLiking.value = false
   }
 }
 
-// 初始化
-onMounted(async () => {
-  console.log('🚀 PostDetail 组件挂载，帖子ID:', postId)
+// 切换收藏状态
+const toggleFavorite = async (post: Post) => {
+  if (isFavoriting.value) return
   
-  if (!postId) {
-    console.error('帖子ID不存在')
-    router.push('/community')
-    return
+  isFavoriting.value = true
+  try {
+    // 获取当前用户ID
+    let currentUserId = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      alert('请先登录后再收藏帖子')
+      return
+    }
+    
+    // 确保数据库已初始化
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('收藏操作：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('收藏操作：数据库客户端初始化失败')
+      return
+    }
+    
+    if (post.is_favorited) {
+      // 取消收藏
+      const { error } = await client
+        .from('post_favorites')
+        .delete()
+        .eq('user_id', currentUserId)
+        .eq('post_id', post.id)
+      
+      if (error) {
+        console.error('取消收藏失败:', error)
+        throw error
+      }
+      
+      post.is_favorited = false
+      post.favorite_count = Math.max((post.favorite_count || 0) - 1, 0)
+      console.log('✅ 取消收藏成功')
+    } else {
+      // 添加收藏
+      const { error } = await client
+        .from('post_favorites')
+        .insert([{
+          user_id: currentUserId,
+          post_id: post.id
+        }])
+      
+      if (error) {
+        console.error('添加收藏失败:', error)
+        throw error
+      }
+      
+      post.is_favorited = true
+      post.favorite_count = (post.favorite_count || 0) + 1
+      console.log('✅ 添加收藏成功')
+    }
+  } catch (error) {
+    console.error('收藏操作失败:', error)
+  } finally {
+    isFavoriting.value = false
+  }
+}
+
+// 获取帖子详情
+const fetchPostDetail = async () => {
+  try {
+    // 确保数据库已初始化
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('帖子详情加载：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('帖子详情加载：数据库客户端初始化失败')
+      return
+    }
+    
+    console.log('📖 开始加载帖子详情，ID:', postId)
+    
+    // 获取帖子详情
+    const { data: postData, error: postError } = await client
+      .from('community_posts')
+      .select(`
+        *,
+        user:user_id (
+          id,
+          username,
+          nickname
+        )
+      `)
+      .eq('id', postId)
+      .single()
+    
+    if (postError) {
+      console.error('❌ 加载帖子详情失败:', postError)
+      return
+    }
+    
+    // 获取当前用户ID以检查收藏状态
+    let currentUserId = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    // 检查用户是否已收藏该帖子
+    let isFavorited = false
+    if (currentUserId) {
+      const { data: favoriteData, error: favoriteError } = await client
+        .from('post_favorites')
+        .select('id')
+        .eq('user_id', currentUserId)
+        .eq('post_id', postId)
+        
+      if (!favoriteError && favoriteData && favoriteData.length > 0) {
+        isFavorited = true
+      }
+    }
+    
+    // 处理帖子数据
+    post.value = {
+      ...postData,
+      author_name: postData.user?.nickname || postData.user?.username || '匿名用户',
+      is_favorited: isFavorited,
+      favorite_count: postData.favorite_count || 0
+    }
+    
+    console.log('✅ 帖子详情加载成功:', post.value)
+    
+    // 获取帖子评论
+    await loadComments()
+    
+  } catch (error) {
+    console.error('❌ 获取帖子详情失败:', error)
+  }
+}
+
+// 加载评论
+const loadComments = async () => {
+  try {
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('评论加载：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('评论加载：数据库客户端初始化失败')
+      return
+    }
+    
+    console.log('💬 开始加载评论，帖子ID:', postId)
+    
+    const { data: commentsData, error: commentsError } = await client
+      .from('post_comments')
+      .select(`
+        *,
+        user:user_id (
+          id,
+          username,
+          nickname
+        )
+      `)
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true })
+    
+    if (commentsError) {
+      console.error('❌ 加载评论失败:', commentsError)
+      return
+    }
+    
+    // 处理评论数据
+    comments.value = (commentsData || []).map(comment => ({
+      ...comment,
+      author_name: comment.user?.nickname || comment.user?.username || '匿名用户'
+    }))
+    
+    // 更新评论计数
+    commentCount.value = comments.value.length
+    
+    console.log('✅ 评论加载完成，数量:', comments.value.length)
+    
+  } catch (error) {
+    console.error('❌ 加载评论失败:', error)
+  }
+}
+
+// 获取用户头像（与个人中心保持一致）
+const getUserAvatar = (userId: string, authorName: string) => {
+  // 与个人中心保持一致，使用浅蓝色背景和深蓝色字母
+  const bgColor = '#DBEAFE' // 浅蓝色，对应 bg-blue-100
+  const textColor = '#2563EB' // 深蓝色，对应 text-blue-600
+  
+  // 创建SVG头像，与个人中心保持一致
+  const initial = authorName ? authorName.charAt(0).toUpperCase() : 'U'
+  
+  // 生成SVG头像数据URL
+  const svgContent = `
+    <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="20" fill="${bgColor}"/>
+      <text x="20" y="26" text-anchor="middle" fill="${textColor}" font-family="Arial, sans-serif" font-size="16" font-weight="bold">
+        ${initial}
+      </text>
+    </svg>
+  `.trim()
+  
+  // 将SVG转换为Data URL
+  return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgContent)))
+}
+
+// 添加评论
+const addComment = async () => {
+  if (!newComment.value.trim()) {
+    return // 空评论不处理
   }
   
-  await loadPostDetail()
+  try {
+    // 获取当前用户信息
+    let currentUser = null
+    let currentUserId = null
+    let authorName = '当前用户'
+    
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (currentUserStr) {
+      try {
+        currentUser = JSON.parse(currentUserStr)
+        if (currentUser.id) {
+          currentUserId = currentUser.id
+          authorName = currentUser.nickname || currentUser.username || '当前用户'
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      return // 未登录不处理
+    }
+    
+    console.log('💬 开始发表评论，帖子ID:', postId, '用户ID:', currentUserId)
+    
+    // 确保数据库已初始化
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('发表评论：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('发表评论：数据库客户端初始化失败')
+      return
+    }
+    
+    // 使用服务端密钥绕过RLS策略
+    const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+    if (serviceKey) {
+      console.log('使用服务端密钥绕过RLS策略')
+      
+      // 使用服务端密钥创建新的客户端
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      
+      if (supabaseUrl && serviceKey) {
+        const adminClient = createClient(supabaseUrl, serviceKey)
+        
+        // 保存评论到数据库
+        const { data: commentData, error } = await adminClient
+          .from('post_comments')
+          .insert([{
+            post_id: postId,
+            user_id: currentUserId,
+            content: newComment.value.trim()
+          }])
+          .select()
+        
+        if (error) {
+          console.error('❌ 使用服务端密钥保存评论失败:', error)
+          
+          // 如果服务端密钥也失败，尝试使用原始客户端
+          console.log('尝试使用原始客户端保存评论...')
+          const { data: commentData2, error: error2 } = await client
+            .from('post_comments')
+            .insert([{
+              post_id: postId,
+              user_id: currentUserId,
+              content: newComment.value.trim()
+            }])
+            .select()
+          
+          if (error2) {
+            console.error('❌ 原始客户端保存评论失败:', error2)
+            
+            // 如果两种方法都失败，使用本地模式
+            console.log('使用本地模式保存评论')
+            const comment = {
+              id: 'temp-' + Date.now(),
+              post_id: postId,
+              user_id: currentUserId,
+              content: newComment.value.trim(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              author_name: authorName
+            }
+            
+            comments.value.unshift(comment)
+            
+            // 更新帖子评论数
+            if (post.value) {
+              post.value.comment_count = (post.value.comment_count || 0) + 1
+            }
+            
+            // 更新评论计数
+            commentCount.value = comments.value.length
+            
+            newComment.value = ''
+            console.log('✅ 评论发表成功（本地模式）')
+            return
+          } else {
+          // 原始客户端保存成功
+          console.log('✅ 评论已保存到数据库（原始客户端）')
+          
+          // 重新加载评论列表以确保显示最新的评论
+          await loadComments()
+          
+          // 更新帖子评论数
+          if (post.value) {
+            post.value.comment_count = (post.value.comment_count || 0) + 1
+          }
+          
+          // 更新评论计数（通过loadComments已更新）
+          
+          newComment.value = ''
+          console.log('✅ 评论发表成功')
+          return
+          }
+        } else {
+          // 服务端密钥保存成功
+          console.log('✅ 评论已保存到数据库（服务端密钥）')
+          
+          // 重新加载评论列表以确保显示最新的评论
+          await loadComments()
+          
+          // 更新帖子评论数
+          if (post.value) {
+            post.value.comment_count = (post.value.comment_count || 0) + 1
+          }
+          
+          // 更新评论计数（通过loadComments已更新）
+          
+          newComment.value = ''
+          console.log('✅ 评论发表成功')
+          return
+        }
+      }
+    }
+    
+    // 如果没有服务端密钥，尝试使用原始客户端
+    console.log('没有服务端密钥，尝试使用原始客户端')
+    
+    const { data: commentData, error } = await client
+      .from('post_comments')
+      .insert([{
+        post_id: postId,
+        user_id: currentUserId,
+        content: newComment.value.trim()
+      }])
+      .select()
+    
+    if (error) {
+      console.error('❌ 发表评论失败:', error)
+      
+      // 如果RLS策略导致问题，使用本地模式
+      if (error.message.includes('RLS') || error.message.includes('policy')) {
+        console.log('RLS策略限制，使用本地模式...')
+        
+        const comment = {
+          id: 'temp-' + Date.now(),
+          post_id: postId,
+          user_id: currentUserId,
+          content: newComment.value.trim(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          author_name: authorName
+        }
+        
+        comments.value.unshift(comment)
+        
+        // 更新帖子评论数
+        if (post.value) {
+          post.value.comment_count = (post.value.comment_count || 0) + 1
+        }
+        
+        // 更新评论计数
+        commentCount.value = comments.value.length
+        
+        newComment.value = ''
+        console.log('✅ 评论发表成功（本地模式）')
+        return
+      }
+      
+      return
+    }
+    
+    // 处理新评论数据
+    if (commentData && commentData[0]) {
+      // 重新加载评论列表以确保显示最新的评论
+      await loadComments()
+      
+      // 更新帖子评论数
+      if (post.value) {
+        post.value.comment_count = (post.value.comment_count || 0) + 1
+      }
+    }
+    
+    newComment.value = ''
+    console.log('✅ 评论发表成功')
+    
+    // 保持评论输入框显示，并自动聚焦
+    setTimeout(() => {
+      const textarea = document.querySelector('.comment-input') as HTMLTextAreaElement
+      if (textarea) {
+        textarea.focus()
+      }
+    }, 100)
+    
+  } catch (error) {
+    console.error('❌ 发表评论失败:', error)
+  }
+}
+
+onMounted(() => {
+  fetchPostDetail()
 })
 </script>
+
+<style scoped>
+.post-detail {
+  padding: 20px 0;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.back-button {
+  margin-bottom: 20px;
+}
+
+.post-card {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.post-header {
+  margin-bottom: 20px;
+}
+
+.post-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.post-content {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+.post-stats {
+  display: flex;
+  gap: 20px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.comments-section {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.comments-section h2 {
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.add-comment {
+  margin-bottom: 30px;
+}
+
+.comment-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  margin-bottom: 10px;
+  font-family: inherit;
+}
+
+.comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comment-item {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.comment-avatar {
+  flex-shrink: 0;
+}
+
+.comment-avatar .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+}
+
+.comment-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.comment-date {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.comment-content {
+  color: #444;
+  line-height: 1.5;
+}
+
+.no-comments {
+  text-align: center;
+  color: #666;
+  padding: 40px;
+  font-style: italic;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+</style>

@@ -184,7 +184,7 @@
                     supabase = createClient(supabaseUrl, supabaseKey);
                 }
                 
-                const { data, error } = await supabase.from('_test_connection').select('*').limit(1);
+                const { data, error } = await supabase.from('users').select('id').limit(1);
                 updateConnectionStatus('✅ 数据库连接正常！', 'success');
                 
             } catch (error) {

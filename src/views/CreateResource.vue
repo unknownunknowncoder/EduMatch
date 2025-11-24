@@ -199,26 +199,26 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   
   try {
-    // 获取当前用户ID - 统一使用admin用户
-    let currentUserId = 'demo-user-id'
+    // 获取当前登录用户ID
+    let currentUserId = null
     
-    try {
-      // 使用Supabase服务的方法获取admin用户
-      const adminUser = await supabaseService.getUserByUsername('admin')
-      
-      if (adminUser) {
-        currentUserId = adminUser.id
-        console.log('使用admin用户ID:', currentUserId)
-      } else {
-        // 如果获取失败，使用硬编码的ID作为后备方案
-        currentUserId = 'b6c871eb-717c-4a40-859b-b639cf8ccd08'
-        console.log('admin用户不存在，使用后备用户ID:', currentUserId)
+    // 从localStorage获取当前登录用户
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('currentUser')
+      if (storedUser) {
+        const user = JSON.parse(storedUser)
+        if (user && user.id) {
+          currentUserId = user.id
+          console.log('使用当前登录用户ID:', currentUserId)
+        }
       }
-    } catch (error) {
-      console.error('获取admin用户失败:', error)
-      // 使用硬编码的ID作为后备方案
-      currentUserId = 'b6c871eb-717c-4a40-859b-b639cf8ccd08'
-      console.log('使用后备用户ID:', currentUserId)
+    }
+    
+    // 如果没有登录用户，提示登录
+    if (!currentUserId) {
+      alert('请先登录后再发布资源')
+      isSubmitting.value = false
+      return
     }
     
     // 准备要提交的数据

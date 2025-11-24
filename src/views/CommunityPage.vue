@@ -138,17 +138,34 @@
                   </p>
                 </div>
                 
-                <!-- 点赞按钮 -->
-                <button 
-                  @click.stop="toggleLike(post)"
-                  :disabled="isLiking"
-                  class="ml-4 flex flex-col items-center space-y-1 text-gray-500 hover:text-red-500 transition-colors disabled:opacity-50"
-                >
-                  <svg class="w-6 h-6" :class="post.is_liked ? 'text-red-500' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                  </svg>
-                  <span class="text-xs">{{ post.likes_count || 0 }}</span>
-                </button>
+                <!-- 点赞和收藏按钮 - 右上角横向排列 -->
+                <div class="ml-4 flex space-x-3">
+                  <!-- 点赞按钮 -->
+                  <button 
+                    @click.stop="toggleLike(post)"
+                    :disabled="isLiking"
+                    class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
+                    :class="post.is_liked ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : 'bg-gray-100 dark:bg-gray-700'"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">{{ post.likes_count || 0 }}</span>
+                  </button>
+                  
+                  <!-- 收藏按钮 -->
+                  <button 
+                    @click.stop="toggleFavorite(post)"
+                    :disabled="isFavoriting"
+                    class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors disabled:opacity-50"
+                    :class="post.is_favorited ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'bg-gray-100 dark:bg-gray-700'"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">{{ post.favorite_count || 0 }}</span>
+                  </button>
+                </div>
               </div>
               
               <!-- 帖子元信息 -->
@@ -323,6 +340,7 @@ const isLoading = ref(false)
 const showCreatePostModal = ref(false)
 const isSubmitting = ref(false)
 const isLiking = ref(false)
+const isFavoriting = ref(false)
 const newPost = ref({
   title: '',
   content: '',
@@ -431,13 +449,154 @@ const toggleLike = async (post: any) => {
   
   isLiking.value = true
   try {
-    // 简单的点赞切换
-    post.is_liked = !post.is_liked
-    post.likes_count = (post.likes_count || 0) + (post.is_liked ? 1 : -1)
+    // 获取当前用户ID
+    let currentUserId = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      alert('请先登录后再点赞')
+      return
+    }
+    
+    // 确保数据库已初始化
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('点赞操作：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('点赞操作：数据库客户端初始化失败')
+      return
+    }
+    
+    if (post.is_liked) {
+      // 取消点赞
+      const { error } = await client
+        .from('post_likes')
+        .delete()
+        .eq('user_id', currentUserId)
+        .eq('post_id', post.id)
+      
+      if (error) {
+        console.error('取消点赞失败:', error)
+        throw error
+      }
+      
+      post.is_liked = false
+      post.likes_count = Math.max((post.likes_count || 0) - 1, 0)
+      console.log('✅ 取消点赞成功')
+    } else {
+      // 添加点赞
+      const { error } = await client
+        .from('post_likes')
+        .insert([{
+          user_id: currentUserId,
+          post_id: post.id
+        }])
+      
+      if (error) {
+        console.error('添加点赞失败:', error)
+        throw error
+      }
+      
+      post.is_liked = true
+      post.likes_count = (post.likes_count || 0) + 1
+      console.log('✅ 添加点赞成功')
+    }
   } catch (error) {
-    // 点赞失败处理
+    console.error('点赞操作失败:', error)
   } finally {
     isLiking.value = false
+  }
+}
+
+// 切换收藏
+const toggleFavorite = async (post: any) => {
+  if (isFavoriting.value) return
+  
+  isFavoriting.value = true
+  try {
+    // 获取当前用户ID
+    let currentUserId = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      alert('请先登录后再收藏帖子')
+      return
+    }
+    
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('收藏操作：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('收藏操作：数据库客户端初始化失败')
+      return
+    }
+    
+    if (post.is_favorited) {
+      // 取消收藏
+      const { error } = await client
+        .from('post_favorites')
+        .delete()
+        .eq('user_id', currentUserId)
+        .eq('post_id', post.id)
+      
+      if (error) {
+        console.error('取消收藏失败:', error)
+        throw error
+      }
+      
+      post.is_favorited = false
+      post.favorite_count = Math.max((post.favorite_count || 0) - 1, 0)
+      console.log('✅ 取消收藏成功')
+    } else {
+      // 添加收藏
+      const { error } = await client
+        .from('post_favorites')
+        .insert([{
+          user_id: currentUserId,
+          post_id: post.id
+        }])
+      
+      if (error) {
+        console.error('添加收藏失败:', error)
+        throw error
+      }
+      
+      post.is_favorited = true
+      post.favorite_count = (post.favorite_count || 0) + 1
+      console.log('✅ 添加收藏成功')
+    }
+  } catch (error) {
+    console.error('收藏操作异常:', error)
+  } finally {
+    isFavoriting.value = false
   }
 }
 
@@ -492,7 +651,14 @@ const loadPosts = async () => {
     console.log('🔄 开始加载帖子...')
     const { data, error } = await client
       .from('community_posts')
-      .select('*')
+      .select(`
+        *,
+        user:user_id (
+          id,
+          username,
+          nickname
+        )
+      `)
       .order('created_at', { ascending: false })
     
     if (error) {
@@ -501,7 +667,35 @@ const loadPosts = async () => {
       return
     }
     
-    posts.value = data || []
+    // 获取当前用户ID以检查收藏状态
+    let currentUserId = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    // 处理帖子数据，添加用户名显示和收藏状态
+    posts.value = (data || []).map(post => ({
+      ...post,
+      // 优先使用昵称，如果没有昵称则使用用户名
+      author: post.user?.nickname || post.user?.username || '匿名用户',
+      // 默认收藏状态为false
+      is_favorited: false,
+      favorite_count: post.favorite_count || 0
+    }))
+    
+    // 如果用户已登录，加载收藏状态
+    if (currentUserId) {
+      await loadFavoritesStatus(currentUserId)
+    }
+    
     console.log('✅ 成功加载帖子数量:', posts.value.length)
     console.log('📄 帖子列表:', posts.value)
     
@@ -509,6 +703,47 @@ const loadPosts = async () => {
     console.error('❌ 加载帖子异常:', error)
   } finally {
     isLoading.value = false
+  }
+}
+
+// 加载收藏状态
+const loadFavoritesStatus = async (userId: string) => {
+  try {
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('收藏状态加载：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('收藏状态加载：数据库客户端初始化失败')
+      return
+    }
+    
+    console.log('⭐ 开始加载用户收藏状态...')
+    const { data, error } = await client
+      .from('post_favorites')
+      .select('post_id')
+      .eq('user_id', userId)
+    
+    if (error) {
+      console.error('❌ 加载收藏状态失败:', error)
+      return
+    }
+    
+    // 获取用户收藏的帖子ID列表
+    const favoritedPostIds = data.map(fav => fav.post_id)
+    
+    // 更新帖子列表中的收藏状态
+    posts.value.forEach(post => {
+      post.is_favorited = favoritedPostIds.includes(post.id)
+    })
+    
+    console.log('✅ 收藏状态加载完成，已收藏帖子数量:', favoritedPostIds.length)
+    
+  } catch (error) {
+    console.error('❌ 加载收藏状态异常:', error)
   }
 }
 
@@ -578,7 +813,29 @@ const createPost = async () => {
       return
     }
     
-    console.log('💾 开始创建帖子:', newPost.value)
+    // 获取当前用户ID和用户信息
+    let currentUserId = null
+    let currentUserInfo = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+          currentUserInfo = user
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      alert('请先登录后再发布帖子')
+      isSubmitting.value = false
+      return
+    }
+    
+    console.log('💾 开始创建帖子，用户ID:', currentUserId, '数据:', newPost.value)
     const { data, error } = await client
       .from('community_posts')
       .insert([{
@@ -586,12 +843,19 @@ const createPost = async () => {
         content: newPost.value.content,
         category: newPost.value.category || '学习经验',
         tags: newPost.value.tags,
-        author: '当前用户',
+        user_id: currentUserId,
         likes_count: 0,
         views_count: 0,
         comments_count: 0
       }])
-      .select()
+      .select(`
+        *,
+        user:user_id (
+          id,
+          username,
+          nickname
+        )
+      `)
     
     if (error) {
       console.error('❌ 创建帖子失败:', error)
@@ -600,9 +864,14 @@ const createPost = async () => {
     
     console.log('✅ 帖子创建成功:', data)
     
-    // 添加到帖子列表
+    // 处理新帖子的用户信息
     if (data && data[0]) {
-      posts.value.unshift(data[0])
+      const newPostData = {
+        ...data[0],
+        // 优先使用昵称，如果没有昵称则使用用户名
+        author: data[0].user?.nickname || data[0].user?.username || '匿名用户'
+      }
+      posts.value.unshift(newPostData)
     }
     
     // 关闭弹窗

@@ -19,9 +19,8 @@
             {{ userAvatar }}
           </div>
           <div>
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">{{ userInfo.name }}</h2>
-            <p class="text-gray-600 dark:text-gray-400">{{ userInfo.email }}</p>
-            <div class="flex items-center mt-2">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">{{ userInfo.name }}</h2>
+            <div class="flex items-center">
               <span class="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full text-sm font-medium">
                 活跃学习者
               </span>
@@ -278,10 +277,29 @@ const databaseStore = useDatabaseStore()
 const myResources = ref<MyResource[]>([])
 const isLoadingResources = ref(false)
 
-const userInfo: UserInfo = {
-  name: '演示用户',
-  email: 'demo@example.com'
+// 从localStorage获取当前用户信息
+const getUserInfo = (): UserInfo => {
+  const currentUser = localStorage.getItem('currentUser')
+  if (currentUser) {
+    try {
+      const user = JSON.parse(currentUser)
+      return {
+        name: user.nickname || user.username || '演示用户',
+        email: user.email || 'demo@example.com'
+      }
+    } catch (error) {
+      console.error('解析用户信息失败:', error)
+    }
+  }
+  
+  // 如果没有用户信息，返回默认值
+  return {
+    name: '演示用户',
+    email: 'demo@example.com'
+  }
 }
+
+const userInfo = ref<UserInfo>(getUserInfo())
 
 // 账户管理状态
 const nicknameInput = ref('')
@@ -296,7 +314,7 @@ const passwordForm = reactive({
 
 
 const userAvatar = computed(() => {
-  return userInfo.name.charAt(0).toUpperCase()
+  return userInfo.value.name.charAt(0).toUpperCase()
 })
 
 
@@ -333,24 +351,23 @@ const navigateToResource = (resourceId: string) => {
 const loadMyResources = async () => {
   isLoadingResources.value = true
   try {
-    // 获取当前用户ID - 统一使用admin用户
+    // 获取当前用户ID - 使用当前登录用户
     const client = supabaseService.getClient()
-    let currentUserId = 'demo-user-id'
+    let currentUserId = null
     
-    // 使用Supabase服务的方法获取admin用户
-    try {
-      const adminUser = await supabaseService.getUserByUsername('admin')
-      
-      if (adminUser) {
-        currentUserId = adminUser.id
-        console.log('个人中心使用admin用户ID:', currentUserId)
-      } else {
-        console.error('admin用户不存在，将显示空列表')
-        myResources.value = []
-        return
+    // 从localStorage获取当前登录用户
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      if (user.id) {
+        currentUserId = user.id
+        console.log('个人中心使用当前用户ID:', currentUserId)
       }
-    } catch (error) {
-      console.error('获取admin用户失败:', error)
+    }
+    
+    // 如果没有登录用户，显示空列表
+    if (!currentUserId) {
+      console.error('用户未登录，将显示空列表')
       myResources.value = []
       return
     }

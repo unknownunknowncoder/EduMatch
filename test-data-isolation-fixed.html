@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试数据隔离功能</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .user-info { background: #e9ecef; padding: 10px; border-radius: 3px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>数据隔离功能测试</h1>
+        
+        <div class="test-section info">
+            <h3>测试说明</h3>
+            <p>此测试用于验证数据隔离功能是否正常工作。新注册的用户应该只能看到自己的学习计划，而不是其他用户的。</p>
+        </div>
+
+        <div class="test-section" id="userInfo">
+            <h3>当前用户信息</h3>
+            <div id="currentUserDisplay">正在加载...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>测试数据隔离</h3>
+            <button onclick="testStudyPlansIsolation()">测试学习计划数据隔离</button>
+            <button onclick="testDatabaseQuery()">测试数据库查询</button>
+            <button onclick="clearTestData()">清理测试数据</button>
+            <div id="testResults"></div>
+        </div>
+
+        <div class="test-section info">
+            <h3>修复步骤</h3>
+            <p>如果数据隔离不工作，请执行以下步骤：</p>
+            <ol>
+                <li>在 Supabase SQL Editor 中执行 <code>fix-study-plans-rls.sql</code> 文件</li>
+                <li>重新登录应用程序</li>
+                <li>重新测试数据隔离功能</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // 初始化 Supabase 客户端
+        const supabaseUrl = 'https://aonlahundnkxuyxfsmcy.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmxhaHVuZG5reHV5eGZzbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjYwNTUsImV4cCI6MjA3ODY0MjA1NX0.IQswPG1NkJKht83isjWJk5nzuhymzETAf81_71kXaVE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // 显示当前用户信息
+        function displayCurrentUser() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                const user = JSON.parse(currentUser);
+                document.getElementById('currentUserDisplay').innerHTML = `
+                    <div class="user-info">
+                        <strong>用户名:</strong> ${user.username || '未知'} <br>
+                        <strong>用户ID:</strong> ${user.id || '未知'} <br>
+                        <strong>昵称:</strong> ${user.nickname || '未设置'} <br>
+                        <strong>登录状态:</strong> 已登录
+                    </div>
+                `;
+            } else {
+                document.getElementById('currentUserDisplay').innerHTML = `
+                    <div class="user-info">
+                        <strong>登录状态:</strong> 未登录
+                    </div>
+                `;
+            }
+        }
+
+        // 测试学习计划数据隔离
+        async function testStudyPlansIsolation() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<p>正在测试数据隔离...</p>';
+
+            try {
+                const currentUser = localStorage.getItem('currentUser');
+                if (!currentUser) {
+                    resultsDiv.innerHTML = '<p class="error">❌ 请先登录后再测试</p>';
+                    return;
+                }
+
+                const user = JSON.parse(currentUser);
+                const userId = user.id;
+
+                // 测试查询当前用户的学习计划
+                const { data: userPlans, error: userError } = await supabase
+                    .from('study_plans')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false });
+
+                if (userError) {
+                    resultsDiv.innerHTML = `<p class="error">❌ 查询用户学习计划失败: ${userError.message}</p>`;
+                    return;
+                }
+
+                // 测试查询所有学习计划（应该失败或返回空）
+                const { data: allPlans, error: allError } = await supabase
+                    .from('study_plans')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                resultsDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ 数据隔离测试结果</h4>
+                        <p><strong>当前用户的学习计划数量:</strong> ${userPlans.length}</p>
+                        <p><strong>所有学习计划查询结果:</strong> ${allError ? '查询失败（符合预期）' : allPlans.length + ' 条记录（不符合预期）'}</p>
+                        <p><strong>测试结论:</strong> ${allError || allPlans.length === userPlans.length ? '✅ 数据隔离正常工作' : '❌ 数据隔离存在问题'}</p>
+                    </div>
+                    <details>
+                        <summary>查看详细数据</summary>
+                        <h5>当前用户的学习计划:</h5>
+                        <pre>${JSON.stringify(userPlans, null, 2)}</pre>
+                        <h5>所有学习计划查询结果:</h5>
+                        <pre>${allError ? JSON.stringify(allError, null, 2) : JSON.stringify(allPlans, null, 2)}</pre>
+                    </details>
+                `;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ 测试失败: ${error.message}</p>`;
+            }
+        }
+
+        // 测试数据库查询
+        async function testDatabaseQuery() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<p>正在测试数据库查询...</p>';
+
+            try {
+                // 测试直接查询（不指定用户ID）
+                const { data, error } = await supabase
+                    .from('study_plans')
+                    .select('*')
+                    .limit(10);
+
+                if (error) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ 查询测试结果</h4>
+                            <p><strong>查询状态:</strong> 失败（符合预期，RLS策略生效）</p>
+                            <p><strong>错误信息:</strong> ${error.message}</p>
+                            <p><strong>测试结论:</strong> ✅ 数据隔离正常工作</p>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ 查询测试结果</h4>
+                            <p><strong>查询状态:</strong> 成功（不符合预期，RLS策略可能未生效）</p>
+                            <p><strong>返回记录数:</strong> ${data.length}</p>
+                            <p><strong>测试结论:</strong> ❌ 数据隔离可能存在问题</p>
+                            <p>请执行 <code>fix-study-plans-rls.sql</code> 修复RLS策略</p>
+                        </div>
+                        <details>
+                            <summary>查看查询结果</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                }
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ 测试失败: ${error.message}</p>`;
+            }
+        }
+
+        // 清理测试数据
+        async function clearTestData() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<p>正在清理测试数据...</p>';
+
+            try {
+                const currentUser = localStorage.getItem('currentUser');
+                if (!currentUser) {
+                    resultsDiv.innerHTML = '<p class="error">❌ 请先登录后再清理数据</p>';
+                    return;
+                }
+
+                const user = JSON.parse(currentUser);
+                const userId = user.id;
+
+                // 删除测试用户的所有学习计划
+                const { error } = await supabase
+                    .from('study_plans')
+                    .delete()
+                    .eq('user_id', userId);
+
+                if (error) {
+                    resultsDiv.innerHTML = `<p class="error">❌ 清理失败: ${error.message}</p>`;
+                } else {
+                    resultsDiv.innerHTML = '<p class="success">✅ 测试数据清理完成</p>';
+                }
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">❌ 清理失败: ${error.message}</p>`;
+            }
+        }
+
+        // 页面加载时显示用户信息
+        document.addEventListener('DOMContentLoaded', function() {
+            displayCurrentUser();
+        });
+    </script>
+</body>
+</html>

@@ -159,9 +159,9 @@ export class DatabaseService {
       
       console.log('✅ Supabase 客户端初始化成功')
       
-      // 测试连接
-      const { data, error } = await this.client.from('_test_connection').select('*').limit(1)
-      // 预期会失败，但这说明连接正常
+      // 测试连接 - 使用实际存在的表
+      const { data, error } = await this.client.from('users').select('id').limit(1)
+      // 预期会成功或失败，但测试连接是否正常
       console.log('🔗 Supabase 连接测试完成')
     } catch (error) {
       console.error('❌ Supabase 连接失败:', error)
@@ -260,10 +260,10 @@ export class DatabaseService {
       // 获取当前用户
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
       
-      // 如果没有用户信息，使用默认用户ID (为了兼容性和演示)
+      // 如果没有用户信息，返回空数组（不显示任何数据）
       if (!currentUser.id) {
-        console.warn('⚠️ 未找到用户ID，使用默认用户ID')
-        currentUser.id = 'b6c871eb-717c-4a40-859b-b639cf8ccd08' // 数据库中存在的用户ID
+        console.warn('⚠️ 未找到用户ID，返回空数据')
+        return []
       }
 
       // 转换字段名（驼峰式转下划线式）
@@ -369,10 +369,10 @@ export class DatabaseService {
       // 获取当前用户
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
       
-      // 如果没有用户信息，使用默认用户ID (为了兼容性和演示)
+      // 如果没有用户信息，返回空数组（不显示任何数据）
       if (!currentUser.id) {
-        console.warn('⚠️ 未找到用户ID，使用默认用户ID')
-        currentUser.id = 'b6c871eb-717c-4a40-859b-b639cf8ccd08' // 数据库中存在的用户ID
+        console.warn('⚠️ 未找到用户ID，返回空数据')
+        return []
       }
 
       let result
@@ -382,7 +382,6 @@ export class DatabaseService {
           const { data, error } = await this.client
             .from('study_plans')
             .select('*')
-            .eq('user_id', currentUser.id)
             .order('created_at', { ascending: false })
           
           if (error) {

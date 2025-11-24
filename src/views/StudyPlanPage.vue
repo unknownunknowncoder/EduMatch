@@ -64,7 +64,21 @@
       
       <div class="p-6">
         <!-- 学习计划列表 -->
-        <div class="space-y-4">
+        <div v-if="currentPlans.length === 0" class="text-center py-12">
+          <svg class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">暂无学习计划</h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">您还没有创建任何学习计划</p>
+          <button 
+            @click="showCreatePlanModal = true"
+            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            创建第一个计划
+          </button>
+        </div>
+
+        <div v-else class="space-y-4">
           <div 
             v-for="plan in currentPlans"
             :key="plan.id"
@@ -298,109 +312,29 @@ const newPlan = ref({
   resourceUrl: ''
 })
 
-// 硬编码的学习计划数据（基于数据库中的实际数据）
-const currentPlans = ref<StudyPlan[]>([
-  {
-    id: 'bd7ceda8-55b6-4435-91cc-73440245f7b1',
-    title: 'c语言',
-    description: 'C语言学习计划',
-    progress: 0,
-    status: 'in_progress',
-    startDate: '2025-11-20',
-    targetDate: '2025-11-28',
-
-    resourceName: 'c语言零基础',
-    resourceUrl: ''
-  },
-  {
-    id: 'c1e78b13-f9cf-4b53-8437-872d14fde775',
-    title: 'c语言零基础',
-    description: 'C语言零基础学习计划',
-    progress: 0,
-    status: 'in_progress',
-    startDate: '2025-11-20',
-    targetDate: '2025-11-28',
-
-    resourceName: '',
-    resourceUrl: ''
-  },
-  {
-    id: 'fde8c544-2f36-47b1-82b9-556c433ab9e0',
-    title: 'java初级',
-    description: 'Java初级学习计划',
-    progress: 0,
-    status: 'in_progress',
-    startDate: '2025-11-20',
-    targetDate: '2025-11-28',
-
-    resourceName: 'Java官方教程',
-    resourceUrl: 'https://docs.oracle.com/javase/tutorial/'
-  },
-  {
-    id: '4ea70f7f-ef69-4c1d-b038-82982ce247af',
-    title: 'java企业级开发',
-    description: 'Java企业级开发学习计划',
-    progress: 0,
-    status: 'in_progress',
-    startDate: '2025-11-20',
-    targetDate: '2025-11-28',
-
-    resourceName: 'Spring Boot教程',
-    resourceUrl: 'https://spring.io/guides'
-  },
-  {
-    id: 'plan-5',
-    title: 'java进阶',
-    description: 'Java进阶学习计划',
-    progress: 0,
-    status: 'in_progress',
-    startDate: '2025-11-20',
-    targetDate: '2025-11-28',
-
-    resourceName: '',
-    resourceUrl: ''
-  },
-  {
-    id: 'plan-6',
-    title: 'c语言进阶',
-    description: 'C语言进阶学习计划',
-    progress: 0,
-    status: 'in_progress',
-    startDate: '2025-11-20',
-    targetDate: '2025-11-28',
-
-    resourceName: '',
-    resourceUrl: ''
-  },
-  {
-    id: 'plan-7',
-    title: 'java高级',
-    description: 'Java高级学习计划',
-    progress: 0,
-    status: 'in_progress',
-    startDate: '2025-11-20',
-    targetDate: '2025-11-28',
-
-    resourceName: '',
-    resourceUrl: ''
-  }
-])
+// 学习计划数据（从数据库动态加载）
+const currentPlans = ref<StudyPlan[]>([])
 
 // 从数据库加载学习计划
 const loadDatabasePlans = async () => {
   try {
     console.log('🔄 从数据库加载学习计划...')
     
-    // 设置用户信息
-    const currentUser = {
-      id: 'b6c871eb-717c-4a40-859b-b639cf8ccd08',
-      username: 'admin',
-      email: 'admin@edumatch.com',
-      nickname: '管理员'
+    // 从localStorage获取当前登录用户
+    let currentUser = null
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('currentUser')
+      if (storedUser) {
+        currentUser = JSON.parse(storedUser)
+      }
     }
     
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser))
+    // 如果没有登录用户，显示空列表
+    if (!currentUser || !currentUser.id) {
+      console.log('用户未登录，显示空学习计划列表')
+      currentPlans.value = []
+      updateStats()
+      return
     }
     
     // 动态导入 Supabase
@@ -512,12 +446,19 @@ const handleCreatePlan = async () => {
   try {
     console.log('🔄 准备创建学习计划...')
     
-    // 设置用户信息
-    const currentUser = {
-      id: 'b6c871eb-717c-4a40-859b-b639cf8ccd08',
-      username: 'admin',
-      email: 'admin@edumatch.com',
-      nickname: '管理员'
+    // 从localStorage获取当前登录用户
+    let currentUser = null
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('currentUser')
+      if (storedUser) {
+        currentUser = JSON.parse(storedUser)
+      }
+    }
+    
+    // 如果没有登录用户，显示错误信息
+    if (!currentUser || !currentUser.id) {
+      alert('请先登录后再创建学习计划')
+      return
     }
     
     // 动态导入 Supabase

@@ -268,7 +268,6 @@ export class SupabaseService {
           url
         )
       `)
-      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (options.limit) {
@@ -341,7 +340,6 @@ export class SupabaseService {
           created_at
         )
       `)
-      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (options.limit) {
