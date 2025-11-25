@@ -86,7 +86,7 @@
             </div>
             
             <!-- 关键信息 -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
               <div class="flex items-center">
                 <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
                   <Clock class="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -116,12 +116,45 @@
                   <div class="text-sm font-medium">{{ resource.type }}</div>
                 </div>
               </div>
+              <div class="flex items-center">
+                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
+                  <ThumbsUp class="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">点赞数</div>
+                  <div class="text-sm font-medium">{{ resource.likeCount || 0 }}</div>
+                </div>
+              </div>
             </div>
             
             <!-- 点赞状态 -->
-            <div class="bg-blue-100 dark:bg-blue-900/20 rounded-lg p-3 mb-4 flex items-center">
-              <ThumbsUp class="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
-              <p class="text-sm text-blue-700 dark:text-blue-300">你已点赞此资源</p>
+            <div class="bg-blue-100 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
+              <div class="flex items-center mb-2">
+                <ThumbsUp class="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <p class="text-sm text-blue-700 dark:text-blue-300">你已点赞此资源</p>
+              </div>
+              
+              <!-- 点赞用户信息 -->
+              <div class="mt-2">
+                <div class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
+                  点赞用户 ({{ resource.likedUsers.length }}):
+                </div>
+                <div v-if="resource.likedUsers && resource.likedUsers.length > 0" class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="(user, index) in resource.likedUsers.slice(0, 5)" 
+                    :key="index"
+                    class="text-xs bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full"
+                  >
+                    {{ user }}
+                  </span>
+                  <span v-if="resource.likedUsers.length > 5" class="text-xs text-gray-500">
+                    等{{ resource.likedUsers.length - 5 }}人
+                  </span>
+                </div>
+                <div v-else class="text-xs text-gray-400">
+                  暂无其他用户点赞
+                </div>
+              </div>
             </div>
             
             <!-- 立即学习按钮 -->
@@ -177,7 +210,7 @@
             </div>
             
             <!-- 关键信息 -->
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
               <div class="flex items-center">
                 <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
                   <Clock class="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -207,12 +240,45 @@
                   <div class="text-sm font-medium">{{ resource.type }}</div>
                 </div>
               </div>
+              <div class="flex items-center">
+                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
+                  <ThumbsUp class="h-4 w-4 text-blue-500" />
+                </div>
+                <div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">点赞数</div>
+                  <div class="text-sm font-medium">{{ resource.likeCount || 0 }}</div>
+                </div>
+              </div>
             </div>
             
             <!-- 收藏状态 -->
-            <div class="bg-red-100 dark:bg-red-900/20 rounded-lg p-3 mb-4 flex items-center">
-              <Heart class="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
-              <p class="text-sm text-red-700 dark:text-red-300">你已收藏此资源</p>
+            <div class="bg-red-100 dark:bg-red-900/20 rounded-lg p-3 mb-4">
+              <div class="flex items-center mb-2">
+                <Heart class="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
+                <p class="text-sm text-red-700 dark:text-red-300">你已收藏此资源</p>
+              </div>
+              
+              <!-- 收藏用户信息 -->
+              <div class="mt-2">
+                <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-1">
+                  收藏用户 ({{ resource.favoritedUsers.length }}):
+                </div>
+                <div v-if="resource.favoritedUsers && resource.favoritedUsers.length > 0" class="flex flex-wrap gap-1">
+                  <span 
+                    v-for="(user, index) in resource.favoritedUsers.slice(0, 5)" 
+                    :key="index"
+                    class="text-xs bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200 px-2 py-1 rounded-full"
+                  >
+                    {{ user }}
+                  </span>
+                  <span v-if="resource.favoritedUsers.length > 5" class="text-xs text-gray-500">
+                    等{{ resource.favoritedUsers.length - 5 }}人
+                  </span>
+                </div>
+                <div v-else class="text-xs text-gray-400">
+                  暂无其他用户收藏
+                </div>
+              </div>
             </div>
             
             <!-- 立即学习按钮 -->
@@ -297,6 +363,19 @@ const getCurrentUserId = (): string | null => {
       console.error('Failed to parse current user:', error)
     }
   }
+  
+  // 如果localStorage中没有，尝试从authStore获取
+  const authStore = localStorage.getItem('authStore')
+  if (authStore) {
+    try {
+      const auth = JSON.parse(authStore)
+      return auth.user?.id?.toString() || null
+    } catch (error) {
+      console.error('Failed to parse auth store:', error)
+    }
+  }
+  
+  console.warn('⚠️ 未找到当前用户ID，请先登录')
   return null
 }
 
@@ -325,8 +404,13 @@ const loadUserInteractions = async () => {
     
     console.log('开始加载用户点赞收藏数据，用户ID:', userId)
     
+  // 尝试使用数据库加载，失败时使用本地存储
+  let databaseSuccess = false
+  let client = null
+  
+  try {
     // 确保数据库已初始化
-    let client = await dbStore.getClient()
+    client = await dbStore.getClient()
     if (!client) {
       console.log('数据库客户端未初始化，尝试重新连接...')
       await dbStore.reconnect()
@@ -334,111 +418,295 @@ const loadUserInteractions = async () => {
     }
     
     if (!client) {
-      console.error('数据库客户端初始化失败')
-      likedResources.value = []
-      favoritedResources.value = []
-      return
+      throw new Error('数据库客户端初始化失败')
     }
     
-    // 加载用户点赞的帖子
-    const { data: likedPosts, error: likedError } = await client
-      .from('post_likes')
-      .select(`
-        post_id,
-        posts:post_id (
-          id,
-          title,
-          content,
-          author_name,
-          created_at,
-          view_count,
-          like_count,
-          comment_count,
-          user:user_id (
-            id,
-            username,
-            nickname
-          )
-        )
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+    databaseSuccess = true
+  } catch (error) {
+    console.warn('⚠️ 数据库连接失败，尝试直接连接:', error.message)
     
-    if (likedError) {
-      console.error('加载点赞帖子失败:', likedError)
-      likedResources.value = []
-    } else {
-      // 处理点赞帖子数据
-      likedResources.value = (likedPosts || []).map(item => {
-        const post = item.posts
-        return {
-          id: post.id,
-          name: post.title,
-          provider: post.user?.nickname || post.user?.username || '匿名用户',
-          duration: '帖子',
-          rating: post.like_count || 0,
-          url: `/community/post/${post.id}`,
-          matchPoints: post.content?.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
-          type: '社区帖子',
-          interaction: {
-            liked: true,
-            saved: false,
-            likesCount: post.like_count || 0
-          }
+    // 尝试直接使用supabase客户端
+    try {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      
+      if (supabaseUrl && supabaseKey) {
+        client = createClient(supabaseUrl, supabaseKey)
+        console.log('✅ 使用直接连接的Supabase客户端')
+        databaseSuccess = true
+      } else {
+        throw new Error('Supabase环境变量未配置')
+      }
+    } catch (directError) {
+      console.warn('⚠️ 直接连接也失败，使用本地存储:', directError.message)
+      databaseSuccess = false
+    }
+  }
+    
+    if (databaseSuccess && client) {
+      // 使用数据库加载
+      try {
+        console.log('📊 开始从数据库加载点赞和收藏数据...')
+        
+        // 加载用户点赞的帖子 - 优化查询，包含详细的点赞用户信息
+        const { data: likedPosts, error: likedError } = await client
+          .from('post_likes')
+          .select(`
+            post_id,
+            created_at,
+            posts:post_id (
+              id,
+              title,
+              content,
+              created_at,
+              view_count,
+              like_count,
+              comment_count,
+              favorite_count,
+              user:user_id (
+                id,
+                username,
+                nickname
+              ),
+              post_likes!post_likes_post_id_fkey!inner(
+                user:user_id (
+                  id,
+                  username,
+                  nickname
+                )
+              )
+            )
+          `)
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+        
+        if (likedError) {
+          console.warn('⚠️ 数据库加载点赞失败，切换到本地存储:', likedError.message)
+          databaseSuccess = false
+        } else {
+          console.log('✅ 点赞帖子数据查询成功，数量:', (likedPosts || []).length)
+          
+          // 处理点赞帖子数据
+          likedResources.value = (likedPosts || []).map((item: any) => {
+            const post = item.posts
+            
+            // 获取所有点赞该帖子的用户信息
+            const likedUsers = post.post_likes?.map((like: any) => 
+              like.user?.nickname || like.user?.username || '匿名用户'
+            ) || []
+            
+            // 获取作者信息
+            const author = post.user?.nickname || post.user?.username || '匿名用户'
+            
+            return {
+              id: post.id,
+              name: post.title,
+              provider: author,
+              duration: '帖子',
+              rating: post.like_count || 0,
+              url: `/post/${post.id}`,
+              matchPoints: post.content?.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
+              type: '社区帖子',
+              interaction: {
+                liked: true,
+                saved: false,
+                likesCount: post.like_count || 0
+              },
+              // 添加点赞用户信息
+              likedUsers: likedUsers,
+              favoritedUsers: [], // 收藏用户信息在收藏部分单独处理
+              likeCount: post.like_count || 0,
+              favoriteCount: post.favorite_count || 0,
+              // 添加帖子详情信息
+              postDetails: {
+                id: post.id,
+                author: author,
+                content: post.content,
+                createdAt: post.created_at,
+                viewCount: post.view_count || 0,
+                commentCount: post.comment_count || 0
+              }
+            }
+          })
+          
+          console.log('✅ 数据库点赞帖子加载完成，数量:', likedResources.value.length)
+          console.log('📋 点赞帖子详情:', likedResources.value.map(p => ({
+            id: p.id,
+            title: p.name,
+            author: p.provider,
+            likedUsers: p.likedUsers
+          })))
         }
-      })
-      console.log('✅ 点赞帖子加载完成，数量:', likedResources.value.length)
+        
+        // 加载用户收藏的帖子 - 优化查询，包含详细的收藏用户信息
+        const { data: favoritedPosts, error: favoritedError } = await client
+          .from('post_favorites')
+          .select(`
+            post_id,
+            created_at,
+            posts:post_id (
+              id,
+              title,
+              content,
+              created_at,
+              view_count,
+              like_count,
+              comment_count,
+              favorite_count,
+              user:user_id (
+                id,
+                username,
+                nickname
+              ),
+              post_favorites!inner(
+                user:user_id (
+                  id,
+                  username,
+                  nickname
+                )
+              )
+            )
+          `)
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+        
+        if (favoritedError) {
+          console.warn('⚠️ 数据库加载收藏失败，切换到本地存储:', favoritedError.message)
+          databaseSuccess = false
+        } else {
+          console.log('✅ 收藏帖子数据查询成功，数量:', (favoritedPosts || []).length)
+          
+          // 处理收藏帖子数据
+          favoritedResources.value = (favoritedPosts || []).map((item: any) => {
+            const post = item.posts
+            
+            // 获取所有收藏该帖子的用户信息
+            const favoritedUsers = post.post_favorites?.map((fav: any) => 
+              fav.user?.nickname || fav.user?.username || '匿名用户'
+            ) || []
+            
+            // 获取作者信息
+            const author = post.user?.nickname || post.user?.username || '匿名用户'
+            
+            return {
+              id: post.id,
+              name: post.title,
+              provider: author,
+              duration: '帖子',
+              rating: post.favorite_count || 0,
+              url: `/post/${post.id}`,
+              matchPoints: post.content?.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
+              type: '社区帖子',
+              interaction: {
+                liked: false,
+                saved: true,
+                likesCount: post.like_count || 0
+              },
+              // 添加收藏用户信息
+              likedUsers: [], // 点赞用户信息在点赞部分单独处理
+              favoritedUsers: favoritedUsers,
+              likeCount: post.like_count || 0,
+              favoriteCount: post.favorite_count || 0,
+              // 添加帖子详情信息
+              postDetails: {
+                id: post.id,
+                author: author,
+                content: post.content,
+                createdAt: post.created_at,
+                viewCount: post.view_count || 0,
+                commentCount: post.comment_count || 0
+              }
+            }
+          })
+          
+          console.log('✅ 数据库收藏帖子加载完成，数量:', favoritedResources.value.length)
+          console.log('📋 收藏帖子详情:', favoritedResources.value.map(p => ({
+            id: p.id,
+            title: p.name,
+            author: p.provider,
+            favoritedUsers: p.favoritedUsers
+          })))
+        }
+      } catch (error) {
+        console.warn('⚠️ 数据库查询异常，切换到本地存储:', error.message)
+        databaseSuccess = false
+      }
     }
     
-    // 加载用户收藏的帖子
-    const { data: favoritedPosts, error: favoritedError } = await client
-      .from('post_favorites')
-      .select(`
-        post_id,
-        posts:post_id (
-          id,
-          title,
-          content,
-          author_name,
-          created_at,
-          view_count,
-          like_count,
-          comment_count,
-          favorite_count,
-          user:user_id (
-            id,
-            username,
-            nickname
-          )
-        )
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-    
-    if (favoritedError) {
-      console.error('加载收藏帖子失败:', favoritedError)
-      favoritedResources.value = []
-    } else {
-      // 处理收藏帖子数据
-      favoritedResources.value = (favoritedPosts || []).map(item => {
-        const post = item.posts
-        return {
-          id: post.id,
-          name: post.title,
-          provider: post.user?.nickname || post.user?.username || '匿名用户',
-          duration: '帖子',
-          rating: post.favorite_count || 0,
-          url: `/community/post/${post.id}`,
-          matchPoints: post.content?.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
-          type: '社区帖子',
-          interaction: {
-            liked: false,
-            saved: true,
-            likesCount: post.like_count || 0
-          }
+    // 如果数据库失败，使用本地存储
+    if (!databaseSuccess) {
+      console.log('🔄 使用本地存储加载点赞收藏数据')
+      
+      // 加载本地点赞数据
+      const localLikesKey = `edumatch_likes_${userId}`
+      const localLikes = JSON.parse(localStorage.getItem(localLikesKey) || '[]')
+      
+      // 加载本地收藏数据
+      const localFavoritesKey = `edumatch_favorites_${userId}`
+      const localFavorites = JSON.parse(localStorage.getItem(localFavoritesKey) || '[]')
+      
+      // 需要获取帖子详情，这里简化处理，只显示本地存储的帖子ID
+      likedResources.value = localLikes.map((like: any) => ({
+        id: like.post_id,
+        name: `帖子 ${like.post_id}`,
+        provider: '本地存储',
+        duration: '帖子',
+        rating: 0,
+        url: `/post/${like.post_id}`,
+        matchPoints: '从本地存储加载的点赞记录',
+        type: '社区帖子',
+        interaction: {
+          liked: true,
+          saved: false,
+          likesCount: 0
+        },
+        // 本地存储不包含用户信息，使用默认值
+        likedUsers: ['当前用户'],
+        favoritedUsers: [],
+        likeCount: 0,
+        favoriteCount: 0,
+        postDetails: {
+          id: like.post_id,
+          author: '本地存储',
+          content: '从本地存储加载的点赞记录',
+          createdAt: new Date(like.timestamp || Date.now()).toISOString(),
+          viewCount: 0,
+          commentCount: 0
         }
-      })
-      console.log('✅ 收藏帖子加载完成，数量:', favoritedResources.value.length)
+      }))
+      
+      favoritedResources.value = localFavorites.map((fav: any) => ({
+        id: fav.post_id,
+        name: `帖子 ${fav.post_id}`,
+        provider: '本地存储',
+        duration: '帖子',
+        rating: 0,
+        url: `/post/${fav.post_id}`,
+        matchPoints: '从本地存储加载的收藏记录',
+        type: '社区帖子',
+        interaction: {
+          liked: false,
+          saved: true,
+          likesCount: 0
+        },
+        // 本地存储不包含用户信息，使用默认值
+        likedUsers: [],
+        favoritedUsers: ['当前用户'],
+        likeCount: 0,
+        favoriteCount: 0,
+        postDetails: {
+          id: fav.post_id,
+          author: '本地存储',
+          content: '从本地存储加载的收藏记录',
+          createdAt: new Date(fav.timestamp || Date.now()).toISOString(),
+          viewCount: 0,
+          commentCount: 0
+        }
+      }))
+      
+      console.log('✅ 本地存储点赞帖子加载完成，数量:', likedResources.value.length)
+      console.log('✅ 本地存储收藏帖子加载完成，数量:', favoritedResources.value.length)
     }
     
   } catch (error) {
@@ -452,7 +720,7 @@ const loadUserInteractions = async () => {
 
 // 处理点击帖子
 const handlePostClick = (postId: string) => {
-  router.push(`/community/post/${postId}`)
+  router.push(`/post/${postId}`)
 }
 
 // 处理点击资源链接

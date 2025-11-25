@@ -35,8 +35,7 @@ async function testLikeFunctionality() {
     }
 
     // 2. 检查社区帖子
-    console.log('
-2. 检查社区帖子...');
+    console.log('\n2. 检查社区帖子...');
     const { data: posts, error: postsError } = await client
       .from('community_posts')
       .select('*')
@@ -55,8 +54,7 @@ async function testLikeFunctionality() {
     }
 
     // 3. 检查点赞数据
-    console.log('
-3. 检查点赞数据...');
+    console.log('\n3. 检查点赞数据...');
     const { data: likes, error: likesError } = await client
       .from('post_likes')
       .select(`
@@ -75,11 +73,9 @@ async function testLikeFunctionality() {
 
     // 显示点赞详情
     if (likes.length > 0) {
-      console.log('
-📊 点赞详情:');
+      console.log('\n📊 点赞详情:');
       likes.forEach((like, index) => {
-        console.log(`
-${index + 1}. 帖子: "${like.post?.title || '未知帖子'}"`);
+        console.log(`\n${index + 1}. 帖子: "${like.post?.title || '未知帖子'}"`);
         console.log(`   作者: ${like.post?.author || '未知作者'}`);
         console.log(`   点赞用户: ${like.user?.nickname || like.user?.username || '匿名用户'}`);
         console.log(`   用户ID: ${like.user_id}`);
@@ -88,8 +84,7 @@ ${index + 1}. 帖子: "${like.post?.title || '未知帖子'}"`);
     }
 
     // 4. 为第一个帖子添加测试点赞
-    console.log('
-4. 测试添加点赞...');
+    console.log('\n4. 测试添加点赞...');
     const testPost = posts[0];
     const testUserId = 'b6c871eb-717c-4a40-859b-b639cf8ccd08'; // 使用现有用户ID
 
@@ -141,8 +136,7 @@ ${index + 1}. 帖子: "${like.post?.title || '未知帖子'}"`);
     }
 
     // 5. 验证点赞用户信息查询
-    console.log('
-5. 验证点赞用户信息查询...');
+    console.log('\n5. 验证点赞用户信息查询...');
     const { data: postWithLikes, error: postLikesError } = await client
       .from('community_posts')
       .select(`
@@ -172,8 +166,7 @@ ${index + 1}. 帖子: "${like.post?.title || '未知帖子'}"`);
       }
     }
 
-    console.log('
-🎉 点赞功能测试完成！');
+    console.log('\n🎉 点赞功能测试完成！');
     console.log('✅ 点赞表结构正常');
     console.log('✅ 点赞数据可以正常查询');
     console.log('✅ 点赞用户信息可以正确显示');

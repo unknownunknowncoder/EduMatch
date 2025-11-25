@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS study_plans (
     start_date DATE,
     target_date DATE,
     daily_hours DECIMAL(4,2) CHECK (daily_hours > 0),
+    total_hours DECIMAL(6,2), -- 学习总时长（可选字段）
     resource_name VARCHAR(255),
     resource_url VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

@@ -1,73 +1,89 @@
-// 检查当前数据库状态
-// 使用方法：node check-current-state.js
+import { createClient } from '@supabase/supabase-js';
 
-import { createClient } from '@supabase/supabase-js'
-import 'dotenv/config'
+const supabaseUrl = 'https://aonlahundnkxuyxfsmcy.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmxhaHVuZG5reHV5eGZzbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjYwNTUsImV4cCI6MjA3ODY0MjA1NX0.IQswPG1NkJKht83isjWJk5nzuhymzETAf81_71kXaVE';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ 缺少 Supabase 配置')
-  process.exit(1)
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const client = createClient(supabaseUrl, supabaseKey);
 
 async function checkCurrentState() {
   try {
-    console.log('🔍 检查当前数据库状态...\n')
-    
-    // 1. 测试插入（看看 RLS 是否真的是问题）
-    console.log('🧪 测试学习计划插入...')
-    const testPlan = {
-      user_id: 'b6c871eb-717c-4a40-859b-b639cf8ccd08',
-      title: '测试学习计划',
-      description: '测试描述',
-      progress: 0,
-      status: 'pending',
-      start_date: '2024-01-01',
-      target_date: '2024-12-31',
-      daily_hours: 2.5,
-      resource_name: '测试资源',
-      resource_url: 'https://test.com',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-    
-    const { data, error } = await supabase
-      .from('study_plans')
-      .insert([testPlan])
-      .select()
-    
-    if (error) {
-      console.error('❌ 插入失败:', error.message)
-      console.log('🔍 错误代码:', error.code)
-      console.log('📝 错误详情:', error)
-      
-      // 根据错误类型给出建议
-      if (error.message.includes('row-level security')) {
-        console.log('\n💡 建议: 需要禁用 RLS')
-        console.log('📋 执行: ALTER TABLE study_plans DISABLE ROW LEVEL SECURITY;')
-      } else if (error.message.includes('already exists')) {
-        console.log('\n💡 建议: 触发器或策略已存在，需要清理')
-        console.log('📋 执行: DROP POLICY IF EXISTS "策略名" ON study_plans;')
-      }
+    console.log('🔍 检查数据库当前状态...\\n');
+
+    // 1. 检查用户数据
+    console.log('1. 检查用户数据...');
+    const { data: users, error: usersError } = await client
+      .from('profiles')
+      .select('id, username, email')
+      .limit(5);
+
+    if (usersError) {
+      console.log('❌ 查询用户失败:', usersError.message);
     } else {
-      console.log('✅ 插入成功!')
-      console.log('📊 数据:', data[0])
-      
-      // 清理测试数据
-      await supabase
-        .from('study_plans')
-        .delete()
-        .eq('title', '测试学习计划')
-      console.log('🧹 测试数据已清理')
+      console.log('✅ 用户数量:', users.length);
+      users.forEach(user => {
+        console.log(`   - ${user.username} (${user.email})`);
+      });
     }
+
+    // 2. 检查社区帖子
+    console.log('\\n2. 检查社区帖子...');
+    const { data: posts, error: postsError } = await client
+      .from('community_posts')
+      .select('id, title, author')
+      .limit(5);
+
+    if (postsError) {
+      console.log('❌ 查询帖子失败:', postsError.message);
+    } else {
+      console.log('✅ 帖子数量:', posts.length);
+      posts.forEach(post => {
+        console.log(`   - ${post.title} (作者: ${post.author})`);
+      });
+    }
+
+    // 3. 检查点赞表
+    console.log('\\n3. 检查点赞表...');
+    const { data: likes, error: likesError } = await client
+      .from('post_likes')
+      .select('*')
+      .limit(5);
+
+    if (likesError) {
+      console.log('❌ 查询点赞失败:', likesError.message);
+    } else {
+      console.log('✅ 点赞记录数量:', likes.length);
+      likes.forEach(like => {
+        console.log(`   - 用户ID: ${like.user_id}, 帖子ID: ${like.post_id}`);
+      });
+    }
+
+    // 4. 测试RLS策略是否已解除
+    console.log('\\n4. 测试RLS策略...');
     
+    if (users.length > 0 && posts.length > 0) {
+      const testUser = users[0];
+      const testPost = posts[0];
+      
+      console.log('  测试插入点赞数据...');
+      const { data: testLike, error: testError } = await client
+        .from('post_likes')
+        .insert({
+          user_id: testUser.id,
+          post_id: testPost.id,
+          created_at: new Date().toISOString()
+        })
+        .select();
+
+      if (testError) {
+        console.log('❌ RLS策略可能仍然存在:', testError.message);
+      } else {
+        console.log('✅ RLS策略已解除，可以正常插入点赞数据');
+      }
+    }
+
   } catch (error) {
-    console.error('❌ 检查失败:', error.message)
+    console.error('❌ 检查过程中出现错误:', error);
   }
 }
 
-checkCurrentState()
+checkCurrentState();

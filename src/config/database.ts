@@ -15,6 +15,36 @@ export interface DatabaseConfig {
   appId?: string
 }
 
+// 数据库连接状态枚举
+export enum ConnectionStatus {
+  DISCONNECTED = 'disconnected',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  ERROR = 'error'
+}
+
+// 数据库连接接口
+export interface DatabaseConnection {
+  status: ConnectionStatus
+  lastConnected?: Date
+  error?: string
+}
+
+// 数据库连接状态枚举
+export enum ConnectionStatus {
+  DISCONNECTED = 'disconnected',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  ERROR = 'error'
+}
+
+// 数据库连接接口
+export interface DatabaseConnection {
+  status: ConnectionStatus
+  lastConnected?: Date
+  error?: string
+}
+
 // Supabase配置
 export const supabaseConfig: DatabaseConfig = {
   type: 'supabase',

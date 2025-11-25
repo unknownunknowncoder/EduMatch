@@ -150,7 +150,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                     </svg>
-                    <span class="text-sm font-medium">{{ post.likes_count || 0 }}</span>
+                    <span class="text-sm font-medium">{{ post.like_count || 0 }}</span>
                   </button>
                   
                   <!-- 收藏按钮 -->
@@ -468,55 +468,93 @@ const toggleLike = async (post: any) => {
       return
     }
     
-    // 确保数据库已初始化
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('点赞操作：数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
+    // 尝试使用Supabase数据库
+    let databaseSuccess = false
     
-    if (!client) {
-      console.error('点赞操作：数据库客户端初始化失败')
-      return
-    }
-    
-    if (post.is_liked) {
-      // 取消点赞
-      const { error } = await client
-        .from('post_likes')
-        .delete()
-        .eq('user_id', currentUserId)
-        .eq('post_id', post.id)
+    try {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       
-      if (error) {
-        console.error('取消点赞失败:', error)
-        throw error
+      if (supabaseUrl && supabaseKey) {
+        const client = createClient(supabaseUrl, supabaseKey)
+        
+        if (post.is_liked) {
+          // 取消点赞
+          const { error } = await client
+            .from('post_likes')
+            .delete()
+            .eq('user_id', currentUserId)
+            .eq('post_id', post.id)
+          
+          if (error) {
+            throw error
+          }
+          
+          post.is_liked = false
+          post.like_count = Math.max((post.like_count || 0) - 1, 0)
+          console.log('✅ 数据库取消点赞成功')
+        } else {
+          // 添加点赞
+          const { error } = await client
+            .from('post_likes')
+            .insert([{
+              user_id: currentUserId,
+              post_id: post.id
+            }])
+          
+          if (error) {
+            throw error
+          }
+          
+          post.is_liked = true
+          post.like_count = (post.like_count || 0) + 1
+          console.log('✅ 数据库添加点赞成功')
+        }
+        
+        databaseSuccess = true
+        
+      } else {
+        throw new Error('Supabase环境变量未配置')
       }
+    } catch (error) {
+      console.warn('⚠️ 数据库连接失败，使用本地存储:', error.message)
+      databaseSuccess = false
+    }
+    
+    // 如果数据库操作失败，使用本地存储
+    if (!databaseSuccess) {
+      const localLikesKey = `edumatch_likes_${currentUserId}`
+      let localLikes = JSON.parse(localStorage.getItem(localLikesKey) || '[]')
       
-      post.is_liked = false
-      post.likes_count = Math.max((post.likes_count || 0) - 1, 0)
-      console.log('✅ 取消点赞成功')
-    } else {
-      // 添加点赞
-      const { error } = await client
-        .from('post_likes')
-        .insert([{
+      if (post.is_liked) {
+        // 取消点赞 - 从本地存储中移除
+        localLikes = localLikes.filter(like => like.post_id !== post.id)
+        post.is_liked = false
+        post.like_count = Math.max((post.like_count || 0) - 1, 0)
+        console.log('✅ 本地取消点赞成功')
+      } else {
+        // 添加点赞 - 添加到本地存储
+        localLikes.push({
+          post_id: post.id,
           user_id: currentUserId,
-          post_id: post.id
-        }])
-      
-      if (error) {
-        console.error('添加点赞失败:', error)
-        throw error
+          timestamp: Date.now()
+        })
+        post.is_liked = true
+        post.like_count = (post.like_count || 0) + 1
+        console.log('✅ 本地添加点赞成功')
       }
       
-      post.is_liked = true
-      post.likes_count = (post.likes_count || 0) + 1
-      console.log('✅ 添加点赞成功')
+      // 保存到本地存储
+      localStorage.setItem(localLikesKey, JSON.stringify(localLikes))
     }
+    
+    // 操作完成后重新加载状态，确保数据一致性
+    await reloadPostStatus(currentUserId)
+    
   } catch (error) {
     console.error('点赞操作失败:', error)
+    alert('操作失败，请稍后重试')
   } finally {
     isLiking.value = false
   }
@@ -547,54 +585,93 @@ const toggleFavorite = async (post: any) => {
       return
     }
     
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('收藏操作：数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
+    // 尝试使用Supabase数据库
+    let databaseSuccess = false
     
-    if (!client) {
-      console.error('收藏操作：数据库客户端初始化失败')
-      return
-    }
-    
-    if (post.is_favorited) {
-      // 取消收藏
-      const { error } = await client
-        .from('post_favorites')
-        .delete()
-        .eq('user_id', currentUserId)
-        .eq('post_id', post.id)
+    try {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       
-      if (error) {
-        console.error('取消收藏失败:', error)
-        throw error
+      if (supabaseUrl && supabaseKey) {
+        const client = createClient(supabaseUrl, supabaseKey)
+        
+        if (post.is_favorited) {
+          // 取消收藏
+          const { error } = await client
+            .from('post_favorites')
+            .delete()
+            .eq('user_id', currentUserId)
+            .eq('post_id', post.id)
+          
+          if (error) {
+            throw error
+          }
+          
+          post.is_favorited = false
+          post.favorite_count = Math.max((post.favorite_count || 0) - 1, 0)
+          console.log('✅ 数据库取消收藏成功')
+        } else {
+          // 添加收藏
+          const { error } = await client
+            .from('post_favorites')
+            .insert([{
+              user_id: currentUserId,
+              post_id: post.id
+            }])
+          
+          if (error) {
+            throw error
+          }
+          
+          post.is_favorited = true
+          post.favorite_count = (post.favorite_count || 0) + 1
+          console.log('✅ 数据库添加收藏成功')
+        }
+        
+        databaseSuccess = true
+        
+      } else {
+        throw new Error('Supabase环境变量未配置')
       }
+    } catch (error) {
+      console.warn('⚠️ 数据库连接失败，使用本地存储:', error.message)
+      databaseSuccess = false
+    }
+    
+    // 如果数据库操作失败，使用本地存储
+    if (!databaseSuccess) {
+      const localFavoritesKey = `edumatch_favorites_${currentUserId}`
+      let localFavorites = JSON.parse(localStorage.getItem(localFavoritesKey) || '[]')
       
-      post.is_favorited = false
-      post.favorite_count = Math.max((post.favorite_count || 0) - 1, 0)
-      console.log('✅ 取消收藏成功')
-    } else {
-      // 添加收藏
-      const { error } = await client
-        .from('post_favorites')
-        .insert([{
+      if (post.is_favorited) {
+        // 取消收藏 - 从本地存储中移除
+        localFavorites = localFavorites.filter(fav => fav.post_id !== post.id)
+        post.is_favorited = false
+        post.favorite_count = Math.max((post.favorite_count || 0) - 1, 0)
+        console.log('✅ 本地取消收藏成功')
+      } else {
+        // 添加收藏 - 添加到本地存储
+        localFavorites.push({
+          post_id: post.id,
           user_id: currentUserId,
-          post_id: post.id
-        }])
-      
-      if (error) {
-        console.error('添加收藏失败:', error)
-        throw error
+          timestamp: Date.now()
+        })
+        post.is_favorited = true
+        post.favorite_count = (post.favorite_count || 0) + 1
+        console.log('✅ 本地添加收藏成功')
       }
       
-      post.is_favorited = true
-      post.favorite_count = (post.favorite_count || 0) + 1
-      console.log('✅ 添加收藏成功')
+      // 保存到本地存储
+      localStorage.setItem(localFavoritesKey, JSON.stringify(localFavorites))
     }
+    
+    // 操作完成后重新加载状态，确保数据一致性
+    await reloadPostStatus(currentUserId)
+    
   } catch (error) {
     console.error('收藏操作异常:', error)
+    alert('操作失败，请稍后重试')
   } finally {
     isFavoriting.value = false
   }
@@ -657,7 +734,9 @@ const loadPosts = async () => {
           id,
           username,
           nickname
-        )
+        ),
+        post_likes!post_likes_post_id_fkey(count),
+        post_favorites(count)
       `)
       .order('created_at', { ascending: false })
     
@@ -681,18 +760,22 @@ const loadPosts = async () => {
       }
     }
     
-    // 处理帖子数据，添加用户名显示和收藏状态
-    posts.value = (data || []).map(post => ({
+    // 处理帖子数据，添加用户名显示和点赞收藏状态
+    posts.value = (data || []).map((post: any) => ({
       ...post,
       // 优先使用昵称，如果没有昵称则使用用户名
       author: post.user?.nickname || post.user?.username || '匿名用户',
-      // 默认收藏状态为false
+      // 默认点赞和收藏状态为false
+      is_liked: false,
       is_favorited: false,
-      favorite_count: post.favorite_count || 0
+      // 从关联表中获取点赞和收藏数量
+      like_count: post.post_likes?.[0]?.count || 0,
+      favorite_count: post.post_favorites?.[0]?.count || 0
     }))
     
-    // 如果用户已登录，加载收藏状态
+    // 如果用户已登录，加载点赞和收藏状态
     if (currentUserId) {
+      await loadLikesStatus(currentUserId)
       await loadFavoritesStatus(currentUserId)
     }
     
@@ -706,45 +789,132 @@ const loadPosts = async () => {
   }
 }
 
+// 加载点赞状态
+const loadLikesStatus = async (userId: string) => {
+  try {
+    // 首先尝试使用数据库
+    let databaseSuccess = false
+    let likedPostIds: string[] = []
+    
+    try {
+      // 使用简化的Supabase客户端
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      
+      if (supabaseUrl && supabaseKey) {
+        const client = createClient(supabaseUrl, supabaseKey)
+        
+        console.log('👍 开始从数据库加载用户点赞状态...')
+        const { data, error } = await client
+          .from('post_likes')
+          .select('post_id')
+          .eq('user_id', userId)
+        
+        if (error) {
+          throw error
+        }
+        
+        // 获取用户点赞的帖子ID列表
+        likedPostIds = data.map((like: any) => like.post_id)
+        databaseSuccess = true
+        console.log('✅ 数据库点赞状态加载完成，已点赞帖子数量:', likedPostIds.length)
+        
+      } else {
+        throw new Error('Supabase环境变量未配置')
+      }
+    } catch (error) {
+      console.warn('⚠️ 数据库点赞状态加载失败，使用本地存储:', error.message)
+      databaseSuccess = false
+    }
+    
+    // 如果数据库失败，使用本地存储
+    if (!databaseSuccess) {
+      console.log('🔄 从本地存储加载点赞状态')
+      const localLikesKey = `edumatch_likes_${userId}`
+      const localLikes = JSON.parse(localStorage.getItem(localLikesKey) || '[]')
+      likedPostIds = localLikes.map((like: any) => like.post_id)
+      console.log('✅ 本地存储点赞状态加载完成，已点赞帖子数量:', likedPostIds.length)
+    }
+    
+    // 更新帖子列表中的点赞状态
+    posts.value.forEach(post => {
+      post.is_liked = likedPostIds.includes(post.id)
+    })
+    
+    console.log('✅ 点赞状态加载完成')
+    
+  } catch (error) {
+    console.error('❌ 加载点赞状态异常:', error)
+  }
+}
+
 // 加载收藏状态
 const loadFavoritesStatus = async (userId: string) => {
   try {
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('收藏状态加载：数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
+    // 首先尝试使用数据库
+    let databaseSuccess = false
+    let favoritedPostIds: string[] = []
+    
+    try {
+      // 使用简化的Supabase客户端
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      
+      if (supabaseUrl && supabaseKey) {
+        const client = createClient(supabaseUrl, supabaseKey)
+        
+        console.log('⭐ 开始从数据库加载用户收藏状态...')
+        const { data, error } = await client
+          .from('post_favorites')
+          .select('post_id')
+          .eq('user_id', userId)
+        
+        if (error) {
+          throw error
+        }
+        
+        // 获取用户收藏的帖子ID列表
+        favoritedPostIds = data.map((fav: any) => fav.post_id)
+        databaseSuccess = true
+        console.log('✅ 数据库收藏状态加载完成，已收藏帖子数量:', favoritedPostIds.length)
+        
+      } else {
+        throw new Error('Supabase环境变量未配置')
+      }
+    } catch (error) {
+      console.warn('⚠️ 数据库收藏状态加载失败，使用本地存储:', error.message)
+      databaseSuccess = false
     }
     
-    if (!client) {
-      console.error('收藏状态加载：数据库客户端初始化失败')
-      return
+    // 如果数据库失败，使用本地存储
+    if (!databaseSuccess) {
+      console.log('🔄 从本地存储加载收藏状态')
+      const localFavoritesKey = `edumatch_favorites_${userId}`
+      const localFavorites = JSON.parse(localStorage.getItem(localFavoritesKey) || '[]')
+      favoritedPostIds = localFavorites.map((fav: any) => fav.post_id)
+      console.log('✅ 本地存储收藏状态加载完成，已收藏帖子数量:', favoritedPostIds.length)
     }
-    
-    console.log('⭐ 开始加载用户收藏状态...')
-    const { data, error } = await client
-      .from('post_favorites')
-      .select('post_id')
-      .eq('user_id', userId)
-    
-    if (error) {
-      console.error('❌ 加载收藏状态失败:', error)
-      return
-    }
-    
-    // 获取用户收藏的帖子ID列表
-    const favoritedPostIds = data.map(fav => fav.post_id)
     
     // 更新帖子列表中的收藏状态
     posts.value.forEach(post => {
       post.is_favorited = favoritedPostIds.includes(post.id)
     })
     
-    console.log('✅ 收藏状态加载完成，已收藏帖子数量:', favoritedPostIds.length)
+    console.log('✅ 收藏状态加载完成')
     
   } catch (error) {
     console.error('❌ 加载收藏状态异常:', error)
   }
+}
+
+// 重新加载帖子状态
+const reloadPostStatus = async (userId: string) => {
+  console.log('🔄 重新加载帖子状态...')
+  await loadLikesStatus(userId)
+  await loadFavoritesStatus(userId)
+  console.log('✅ 帖子状态重新加载完成')
 }
 
 // 加载热门标签
@@ -854,7 +1024,9 @@ const createPost = async () => {
           id,
           username,
           nickname
-        )
+        ),
+        post_likes!post_likes_post_id_fkey(count),
+        post_favorites(count)
       `)
     
     if (error) {
@@ -869,7 +1041,13 @@ const createPost = async () => {
       const newPostData = {
         ...data[0],
         // 优先使用昵称，如果没有昵称则使用用户名
-        author: data[0].user?.nickname || data[0].user?.username || '匿名用户'
+        author: data[0].user?.nickname || data[0].user?.username || '匿名用户',
+        // 默认点赞和收藏状态为false
+        is_liked: false,
+        is_favorited: false,
+        // 从关联表中获取点赞和收藏数量
+        like_count: data[0].post_likes?.[0]?.count || 0,
+        favorite_count: data[0].post_favorites?.[0]?.count || 0
       }
       posts.value.unshift(newPostData)
     }

@@ -171,6 +171,23 @@ export class DatabaseService {
 
   // 获取数据库客户端
   getClient() {
+    if (!this.client) {
+      console.warn('⚠️ 数据库客户端未初始化，尝试重新连接...')
+      this.init().catch(console.error)
+      // 即使连接失败，也返回一个模拟客户端，避免应用崩溃
+      if (!this.client) {
+        console.warn('⚠️ 数据库连接失败，返回模拟客户端')
+        return {
+          from: () => ({
+            select: () => ({ data: null, error: new Error('数据库未连接') }),
+            insert: () => ({ data: null, error: new Error('数据库未连接') }),
+            update: () => ({ data: null, error: new Error('数据库未连接') }),
+            delete: () => ({ data: null, error: new Error('数据库未连接') }),
+            eq: () => ({ data: null, error: new Error('数据库未连接') })
+          })
+        }
+      }
+    }
     return this.client
   }
 
@@ -276,6 +293,7 @@ export class DatabaseService {
         start_date: planData.startDate,
         target_date: planData.targetDate,
         daily_hours: planData.dailyHours,
+        total_hours: planData.totalHours || null,
         resource_name: planData.resourceName,
         resource_url: planData.resourceUrl,
         created_at: new Date().toISOString(),
@@ -301,8 +319,8 @@ export class DatabaseService {
           
         case 'mysql':
           const sql = `
-            INSERT INTO study_plans (user_id, title, description, progress, status, start_date, target_date, daily_hours, resource_name, resource_url, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO study_plans (user_id, title, description, progress, status, start_date, target_date, daily_hours, total_hours, resource_name, resource_url, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `
           result = await this.client.execute(sql, [
             convertedPlan.user_id,
@@ -313,6 +331,7 @@ export class DatabaseService {
             convertedPlan.start_date,
             convertedPlan.target_date,
             convertedPlan.daily_hours,
+            convertedPlan.total_hours,
             convertedPlan.resource_name,
             convertedPlan.resource_url,
             convertedPlan.created_at,
