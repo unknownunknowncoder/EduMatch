@@ -1,4 +1,12 @@
+<<<<<<< HEAD:dist/assets/dollar-sign-a25cdb80.js
 import{c as a}from"./index-7612b546.js";/**
+=======
+<<<<<<<< HEAD:dist/assets/dollar-sign-ccdbeb31.js
+import{c as a}from"./index-f8367010.js";/**
+========
+import{c as a}from"./index-03b3e23e.js";/**
+>>>>>>>> bb35c25d5b889d71415c4cb005bd6ed25e270cce:dist/assets/dollar-sign-364db0c8.js
+>>>>>>> 3abbecf6092baee8ab9b23c69792c787719b425b:dist/assets/dollar-sign-364db0c8.js
  * @license lucide-vue-next v0.420.0 - ISC
  *
  * This source code is licensed under the ISC license.

@@ -1,0 +1,33 @@
+    
+    const response = await fetch('http://localhost:3014/api/coze/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: request.query,
+        bot_id: this.botId,
+        user_id: this.getUserId()
+      })
+    })
+    
+    console.log('📊 代理请求状态:', {
+      status: response.status,
+      ok: response.ok
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('✅ 代理响应成功:', { success: result.success })
+      
+      if (result.success && result.data) {
+        return this.parseCozeResponse(result.data)
+      } else {
+        throw new Error(result.error || 'API调用失败')
+      }
+    } else {
+      const errorText = await response.text()
+      console.error('❌ 代理响应错误:', response.status, errorText)
+      throw new Error(`代理服务器错误: ${response.status}`)
+    }
+  }
