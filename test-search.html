@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社区搜索测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-box {
+            margin: 20px 0;
+        }
+        input {
+            padding: 8px;
+            width: 300px;
+        }
+        button {
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .post {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .post h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .post p {
+            margin: 0;
+            color: #666;
+        }
+        .post .meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+        .debug {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 社区搜索功能测试</h1>
+    
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="输入搜索关键词" value="Vue 3">
+        <button onclick="performSearch()">搜索</button>
+        <button onclick="loadAllPosts()">加载所有帖子</button>
+    </div>
+
+    <div id="debugInfo" class="debug">等待搜索...</div>
+    <div id="results"></div>
+
+    <script>
+        const { createClient } = supabase
+        const supabaseUrl = 'https://aonlahundnkxuyxfsmcy.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmxhaHVuZG5reHV5eGZzbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjYwNTUsImV4cCI6MjA3ODY0MjA1NX0.IQswPG1NkJKht83isjWJk5nzuhymzETAf81_71kXaVE'
+        const supabaseClient = createClient(supabaseUrl, supabaseKey)
+
+        let allPosts = []
+
+        async function loadAllPosts() {
+            try {
+                document.getElementById('debugInfo').innerHTML = '🔄 正在加载所有帖子...'
+                
+                const { data, error } = await supabaseClient
+                    .from('community_posts')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                
+                if (error) {
+                    document.getElementById('debugInfo').innerHTML = `❌ 错误: ${error.message}`
+                    return
+                }
+                
+                allPosts = data || []
+                displayPosts(allPosts)
+                document.getElementById('debugInfo').innerHTML = `✅ 加载了 ${allPosts.length} 个帖子`
+                
+            } catch (error) {
+                document.getElementById('debugInfo').innerHTML = `❌ 异常: ${error.message}`
+            }
+        }
+
+        function performSearch() {
+            const keyword = document.getElementById('searchInput').value.trim()
+            
+            if (!keyword) {
+                displayPosts(allPosts)
+                return
+            }
+
+            document.getElementById('debugInfo').innerHTML = `🔍 搜索关键词: "${keyword}"`
+            
+            const keywordLower = keyword.toLowerCase()
+            const matchedPosts = allPosts.filter(post => {
+                // 标题匹配
+                if (post.title && post.title.toLowerCase().includes(keywordLower)) {
+                    console.log('✅ 标题匹配:', post.title)
+                    return true
+                }
+                
+                // 内容匹配
+                if (post.content && post.content.toLowerCase().includes(keywordLower)) {
+                    console.log('✅ 内容匹配:', post.title)
+                    return true
+                }
+                
+                // 分类匹配
+                if (post.category && post.category.toLowerCase().includes(keywordLower)) {
+                    console.log('✅ 分类匹配:', post.title)
+                    return true
+                }
+                
+                // 作者匹配
+                if (post.author && post.author.toLowerCase().includes(keywordLower)) {
+                    console.log('✅ 作者匹配:', post.title)
+                    return true
+                }
+                
+                // 标签匹配
+                if (post.tags && Array.isArray(post.tags)) {
+                    const tagMatch = post.tags.some(tag => 
+                        typeof tag === 'string' && tag.toLowerCase().includes(keywordLower)
+                    )
+                    if (tagMatch) {
+                        console.log('✅ 标签匹配:', post.title, 'tags:', post.tags)
+                        return true
+                    }
+                }
+                
+                return false
+            })
+
+            document.getElementById('debugInfo').innerHTML = `🔍 搜索 "${keyword}" 找到 ${matchedPosts.length} 条结果`
+            displayPosts(matchedPosts)
+        }
+
+        function displayPosts(posts) {
+            const resultsDiv = document.getElementById('results')
+            
+            if (posts.length === 0) {
+                resultsDiv.innerHTML = '<p>没有找到匹配的帖子</p>'
+                return
+            }
+
+            resultsDiv.innerHTML = posts.map(post => `
+                <div class="post">
+                    <h3>${post.title}</h3>
+                    <p>${post.content ? post.content.substring(0, 150) + '...' : '无内容'}</p>
+                    <div class="meta">
+                        作者: ${post.author || '未知'} | 
+                        分类: ${post.category || '无'} | 
+                        标签: ${post.tags ? post.tags.join(', ') : '无'}
+                    </div>
+                </div>
+            `).join('')
+        }
+
+        // 页面加载时自动加载所有帖子
+        loadAllPosts()
+    </script>
+</body>
+</html>

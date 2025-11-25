@@ -6,7 +6,7 @@
         <svg class="h-8 w-8 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
         </svg>
-        创建学习资源
+        创建资源
       </h1>
       <p class="text-gray-600 dark:text-gray-400 mt-2">分享你的学习资源，帮助更多人成长</p>
     </div>
@@ -199,22 +199,26 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   
   try {
-    // 获取当前用户ID - 统一使用admin用户
-    const client = supabaseService.getClient()
-    let currentUserId = 'demo-user-id'
+    // 获取当前登录用户ID
+    let currentUserId = null
     
-    // 获取admin用户的真实ID
-    const { data: adminUser, error: adminError } = await client
-      .from('users')
-      .select('id')
-      .eq('username', 'admin')
-      .single()
+    // 从localStorage获取当前登录用户
+    if (typeof window !== 'undefined') {
+      const storedUser = localStorage.getItem('currentUser')
+      if (storedUser) {
+        const user = JSON.parse(storedUser)
+        if (user && user.id) {
+          currentUserId = user.id
+          console.log('使用当前登录用户ID:', currentUserId)
+        }
+      }
+    }
     
-    if (adminUser && !adminError) {
-      currentUserId = adminUser.id
-      console.log('使用admin用户ID:', currentUserId)
-    } else {
-      throw new Error('无法获取admin用户ID，请确保admin用户存在')
+    // 如果没有登录用户，提示登录
+    if (!currentUserId) {
+      alert('请先登录后再发布资源')
+      isSubmitting.value = false
+      return
     }
     
     // 准备要提交的数据
@@ -236,10 +240,47 @@ const handleSubmit = async () => {
     // 调用数据库服务创建资源
     const createdResource = await supabaseService.createResource(resourceData)
     
-    console.log('资源创建成功:', createdResource)
+    console.log('✅ 资源创建成功:', createdResource)
+    console.log('📊 资源ID:', createdResource.id)
     
-    // 显示成功消息
-    alert('发布成功！')
+    // 验证资源确实创建成功
+    if (!createdResource || !createdResource.id) {
+      throw new Error('资源创建失败：返回数据无效')
+    }
+    
+    // 同时创建一个社区帖子，让资源显示在学习社区中
+    const postData = {
+      user_id: currentUserId,
+      title: formData.title,
+      content: formData.description || '分享了一个学习资源',
+      category: formData.type || 'other',
+      likes_count: 0,
+      views_count: 0
+    }
+    
+    try {
+      console.log('🔄 准备创建社区帖子，数据:', postData)
+      const createdPost = await supabaseService.createCommunityPost(postData)
+      console.log('✅ 社区帖子创建成功:', createdPost)
+      console.log('📊 帖子ID:', createdPost.id)
+      console.log('📊 帖子标题:', createdPost.title)
+      
+      // 显示成功消息
+      alert('发布成功！资源已添加到学习社区')
+      
+    } catch (postError) {
+      console.error('❌ 创建社区帖子失败:', postError)
+      console.error('❌ 错误详情:', postError.message)
+      console.error('❌ 错误代码:', postError.code)
+      
+        // 如果是RLS策略错误，提示用户执行SQL脚本
+        if (postError.code === '42501' || postError.message.includes('row-level security policy')) {
+          alert('发布成功！但由于数据库安全策略，资源暂时无法显示在学习社区中。\n\n请执行以下操作：\n1. 打开 Supabase SQL Editor\n2. 执行 fix-community-posts-rls.sql 文件中的SQL语句\n3. 重新发布资源')
+        } else {
+          // 其他错误
+          alert('资源发布成功！但未能添加到学习社区，请稍后手动分享')
+        }
+    }
     
     // 提交成功后跳转到首页
     router.push('/')

@@ -13,7 +13,7 @@ export default defineConfig({
     postcss: './postcss.config.js'
   },
   server: {
-    port: 3000,
+    port: 3007,
     host: true,
     fs: {
       strict: false

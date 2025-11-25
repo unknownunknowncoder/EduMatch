@@ -101,6 +101,38 @@ export class SupabaseService {
     return data[0]
   }
 
+  async updateUserPassword(userId: string, newPassword: string) {
+    const client = this.getClient()
+    
+    // 生成密码哈希（实际项目中应该使用更安全的哈希方法）
+    const password_hash = await this.hashPassword(newPassword)
+    
+    const { data, error } = await client
+      .from('users')
+      .update({ password_hash })
+      .eq('id', userId)
+      .select()
+    
+    if (error) throw error
+    return data[0]
+  }
+
+  // 简单的密码哈希方法（与登录页面保持一致）
+  private async hashPassword(password: string): Promise<string> {
+    // 与登录页面使用相同的哈希方法，不加salt
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  }
+
+  // 验证密码
+  async verifyPassword(password: string, hash: string): Promise<boolean> {
+    const passwordHash = await this.hashPassword(password)
+    return passwordHash === hash
+  }
+
   // 学习资源相关操作
   async getResources(options: {
     limit?: number
@@ -174,6 +206,31 @@ export class SupabaseService {
     return data[0]
   }
 
+  async createCommunityPost(postData: {
+    user_id: string
+    title: string
+    content: string
+    category?: string
+    likes_count?: number
+    views_count?: number
+  }) {
+    console.log('🔄 Supabase服务：准备创建社区帖子，数据:', postData)
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('community_posts')
+      .insert([postData])
+      .select()
+    
+    if (error) {
+      console.error('❌ Supabase服务：创建社区帖子失败:', error)
+      console.error('❌ 错误详情:', error.message, error.details, error.hint)
+      throw error
+    }
+    
+    console.log('✅ Supabase服务：社区帖子创建成功，返回数据:', data[0])
+    return data[0]
+  }
+
   // 学习记录相关操作
   async addLearningRecord(recordData: {
     user_id: string
@@ -211,7 +268,6 @@ export class SupabaseService {
           url
         )
       `)
-      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (options.limit) {
@@ -284,7 +340,6 @@ export class SupabaseService {
           created_at
         )
       `)
-      .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
     if (options.limit) {

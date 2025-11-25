@@ -5,7 +5,7 @@
       <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
           <Clock class="h-8 w-8 mr-3 text-blue-500" />
-          历史记录
+          学习记录
         </h1>
         <p class="text-gray-600 dark:text-gray-400 mt-2">查看你的学习足迹</p>
       </div>
