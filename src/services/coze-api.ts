@@ -55,21 +55,48 @@ class CozeAPIService {
   }
 
   /**
-   * 搜索扣子API - 通过代理服务器调用
+   * 搜索资源 - 通过代理服务器调用
    */
-  async searchRecommendations(request: CozeSearchRequest): Promise<CozeSearchResponse> {
+  async searchResources(request: CozeSearchRequest): Promise<CozeSearchResponse> {
     console.log('🔍 通过代理服务器搜索扣子API:', request)
     
     // 直接使用代理服务器
-    const response = await fetch('http://localhost:3001/api/coze/chat', {
+    const response = await fetch('http://localhost:3014/search-resources', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        query: request.query,
-        bot_id: this.botId,
-        user_id: this.getUserId()
+        query: request.query
+      })
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      if (result.success && result.data) {
+        return this.parseCozeResponse(result.data)
+      } else {
+        throw new Error(result.error || 'API调用失败')
+      }
+    } else {
+      throw new Error(`代理服务器错误: ${response.status}`)
+    }
+  }
+
+  /**
+   * 搜索扣子API - 通过代理服务器调用 (兼容方法)
+   */
+  async searchRecommendations(request: CozeSearchRequest): Promise<CozeSearchResponse> {
+    console.log('🔍 通过代理服务器搜索扣子API:', request)
+    
+    // 直接使用代理服务器
+    const response = await fetch('http://localhost:3014/search-resources', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        query: request.query
       })
     })
     
@@ -114,9 +141,27 @@ class CozeAPIService {
         content = lastAiMessage.content || ''
       }
     } else if (cozeData.messages && cozeData.messages.length > 0) {
-      // 新版API格式
-      const lastMessage = cozeData.messages[cozeData.messages.length - 1]
-      content = lastMessage.content || ''
+      // 新版API格式 - 查找包含实际推荐内容的answer消息
+      const answerMessages = cozeData.messages.filter((msg: any) => 
+        msg.role === 'assistant' && 
+        msg.type === 'answer' && 
+        msg.content_type === 'text' &&
+        msg.content &&
+        msg.content.includes('🎯')
+      )
+      if (answerMessages.length > 0) {
+        content = answerMessages[answerMessages.length - 1].content || ''
+      } else {
+        // 如果没有找到格式化的推荐内容，尝试最后一个文本消息
+        const textMessages = cozeData.messages.filter((msg: any) => 
+          msg.role === 'assistant' && 
+          msg.type === 'answer' && 
+          msg.content_type === 'text'
+        )
+        if (textMessages.length > 0) {
+          content = textMessages[textMessages.length - 1].content || ''
+        }
+      }
     } else if (cozeData.content) {
       // 直接内容格式
       content = cozeData.content

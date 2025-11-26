@@ -1,130 +1,191 @@
-const express = require('express')
-const cors = require('cors')
-const { CozeAPI } = require('@coze/api')
+const express = require('express');
+const fetch = require('node-fetch');
+const cors = require('cors');
 
-const app = express()
-const PORT = 3001
+const app = express();
+const PORT = 3014;
 
-app.use(cors())
-app.use(express.json())
+// 中间件
+app.use(cors());
+app.use(express.json());
 
-// 扣子API代理 - 直接fetch但优化参数
-app.post('/api/coze/chat', async (req, res) => {
+// 加载环境变量
+require('dotenv').config();
+
+// 扣子API配置
+const COZE_API_URL = 'https://api.coze.cn/open_api/v2/chat';
+const COZE_API_TOKEN = process.env.VITE_COZE_API_TOKEN || process.env.COZE_API_TOKEN || 'sat_uvUYKEkkKh2rL1IfHmO8IkVGwmdyZBP5D7PoxYuw1PvpMFhjMGy5GQyRiz2lBrlH';
+const COZE_BOT_ID = process.env.VITE_COZE_BOT_ID || process.env.COZE_BOT_ID || '7573579561607331840';
+
+console.log('🔧 代理服务器配置检查:');
+console.log('   API Token:', COZE_API_TOKEN ? '已配置' : '未配置');
+console.log('   Bot ID:', COZE_BOT_ID ? '已配置' : '未配置');
+
+// 健康检查端点
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// 聊天端点 - 直接转发到扣子API
+app.post('/chat', async (req, res) => {
   try {
-    const { query, bot_id } = req.body
-    console.log('🔍 代理请求:', query)
+    console.log('🔧 收到前端请求:', req.body);
     
-    const serviceToken = 'sat_uvUYKEkkKh2rL1IfHmO8IkVGwmdyZBP5D7PoxYuw1PvpMFhjMGy5GQyRiz2lBrlH'
-    const defaultBotId = '7573579561607331840'
-    
-    console.log('🔐 使用服务访问令牌(SAT)，直接作为Bearer token，前缀:', serviceToken ? serviceToken.substring(0, 15) + '...' : 'undefined')
-    
-    // SAT 直接作为 Bearer token 使用，不需要 OAuth 流程
-    const response = await fetch('https://api.coze.cn/v3/chat', {
+    const { conversation_id, messages, user } = req.body;
+
+    // 构建扣子API请求
+    const lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : {};
+    const cozeRequest = {
+      conversation_id: conversation_id || '',
+      bot_id: COZE_BOT_ID,
+      user: user || 'default_user',
+      stream: false,
+      messages: [
+        {
+          content_type: 'text',
+          content: {
+            text: lastMessage.content || '',
+            image_url: null,
+            file_url: null
+          }
+        }
+      ]
+    };
+
+    console.log('🔗 发送到扣子API:', JSON.stringify(cozeRequest, null, 2));
+
+    // 发送请求到扣子API
+    const response = await fetch(COZE_API_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${serviceToken}`,
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${COZE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        bot_id: bot_id || defaultBotId,
-        user_id: 'user_' + Date.now(),
-        stream: false,
-        additional_messages: [{
-          content: `推荐${query}相关的优质学习资源，包括B站视频和MOOC课程`,
-          content_type: "text",
-          role: "user"
-        }]
-      })
-    })
-    
-    const responseText = await response.text()
-    console.log('📊 API响应状态:', response.status)
-    console.log('📊 API响应内容:', responseText.substring(0, 200) + '...')
-    
-    if (response.ok) {
-      const chatData = JSON.parse(responseText)
-      console.log('✅ 创建聊天会话成功:', chatData.data.id)
-      
-      // 轮询获取AI回复，直到完成
-      console.log('🔄 开始轮询AI回复状态...')
-      let finalResult = null
-      let pollCount = 0
-      const maxPolls = 20 // 最多轮询20次 (40秒)
-      
-      while (pollCount < maxPolls) {
-        pollCount++
-        console.log(`🔄 第${pollCount}次轮询...`)
-        
-        await new Promise(resolve => setTimeout(resolve, 2000)) // 等待2秒
-        
-        // 查询聊天状态
-        const statusResponse = await fetch(`https://api.coze.cn/v3/chat/retrieve?chat_id=${chatData.data.id}&conversation_id=${chatData.data.conversation_id}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${serviceToken}`,
-            'Content-Type': 'application/json'
-          }
-        })
-        
-        if (statusResponse.ok) {
-          const statusData = await statusResponse.text()
-          const statusJson = JSON.parse(statusData)
-          console.log(`📊 第${pollCount}次轮询结果:`, statusJson.data?.status)
-          
-          if (statusJson.data?.status === 'completed') {
-            console.log('✅ AI回复完成!')
-            // 获取消息列表
-            const messagesResponse = await fetch(`https://api.coze.cn/v3/chat/message/list?chat_id=${chatData.data.id}&conversation_id=${chatData.data.conversation_id}`, {
-              method: 'GET',
-              headers: {
-                'Authorization': `Bearer ${serviceToken}`,
-                'Content-Type': 'application/json'
-              }
-            })
-            
-            if (messagesResponse.ok) {
-              const messagesData = await messagesResponse.text()
-              console.log('✅ 获取到完整消息:', messagesData.substring(0, 200) + '...')
-              finalResult = messagesData
-            } else {
-              console.log('❌ 获取消息失败，使用状态数据')
-              finalResult = statusData
-            }
-            break
-          } else if (statusJson.data?.status === 'failed') {
-            console.log('❌ AI回复失败')
-            finalResult = JSON.stringify({
-              error: 'AI回复失败',
-              status: 'failed',
-              details: statusJson.data
-            })
-            break
-          }
-        } else {
-          console.log(`❌ 第${pollCount}次轮询失败:`, statusResponse.status)
-          await new Promise(resolve => setTimeout(resolve, 1000)) // 失败时额外等待
-        }
-      }
-      
-      if (finalResult) {
-        console.log('✅ 最终获取到结果，返回给前端')
-        res.json({ success: true, data: finalResult })
-      } else {
-        console.log('⏰ 轮询超时，返回超时错误')
-        res.json({ success: false, error: 'AI回复超时，请稍后重试' })
-      }
-    } else {
-      console.log('❌ API调用失败:', response.status)
-      res.status(response.status).json({ success: false, error: responseText })
-    }
-    
-  } catch (error) {
-    console.error('💥 代理错误:', error)
-    res.status(500).json({ success: false, error: error.message })
-  }
-})
+      body: JSON.stringify(cozeRequest)
+    });
 
+    if (!response.ok) {
+      throw new Error(`扣子API请求失败: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('📩 扣子API响应:', data);
+
+    // 检查响应格式
+    if (data.messages && data.messages.length > 0) {
+      const lastMessage = data.messages[data.messages.length - 1];
+      if (lastMessage.type === 'answer' && lastMessage.content) {
+        // 直接返回扣子的回复内容，不做任何修改
+        res.json({
+          success: true,
+          data: {
+            content: lastMessage.content,
+            type: 'ai_response'
+          }
+        });
+        return;
+      }
+    }
+
+    // 如果没有找到消息，返回原始响应
+    console.log('⚠️ 未找到有效的回复内容，返回原始响应');
+    res.json({
+      success: true,
+      data: data
+    });
+
+  } catch (error) {
+    console.error('❌ 代理服务器错误:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// 搜索资源端点
+app.post('/search-resources', async (req, res) => {
+  try {
+    console.log('🔧 收到资源搜索请求:', req.body);
+    
+    const { query } = req.body;
+    if (!query || typeof query !== 'string' || !query.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: '查询内容不能为空'
+      });
+    }
+
+    // 直接使用用户查询作为输入
+    const userQuery = query.trim();
+
+    // 构建扣子API请求 - 使用官方支持的query字段
+    const cozeRequest = {
+      conversation_id: '',
+      bot_id: COZE_BOT_ID,
+      user: `resource_user_${Date.now()}`,
+      query: `请根据“${userQuery}”推荐B站与中国大学MOOC的优质学习资源，严格按照以下格式返回：🎯 最推荐、📚 其他推荐、💡 学习建议，并务必包含平台来源、难度、学习时长与学习数据。`,
+      chat_history: [],
+      stream: false
+    };
+
+    console.log('🔗 发送到扣子API:', JSON.stringify(cozeRequest, null, 2));
+
+    // 发送请求到扣子API
+    const response = await fetch(COZE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${COZE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(cozeRequest)
+    });
+
+    if (!response.ok) {
+      throw new Error(`扣子API请求失败: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('📩 扣子API响应:', data);
+
+    // 检查响应格式
+    if (data.messages && data.messages.length > 0) {
+      const lastMessage = data.messages[data.messages.length - 1];
+      if (lastMessage.type === 'answer' && lastMessage.content) {
+        // 直接返回扣子的回复内容
+        res.json({
+          success: true,
+          data: {
+            content: lastMessage.content,
+            type: 'ai_response'
+          }
+        });
+        return;
+      }
+    }
+
+    // 如果没有找到消息，返回原始响应
+    console.log('⚠️ 未找到有效的回复内容，返回原始响应');
+    res.json({
+      success: true,
+      data: data
+    });
+
+  } catch (error) {
+    console.error('❌ 代理服务器错误:', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// 启动服务器
 app.listen(PORT, () => {
-  console.log(`🚀 代理服务器启动: http://localhost:${PORT}`)
-})
+  console.log(`🚀 扣子API代理服务器已启动`);
+  console.log(`📍 地址: http://localhost:${PORT}`);
+  console.log(`🔗 API端点: http://localhost:${PORT}/chat`);
+  console.log(`🔍 搜索端点: http://localhost:${PORT}/search-resources`);
+});
