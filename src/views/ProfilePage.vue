@@ -36,7 +36,7 @@
 
     <!-- 我的资源 -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
-      <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+      <div class="p-6 border-b border-gray-100 dark:border-gray-700 cursor-pointer" @click="navigateToAllResources">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
           <svg class="h-5 w-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
@@ -62,7 +62,7 @@
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div 
-            v-for="resource in myResources"
+            v-for="resource in displayResources"
             :key="resource.id"
             class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
             @click="navigateToResource(resource.id)"
@@ -79,30 +79,103 @@
               </div>
             </div>
             
-            <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <div class="text-sm text-gray-500 dark:text-gray-400">
               <div class="flex items-center">
                 <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
                 {{ formatDate(resource.created_at) }}
               </div>
-              <div class="flex items-center space-x-3">
-                <div class="flex items-center">
-                  <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                  </svg>
-                  {{ resource.views || 0 }}
-                </div>
-                <div class="flex items-center">
-                  <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                  </svg>
-                  {{ resource.likes || 0 }}
+            </div>
+          </div>
+        </div>
+        
+        <!-- 查看全部按钮 -->
+        <div v-if="myResources.length > 3" class="text-center mt-6">
+          <button 
+            @click="navigateToAllResources"
+            class="px-6 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+          >
+            查看全部 {{ myResources.length }} 个资源
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 我的帖子 -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
+      <div class="p-6 border-b border-gray-100 dark:border-gray-700 cursor-pointer" @click="navigateToAllPosts">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+          <svg class="h-5 w-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+          </svg>
+          我的帖子
+        </h3>
+      </div>
+      
+      <div class="p-6">
+        <div v-if="myPosts.length === 0" class="text-center py-12">
+          <svg class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+          </svg>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">暂无发布的帖子</h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">您还没有在社区发布任何帖子</p>
+          <button 
+            @click="navigateToCommunity"
+            class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+          >
+            去社区发帖
+          </button>
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div 
+            v-for="post in displayPosts"
+            :key="post.id"
+            class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+            @click="navigateToPost(post.id)"
+          >
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-1">{{ post.title }}</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">{{ post.content }}</p>
+                <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                  <span v-if="post.category" class="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full mr-2">
+                    {{ post.category }}
+                  </span>
                 </div>
               </div>
             </div>
+            
+            <div class="text-sm text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-200 dark:border-gray-600">
+              <div class="flex items-center">
+                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                {{ formatDate(post.created_at) }}
+              </div>
+            </div>
           </div>
+        </div>
+        
+        <!-- 查看全部按钮 -->
+        <div v-if="myPosts.length > 3" class="text-center mt-6">
+          <button 
+            @click="navigateToAllPosts"
+            class="px-6 py-2 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+          >
+            查看全部 {{ myPosts.length }} 个帖子
+          </button>
+        </div>
+        
+        <!-- 查看全部按钮 -->
+        <div v-if="myResources.length > 3" class="text-center mt-6">
+          <button 
+            @click="navigateToAllResources"
+            class="px-6 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+          >
+            查看全部 {{ myResources.length }} 个资源
+          </button>
         </div>
       </div>
     </div>
@@ -272,10 +345,26 @@ interface MyResource {
   created_at: string
 }
 
+interface MyPost {
+  id: string
+  title: string
+  content: string
+  category?: string
+  tags?: string[]
+  status: 'published'
+  views?: number
+  likes?: number
+  comments?: number
+  created_at: string
+  updated_at?: string
+}
+
 const router = useRouter()
 const databaseStore = useDatabaseStore()
 const myResources = ref<MyResource[]>([])
+const myPosts = ref<MyPost[]>([])
 const isLoadingResources = ref(false)
+const isLoadingPosts = ref(false)
 
 // 从localStorage获取当前用户信息
 const getUserInfo = (): UserInfo => {
@@ -346,6 +435,150 @@ const navigateToCreateResource = () => {
 
 const navigateToResource = (resourceId: string) => {
   router.push(`/resource/${resourceId}`)
+}
+
+const navigateToPost = (postId: string) => {
+  router.push(`/post/${postId}`)
+}
+
+const navigateToCommunity = () => {
+  router.push('/community')
+}
+
+const navigateToAllPosts = () => {
+  router.push('/my-all-posts')
+}
+
+const navigateToAllResources = () => {
+  router.push('/my-all-resources')
+}
+
+// 计算属性：只显示最新3个帖子
+const displayPosts = computed(() => {
+  return myPosts.value.slice(0, 3)
+})
+
+// 计算属性：只显示最新3个资源
+const displayResources = computed(() => {
+  return myResources.value.slice(0, 3)
+})
+
+// 获取帖子状态颜色
+const getPostStatusColor = (status: string) => {
+  const colors: Record<string, string> = {
+    published: 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+    draft: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/20 dark:text-yellow-400',
+    deleted: 'bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+  }
+  return colors[status] || colors.draft
+}
+
+// 获取帖子状态文本
+const getPostStatusText = (status: string) => {
+  const texts: Record<string, string> = {
+    published: '已发布',
+    draft: '草稿',
+    deleted: '已删除'
+  }
+  return texts[status] || '草稿'
+}
+
+const loadMyPosts = async () => {
+  isLoadingPosts.value = true
+  try {
+    console.log('🔄 开始加载用户帖子...')
+    
+    // 获取当前用户ID - 使用当前登录用户
+    const client = supabaseService.getClient()
+    let currentUserId = null
+    
+    // 从localStorage获取当前登录用户
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      if (user.id) {
+        currentUserId = user.id
+        console.log('✅ 当前用户ID:', currentUserId)
+      } else {
+        console.error('❌ 用户数据中没有ID字段:', user)
+      }
+    } else {
+      console.error('❌ localStorage中没有用户信息')
+    }
+    
+    // 如果没有登录用户，显示空列表
+    if (!currentUserId) {
+      console.error('❌ 用户未登录，将显示空帖子列表')
+      myPosts.value = []
+      return
+    }
+    
+    console.log('🔍 查询用户帖子...')
+    
+    // 使用 Supabase 查询用户发布的帖子
+    const { data, error } = await client
+      .from('community_posts')
+      .select('*')
+      .eq('user_id', currentUserId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('❌ 获取我的帖子失败:', error)
+      // 如果获取失败，使用空数组
+      myPosts.value = []
+      return
+    }
+    
+    console.log('📊 原始帖子数据:', data)
+    
+    if (!data || data.length === 0) {
+      console.log('ℹ️ 该用户没有发布任何帖子')
+      myPosts.value = []
+      return
+    }
+    
+    // 转换数据格式
+    const postsWithComments = []
+    
+    for (let i = 0; i < data.length; i++) {
+      const post = data[i]
+      
+      // 为每个帖子查询评论数
+      const { data: commentData, error: commentError } = await client
+        .from('post_comments')
+        .select('id')
+        .eq('post_id', post.id)
+      
+      const commentCount = commentError ? 0 : (commentData ? commentData.length : 0)
+      
+      const transformedPost = {
+        id: post.id,
+        title: post.title,
+        content: post.content || '',
+        category: post.category,
+        tags: [], // 社区帖子表没有tags字段，设为空数组
+        status: 'published', // 社区帖子表没有status字段，默认为已发布
+        views: post.views_count || 0, // 使用正确的字段名
+        likes: post.likes_count || 0, // 使用正确的字段名
+        comments: commentCount,
+        created_at: post.created_at,
+        updated_at: post.updated_at
+      }
+      
+      postsWithComments.push(transformedPost)
+      console.log(`📝 帖子 ${i+1}: ${post.title} (评论数: ${commentCount})`)
+    }
+    
+    myPosts.value = postsWithComments
+    console.log('✅ 成功加载我的帖子:', myPosts.value.length)
+    console.log('📋 最终帖子数据:', myPosts.value)
+    
+  } catch (error) {
+    console.error('❌ 加载我的帖子时出错:', error)
+    myPosts.value = []
+  } finally {
+    isLoadingPosts.value = false
+  }
 }
 
 const loadMyResources = async () => {
@@ -604,5 +837,6 @@ const logout = () => {
 
 onMounted(() => {
   loadMyResources()
+  loadMyPosts()
 })
 </script>

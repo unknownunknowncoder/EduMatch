@@ -52,12 +52,7 @@ const routes = [
     component: () => import('@/views/PostDetail.vue'),
     meta: { requiresAuth: true }
   },
-  {
-    path: '/history',
-    name: 'History',
-    component: () => import('@/views/HistoryPage.vue'),
-    meta: { requiresAuth: true }
-  },
+
   {
     path: '/liked',
     name: 'LikedFavorites',
@@ -74,6 +69,18 @@ const routes = [
     path: '/study-plan',
     name: 'StudyPlan',
     component: () => import('@/views/StudyPlanPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/my-all-posts',
+    name: 'MyAllPosts',
+    component: () => import('@/views/MyAllPostsPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/my-all-resources',
+    name: 'MyAllResources',
+    component: () => import('@/views/MyAllResourcesPage.vue'),
     meta: { requiresAuth: true }
   },
   {

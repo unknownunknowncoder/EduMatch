@@ -64,107 +64,31 @@
         <div 
           v-for="resource in likedResources"
           :key="resource.id"
-          class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md border border-gray-100 dark:border-gray-700 transition-transform duration-200 hover:scale-105 cursor-pointer"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-150 hover:shadow-md cursor-pointer"
           @click="handlePostClick(resource.id)"
         >
-          <!-- 资源头部 -->
-          <div class="p-4 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="font-bold text-lg mb-1 line-clamp-1">{{ resource.name }}</h3>
-            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-              <span>{{ resource.provider }}</span>
-            </div>
-          </div>
-          
-          <!-- 资源内容 -->
+          <!-- 帖子基本信息 -->
           <div class="p-4">
-            <!-- 核心契合点 -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
-              <div class="flex items-start">
-                <Check class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-                <p class="text-sm text-gray-700 dark:text-gray-300">{{ resource.matchPoints }}</p>
-              </div>
+            <!-- 帖子标题 -->
+            <h3 class="font-semibold text-lg mb-2 line-clamp-2">{{ resource.name }}</h3>
+            
+            <!-- 作者和发布时间 -->
+            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <span class="mr-3">作者：{{ resource.provider }}</span>
+              <span>发布时间：{{ formatDate(resource.postDetails?.createdAt || resource.created_at) }}</span>
             </div>
             
-            <!-- 关键信息 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <Clock class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">学习时长</div>
-                  <div class="text-sm font-medium">{{ resource.duration }}</div>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                  </svg>
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">用户评分</div>
-                  <div class="text-sm font-medium">{{ resource.rating }}/10</div>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <DollarSign class="h-4 w-4 text-green-500" />
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">资源类型</div>
-                  <div class="text-sm font-medium">{{ resource.type }}</div>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <ThumbsUp class="h-4 w-4 text-blue-500" />
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">点赞数</div>
-                  <div class="text-sm font-medium">{{ resource.likeCount || 0 }}</div>
-                </div>
-              </div>
+            <!-- 标签 -->
+            <div class="flex flex-wrap gap-1 mb-3">
+              <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
+                点赞帖子
+              </span>
+              <span v-if="resource.type" class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+                {{ resource.type }}
+              </span>
             </div>
             
-            <!-- 点赞状态 -->
-            <div class="bg-blue-100 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
-              <div class="flex items-center mb-2">
-                <ThumbsUp class="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
-                <p class="text-sm text-blue-700 dark:text-blue-300">你已点赞此资源</p>
-              </div>
-              
-              <!-- 点赞用户信息 -->
-              <div class="mt-2">
-                <div class="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">
-                  点赞用户 ({{ resource.likedUsers.length }}):
-                </div>
-                <div v-if="resource.likedUsers && resource.likedUsers.length > 0" class="flex flex-wrap gap-1">
-                  <span 
-                    v-for="(user, index) in resource.likedUsers.slice(0, 5)" 
-                    :key="index"
-                    class="text-xs bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full"
-                  >
-                    {{ user }}
-                  </span>
-                  <span v-if="resource.likedUsers.length > 5" class="text-xs text-gray-500">
-                    等{{ resource.likedUsers.length - 5 }}人
-                  </span>
-                </div>
-                <div v-else class="text-xs text-gray-400">
-                  暂无其他用户点赞
-                </div>
-              </div>
-            </div>
-            
-            <!-- 立即学习按钮 -->
-            <button
-              @click="handleResourceClick($event, resource.url)"
-              class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              立即学习
-              <ExternalLink class="h-4 w-4 ml-2" />
-            </button>
+
           </div>
         </div>
       </template>
@@ -188,107 +112,31 @@
         <div 
           v-for="resource in favoritedResources"
           :key="resource.id"
-          class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md border border-gray-100 dark:border-gray-700 transition-transform duration-200 hover:scale-105 cursor-pointer"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-150 hover:shadow-md cursor-pointer"
           @click="handlePostClick(resource.id)"
         >
-          <!-- 资源头部 -->
-          <div class="p-4 border-b border-gray-100 dark:border-gray-700">
-            <h3 class="font-bold text-lg mb-1 line-clamp-1">{{ resource.name }}</h3>
-            <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-              <span>{{ resource.provider }}</span>
-            </div>
-          </div>
-          
-          <!-- 资源内容 -->
+          <!-- 帖子基本信息 -->
           <div class="p-4">
-            <!-- 核心契合点 -->
-            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 mb-4">
-              <div class="flex items-start">
-                <Check class="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
-                <p class="text-sm text-gray-700 dark:text-gray-300">{{ resource.matchPoints }}</p>
-              </div>
+            <!-- 帖子标题 -->
+            <h3 class="font-semibold text-lg mb-2 line-clamp-2">{{ resource.name }}</h3>
+            
+            <!-- 作者和发布时间 -->
+            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
+              <span class="mr-3">作者：{{ resource.provider }}</span>
+              <span>发布时间：{{ formatDate(resource.postDetails?.createdAt || resource.created_at) }}</span>
             </div>
             
-            <!-- 关键信息 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <Clock class="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">学习时长</div>
-                  <div class="text-sm font-medium">{{ resource.duration }}</div>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-500">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                  </svg>
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">用户评分</div>
-                  <div class="text-sm font-medium">{{ resource.rating }}/10</div>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <DollarSign class="h-4 w-4 text-green-500" />
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">资源类型</div>
-                  <div class="text-sm font-medium">{{ resource.type }}</div>
-                </div>
-              </div>
-              <div class="flex items-center">
-                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-2">
-                  <ThumbsUp class="h-4 w-4 text-blue-500" />
-                </div>
-                <div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">点赞数</div>
-                  <div class="text-sm font-medium">{{ resource.likeCount || 0 }}</div>
-                </div>
-              </div>
+            <!-- 标签 -->
+            <div class="flex flex-wrap gap-1 mb-3">
+              <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-2 py-1 rounded-full">
+                收藏帖子
+              </span>
+              <span v-if="resource.type" class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
+                {{ resource.type }}
+              </span>
             </div>
             
-            <!-- 收藏状态 -->
-            <div class="bg-red-100 dark:bg-red-900/20 rounded-lg p-3 mb-4">
-              <div class="flex items-center mb-2">
-                <Heart class="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
-                <p class="text-sm text-red-700 dark:text-red-300">你已收藏此资源</p>
-              </div>
-              
-              <!-- 收藏用户信息 -->
-              <div class="mt-2">
-                <div class="text-xs text-red-600 dark:text-red-400 font-medium mb-1">
-                  收藏用户 ({{ resource.favoritedUsers.length }}):
-                </div>
-                <div v-if="resource.favoritedUsers && resource.favoritedUsers.length > 0" class="flex flex-wrap gap-1">
-                  <span 
-                    v-for="(user, index) in resource.favoritedUsers.slice(0, 5)" 
-                    :key="index"
-                    class="text-xs bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200 px-2 py-1 rounded-full"
-                  >
-                    {{ user }}
-                  </span>
-                  <span v-if="resource.favoritedUsers.length > 5" class="text-xs text-gray-500">
-                    等{{ resource.favoritedUsers.length - 5 }}人
-                  </span>
-                </div>
-                <div v-else class="text-xs text-gray-400">
-                  暂无其他用户收藏
-                </div>
-              </div>
-            </div>
-            
-            <!-- 立即学习按钮 -->
-            <button
-              @click="handleResourceClick($event, resource.url)"
-              class="w-full flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              立即学习
-              <ExternalLink class="h-4 w-4 ml-2" />
-            </button>
+
           </div>
         </div>
       </template>
@@ -634,9 +482,9 @@ const loadUserInteractions = async () => {
       }
     }
     
-    // 如果数据库失败，使用本地存储
+    // 如果数据库失败，使用本地存储，但尝试从社区页面获取帖子详情
     if (!databaseSuccess) {
-      console.log('🔄 使用本地存储加载点赞收藏数据')
+      console.log('🔄 使用本地存储加载点赞收藏数据，并尝试获取帖子详情')
       
       // 加载本地点赞数据
       const localLikesKey = `edumatch_likes_${userId}`
@@ -646,67 +494,229 @@ const loadUserInteractions = async () => {
       const localFavoritesKey = `edumatch_favorites_${userId}`
       const localFavorites = JSON.parse(localStorage.getItem(localFavoritesKey) || '[]')
       
-      // 需要获取帖子详情，这里简化处理，只显示本地存储的帖子ID
-      likedResources.value = localLikes.map((like: any) => ({
-        id: like.post_id,
-        name: `帖子 ${like.post_id}`,
-        provider: '本地存储',
-        duration: '帖子',
-        rating: 0,
-        url: `/post/${like.post_id}`,
-        matchPoints: '从本地存储加载的点赞记录',
-        type: '社区帖子',
-        interaction: {
-          liked: true,
-          saved: false,
-          likesCount: 0
-        },
-        // 本地存储不包含用户信息，使用默认值
-        likedUsers: ['当前用户'],
-        favoritedUsers: [],
-        likeCount: 0,
-        favoriteCount: 0,
-        postDetails: {
-          id: like.post_id,
-          author: '本地存储',
-          content: '从本地存储加载的点赞记录',
-          createdAt: new Date(like.timestamp || Date.now()).toISOString(),
-          viewCount: 0,
-          commentCount: 0
+      // 尝试从社区页面获取帖子详情 - 优化版本
+      const getPostDetails = async (postId: string) => {
+        try {
+          console.log(`🔍 尝试获取帖子 ${postId} 的详细信息...`)
+          
+          // 首先尝试使用数据库存储的客户端
+          let client = await dbStore.getClient()
+          if (!client) {
+            console.log('🔗 数据库客户端未连接，尝试重新连接...')
+            await dbStore.reconnect()
+            client = await dbStore.getClient()
+          }
+          
+          if (client) {
+            console.log('✅ 使用数据库存储客户端获取帖子详情')
+            
+            const { data: postData, error } = await client
+              .from('community_posts')
+              .select(`
+                id,
+                title,
+                content,
+                created_at,
+                view_count,
+                like_count,
+                comment_count,
+                favorite_count,
+                user:user_id (
+                  id,
+                  username,
+                  nickname
+                )
+              `)
+              .eq('id', postId)
+              .single()
+            
+            if (!error && postData) {
+              const author = postData.user?.nickname || postData.user?.username || '匿名用户'
+              console.log(`✅ 成功获取帖子详情: ${postData.title} (作者: ${author})`)
+              return {
+                title: postData.title,
+                author: author,
+                content: postData.content,
+                createdAt: postData.created_at,
+                viewCount: postData.view_count || 0,
+                commentCount: postData.comment_count || 0,
+                likeCount: postData.like_count || 0,
+                favoriteCount: postData.favorite_count || 0
+              }
+            } else {
+              console.warn(`❌ 数据库查询失败:`, error?.message)
+            }
+          }
+          
+          // 如果数据库存储客户端失败，尝试直接连接Supabase
+          console.log('🔄 尝试直接连接Supabase获取帖子详情...')
+          const { createClient } = await import('@supabase/supabase-js')
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+          const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+          
+          if (supabaseUrl && supabaseKey) {
+            const directClient = createClient(supabaseUrl, supabaseKey)
+            
+            const { data: postData, error } = await directClient
+              .from('community_posts')
+              .select(`
+                id,
+                title,
+                content,
+                created_at,
+                view_count,
+                like_count,
+                comment_count,
+                favorite_count,
+                user:user_id (
+                  id,
+                  username,
+                  nickname
+                )
+              `)
+              .eq('id', postId)
+              .single()
+            
+            if (!error && postData) {
+              const author = postData.user?.nickname || postData.user?.username || '匿名用户'
+              console.log(`✅ 直接连接成功获取帖子详情: ${postData.title} (作者: ${author})`)
+              return {
+                title: postData.title,
+                author: author,
+                content: postData.content,
+                createdAt: postData.created_at,
+                viewCount: postData.view_count || 0,
+                commentCount: postData.comment_count || 0,
+                likeCount: postData.like_count || 0,
+                favoriteCount: postData.favorite_count || 0
+              }
+            }
+          }
+          
+          // 如果所有方法都失败，尝试从本地存储的社区帖子数据中查找
+          console.log('🔍 尝试从本地存储的社区帖子数据中查找...')
+          const communityPostsKey = 'edumatch_community_posts'
+          const cachedPosts = JSON.parse(localStorage.getItem(communityPostsKey) || '[]')
+          
+          if (cachedPosts && Array.isArray(cachedPosts)) {
+            const cachedPost = cachedPosts.find((p: any) => p.id === postId)
+            if (cachedPost) {
+              console.log(`✅ 从本地缓存中找到帖子: ${cachedPost.title}`)
+              return {
+                title: cachedPost.title || '学习经验分享',
+                author: cachedPost.author || '社区用户',
+                content: cachedPost.content || '这是一篇来自社区的学习经验分享',
+                createdAt: cachedPost.created_at || new Date().toISOString(),
+                viewCount: cachedPost.view_count || 0,
+                commentCount: cachedPost.comment_count || 0,
+                likeCount: cachedPost.like_count || 0,
+                favoriteCount: cachedPost.favorite_count || 0
+              }
+            }
+          }
+          
+        } catch (error) {
+          console.warn(`❌ 获取帖子 ${postId} 详情失败:`, error.message)
         }
-      }))
+        
+        // 如果所有方法都失败，返回友好的默认值，而不是显示帖子ID
+        console.log(`⚠️ 无法获取帖子 ${postId} 的详情，使用默认值`)
+        return {
+          title: '学习经验分享',
+          author: '社区用户',
+          content: '这是一篇来自社区的学习经验分享，内容暂时无法加载',
+          createdAt: new Date().toISOString(),
+          viewCount: 0,
+          commentCount: 0,
+          likeCount: 0,
+          favoriteCount: 0
+        }
+      }
       
-      favoritedResources.value = localFavorites.map((fav: any) => ({
-        id: fav.post_id,
-        name: `帖子 ${fav.post_id}`,
-        provider: '本地存储',
-        duration: '帖子',
-        rating: 0,
-        url: `/post/${fav.post_id}`,
-        matchPoints: '从本地存储加载的收藏记录',
-        type: '社区帖子',
-        interaction: {
-          liked: false,
-          saved: true,
-          likesCount: 0
-        },
-        // 本地存储不包含用户信息，使用默认值
-        likedUsers: [],
-        favoritedUsers: ['当前用户'],
-        likeCount: 0,
-        favoriteCount: 0,
-        postDetails: {
-          id: fav.post_id,
-          author: '本地存储',
-          content: '从本地存储加载的收藏记录',
-          createdAt: new Date(fav.timestamp || Date.now()).toISOString(),
-          viewCount: 0,
-          commentCount: 0
+      // 处理点赞帖子
+      const likedPromises = localLikes.map(async (like: any) => {
+        const postDetails = await getPostDetails(like.post_id)
+        
+        return {
+          id: like.post_id,
+          name: postDetails.title,
+          provider: postDetails.author,
+          duration: '帖子',
+          rating: 0,
+          url: `/post/${like.post_id}`,
+          matchPoints: postDetails.content.substring(0, 100) + (postDetails.content.length > 100 ? '...' : ''),
+          type: '社区帖子',
+          interaction: {
+            liked: true,
+            saved: false,
+            likesCount: postDetails.likeCount
+          },
+          // 本地存储不包含用户信息，使用默认值
+          likedUsers: ['当前用户'],
+          favoritedUsers: [],
+          likeCount: postDetails.likeCount,
+          favoriteCount: postDetails.favoriteCount,
+          postDetails: {
+            id: like.post_id,
+            author: postDetails.author,
+            content: postDetails.content,
+            createdAt: postDetails.createdAt,
+            viewCount: postDetails.viewCount,
+            commentCount: postDetails.commentCount
+          }
         }
-      }))
+      })
+      
+      // 处理收藏帖子
+      const favoritedPromises = localFavorites.map(async (fav: any) => {
+        const postDetails = await getPostDetails(fav.post_id)
+        
+        return {
+          id: fav.post_id,
+          name: postDetails.title,
+          provider: postDetails.author,
+          duration: '帖子',
+          rating: 0,
+          url: `/post/${fav.post_id}`,
+          matchPoints: postDetails.content.substring(0, 100) + (postDetails.content.length > 100 ? '...' : ''),
+          type: '社区帖子',
+          interaction: {
+            liked: false,
+            saved: true,
+            likesCount: postDetails.likeCount
+          },
+          // 本地存储不包含用户信息，使用默认值
+          likedUsers: [],
+          favoritedUsers: ['当前用户'],
+          likeCount: postDetails.likeCount,
+          favoriteCount: postDetails.favoriteCount,
+          postDetails: {
+            id: fav.post_id,
+            author: postDetails.author,
+            content: postDetails.content,
+            createdAt: postDetails.createdAt,
+            viewCount: postDetails.viewCount,
+            commentCount: postDetails.commentCount
+          }
+        }
+      })
+      
+      // 等待所有异步操作完成
+      likedResources.value = await Promise.all(likedPromises)
+      favoritedResources.value = await Promise.all(favoritedPromises)
       
       console.log('✅ 本地存储点赞帖子加载完成，数量:', likedResources.value.length)
       console.log('✅ 本地存储收藏帖子加载完成，数量:', favoritedResources.value.length)
+      console.log('📋 点赞帖子详情:', likedResources.value.map(p => ({
+        id: p.id,
+        title: p.name,
+        author: p.provider
+      })))
+      console.log('📋 收藏帖子详情:', favoritedResources.value.map(p => ({
+        id: p.id,
+        title: p.name,
+        author: p.provider
+      })))
     }
     
   } catch (error) {

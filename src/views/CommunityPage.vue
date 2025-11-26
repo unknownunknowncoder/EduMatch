@@ -1,19 +1,18 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6">
-    <!-- 页面标题 -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-        <svg class="h-8 w-8 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-        </svg>
-        学习社区
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">与学习伙伴交流，分享学习经验</p>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- 左侧边栏 - 搜索和热门标签 -->
-      <div class="lg:col-span-1 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
+      <!-- 左侧边栏 - 固定区域 -->
+      <div class="lg:col-span-1 space-y-6 lg:sticky lg:top-0 lg:pt-6 lg:self-start lg:h-fit">
+        <!-- 页面标题 -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
+            <svg class="h-8 w-8 mr-3 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            学习社区
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-2">与学习伙伴交流，分享学习经验</p>
+        </div>
         <!-- 搜索框 -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
           <div class="flex space-x-2">
@@ -101,15 +100,29 @@
 
       <!-- 主内容区 - 帖子列表 -->
       <div class="lg:col-span-3">
-        <div v-if="!showSearchResults && posts.length === 0" class="text-center py-12">
-          <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-          </svg>
-          <h3 class="text-lg font-medium mb-2">暂无社区帖子</h3>
-          <p class="text-gray-500 dark:text-gray-400">快来发表你的第一个学习经验吧！</p>
+        <!-- 加载动画 - 优先显示 -->
+        <div v-if="isLoading" class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <span class="ml-3 text-lg text-gray-600 dark:text-gray-300">正在加载帖子...</span>
         </div>
-
-        <div v-else-if="(showSearchResults && filteredPosts.length === 0) || (!showSearchResults && posts.length === 0)" class="text-center py-12">
+        
+        <!-- 错误状态 -->
+        <div v-else-if="hasError" class="text-center py-12">
+          <svg class="w-16 h-16 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="text-lg font-medium mb-2 text-red-600">加载失败</h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-4">{{ errorMessage || '无法加载帖子，请稍后重试' }}</p>
+          <button 
+            @click="retryLoading"
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          >
+            重新加载
+          </button>
+        </div>
+        
+        <!-- 搜索无结果 -->
+        <div v-else-if="(showSearchResults && filteredPosts.length === 0)" class="text-center py-12">
           <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
           </svg>
@@ -117,9 +130,19 @@
           <p class="text-gray-500 dark:text-gray-400">尝试使用其他关键词搜索</p>
         </div>
 
+        <!-- 空状态（没有帖子且不在搜索状态） -->
+        <div v-else-if="!showSearchResults && posts.length === 0" class="text-center py-12">
+          <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+          <h3 class="text-lg font-medium mb-2 text-gray-600 dark:text-gray-400">暂无社区帖子</h3>
+          <p class="text-gray-500 dark:text-gray-500">快来发表你的第一个学习经验吧！</p>
+        </div>
+
+        <!-- 帖子列表 -->
         <div v-else class="space-y-6">
           <div 
-            v-for="(post, index) in (showSearchResults ? filteredPosts : posts)"
+            v-for="(post, index) in paginatedPosts"
             :key="post.id"
             class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md transition-all duration-300 hover:shadow-lg cursor-pointer group"
             @click="viewPostDetail(post.id)"
@@ -199,6 +222,87 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 分页控件 -->
+        <div v-if="totalPages > 0" class="mt-8 flex justify-center items-center">
+          <!-- 多页时显示完整分页控件 -->
+          <template v-if="totalPages > 1">
+            <div class="flex items-center space-x-2">
+              <!-- 上一页按钮 -->
+              <button
+                @click="prevPage"
+                :disabled="currentPage === 1"
+                class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+
+              <!-- 第一页 -->
+              <button
+                v-if="getPageNumbers()[0] > 1"
+                @click="goToPage(1)"
+                class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                1
+              </button>
+
+              <!-- 省略号 -->
+              <span v-if="getPageNumbers()[0] > 2" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+
+              <!-- 页码按钮 -->
+              <button
+                v-for="page in getPageNumbers()"
+                :key="page"
+                @click="goToPage(page)"
+                :class="[
+                  'px-3 py-2 rounded-lg border transition-colors',
+                  currentPage === page
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ]"
+              >
+                {{ page }}
+              </button>
+
+              <!-- 省略号 -->
+              <span v-if="getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1" class="px-2 text-gray-500 dark:text-gray-400">...</span>
+
+              <!-- 最后一页 -->
+              <button
+                v-if="getPageNumbers()[getPageNumbers().length - 1] < totalPages"
+                @click="goToPage(totalPages)"
+                class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                {{ totalPages }}
+              </button>
+
+              <!-- 下一页按钮 -->
+              <button
+                @click="nextPage"
+                :disabled="currentPage === totalPages"
+                class="px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+
+              <!-- 页面信息 -->
+              <div class="ml-4 text-sm text-gray-500 dark:text-gray-400">
+                第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
+              </div>
+            </div>
+          </template>
+          
+          <!-- 只有一页时显示简化信息 -->
+          <template v-else>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+              第 {{ currentPage }} 页 / 共 {{ totalPages }} 页
+            </div>
+          </template>
         </div>
       </div>
     </div>
@@ -336,7 +440,9 @@ const popularTags = ref<any[]>([])
 const searchKeyword = ref('')
 const isSearching = ref(false)
 const showSearchResults = ref(false)
-const isLoading = ref(false)
+const isLoading = ref(true)
+const hasError = ref(false)
+const errorMessage = ref('')
 const showCreatePostModal = ref(false)
 const isSubmitting = ref(false)
 const isLiking = ref(false)
@@ -351,6 +457,83 @@ const customTag = ref('')
 
 const dbStore = useDatabaseStore()
 
+// 分页相关数据
+const currentPage = ref(1)
+const pageSize = ref(10)
+const totalPages = ref(0)
+
+// 计算当前页显示的帖子列表
+const paginatedPosts = ref<any[]>([])
+
+// 计算分页数据
+const updatePagination = () => {
+  const currentPosts = showSearchResults.value ? filteredPosts.value : posts.value
+  totalPages.value = Math.ceil(currentPosts.length / pageSize.value)
+  
+  const startIndex = (currentPage.value - 1) * pageSize.value
+  const endIndex = startIndex + pageSize.value
+  paginatedPosts.value = currentPosts.slice(startIndex, endIndex)
+  
+  // 如果当前页超出了总页数，自动调整到最后一页
+  if (currentPage.value > totalPages.value && totalPages.value > 0) {
+    currentPage.value = totalPages.value
+    updatePagination()
+  }
+  
+  console.log(`📄 分页更新: 第${currentPage.value}页/共${totalPages.value}页, 显示${paginatedPosts.value.length}个帖子`)
+}
+
+// 分页控制方法
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    updatePagination()
+    // 滚动到页面顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+const prevPage = () => {
+  goToPage(currentPage.value - 1)
+}
+
+const nextPage = () => {
+  goToPage(currentPage.value + 1)
+}
+
+// 生成页码数组
+const getPageNumbers = () => {
+  const pages = []
+  const maxVisiblePages = 5 // 最多显示5个页码
+  
+  if (totalPages.value <= maxVisiblePages) {
+    for (let i = 1; i <= totalPages.value; i++) {
+      pages.push(i)
+    }
+  } else {
+    // 当前页靠近开始
+    if (currentPage.value <= 3) {
+      for (let i = 1; i <= 5; i++) {
+        pages.push(i)
+      }
+    }
+    // 当前页靠近结束
+    else if (currentPage.value >= totalPages.value - 2) {
+      for (let i = totalPages.value - 4; i <= totalPages.value; i++) {
+        pages.push(i)
+      }
+    }
+    // 当前页在中间
+    else {
+      for (let i = currentPage.value - 2; i <= currentPage.value + 2; i++) {
+        pages.push(i)
+      }
+    }
+  }
+  
+  return pages
+}
+
 // 处理搜索输入变化
 const handleSearchInput = () => {
   if (!searchKeyword.value.trim()) {
@@ -364,6 +547,8 @@ const clearSearch = () => {
   showSearchResults.value = false
   filteredPosts.value = []
   isSearching.value = false
+  currentPage.value = 1 // 清除搜索时重置到第一页
+  updatePagination() // 更新分页显示
 }
 
 // 执行搜索
@@ -409,6 +594,8 @@ const performSearch = async () => {
     })
     
     filteredPosts.value = matchedPosts
+    currentPage.value = 1 // 搜索时重置到第一页
+    updatePagination() // 更新分页
     
   } catch (error) {
     // 搜索失败处理
@@ -697,6 +884,8 @@ const filterByTag = async (tagName: string) => {
     })
     
     filteredPosts.value = matchedPosts
+    currentPage.value = 1 // 搜索时重置到第一页
+    updatePagination() // 更新分页
     searchKeyword.value = tagName
     
   } catch (error) {
@@ -708,8 +897,6 @@ const filterByTag = async (tagName: string) => {
 
 // 加载帖子
 const loadPosts = async () => {
-  if (isLoading.value) return
-  
   isLoading.value = true
   try {
     // 确保数据库已初始化
@@ -743,7 +930,7 @@ const loadPosts = async () => {
     if (error) {
       console.error('❌ 加载帖子失败:', error)
       console.error('错误详情:', error.details, error.hint)
-      return
+      throw error // 抛出错误，让finally处理isLoading状态
     }
     
     // 获取当前用户ID以检查收藏状态
@@ -782,8 +969,15 @@ const loadPosts = async () => {
     console.log('✅ 成功加载帖子数量:', posts.value.length)
     console.log('📄 帖子列表:', posts.value)
     
+    // 更新分页
+    currentPage.value = 1
+    updatePagination()
+    
   } catch (error) {
     console.error('❌ 加载帖子异常:', error)
+    hasError.value = true
+    errorMessage.value = '加载帖子失败：' + (error.message || '未知错误')
+    posts.value = [] // 清空帖子列表，避免显示过期数据
   } finally {
     isLoading.value = false
   }
@@ -915,6 +1109,14 @@ const reloadPostStatus = async (userId: string) => {
   await loadLikesStatus(userId)
   await loadFavoritesStatus(userId)
   console.log('✅ 帖子状态重新加载完成')
+}
+
+// 重试加载
+const retryLoading = async () => {
+  hasError.value = false
+  errorMessage.value = ''
+  currentPage.value = 1 // 重试时重置到第一页
+  await loadPosts()
 }
 
 // 加载热门标签
@@ -1050,6 +1252,10 @@ const createPost = async () => {
         favorite_count: data[0].post_favorites?.[0]?.count || 0
       }
       posts.value.unshift(newPostData)
+      
+      // 更新分页（新帖子添加到第一页）
+      currentPage.value = 1
+      updatePagination()
     }
     
     // 关闭弹窗
@@ -1108,24 +1314,38 @@ const handleGlobalKeyup = (event: KeyboardEvent) => {
 onMounted(async () => {
   console.log('🚀 CommunityPage 组件挂载')
   
-  // 等待数据库初始化
-  console.log('⏳ 等待数据库初始化...')
-  await new Promise(resolve => setTimeout(resolve, 2000)) // 等待2秒确保数据库初始化
+  // 重置状态，确保干净的初始状态
+  hasError.value = false
+  errorMessage.value = ''
   
-  // 检查数据库连接状态
-  if (dbStore.isConnected) {
-    console.log('✅ 数据库已连接，开始加载数据')
-  } else {
-    console.log('⚠️ 数据库未连接，尝试重新连接')
-    await dbStore.reconnect()
+  // 立即开始加载数据，不等待固定时间
+  console.log('⏳ 开始初始化数据加载...')
+  
+  try {
+    // 检查数据库连接状态
+    if (dbStore.isConnected) {
+      console.log('✅ 数据库已连接，开始加载数据')
+    } else {
+      console.log('⚠️ 数据库未连接，尝试重新连接')
+      await dbStore.reconnect()
+    }
+    
+    // 并行加载数据以提高性能
+    await Promise.all([
+      loadPosts(),
+      loadPopularTags()
+    ])
+    
+    console.log('🎉 CommunityPage 初始化完成')
+  } catch (error) {
+    console.error('❌ 初始化过程中发生错误:', error)
+    hasError.value = true
+    errorMessage.value = '初始化失败：' + (error.message || '未知错误')
+  } finally {
+    // 确保加载动画在任何情况下都被移除
+    isLoading.value = false
+    document.addEventListener('keyup', handleGlobalKeyup)
   }
-  
-  // 加载数据
-  await loadPosts()
-  await loadPopularTags()
-  
-  document.addEventListener('keyup', handleGlobalKeyup)
-  console.log('🎉 CommunityPage 初始化完成')
 })
 
 onUnmounted(() => {

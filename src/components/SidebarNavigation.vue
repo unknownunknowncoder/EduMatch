@@ -33,7 +33,6 @@ import {
   Users, 
   User, 
   BookOpen, 
-  History,
   Heart,
   Calendar
 } from 'lucide-vue-next'
@@ -59,11 +58,6 @@ const navigationItems = [
     name: '学习社区',
     path: '/community',
     icon: Users
-  },
-  {
-    name: '学习记录',
-    path: '/history',
-    icon: History
   },
   {
     name: '点赞收藏',

@@ -173,10 +173,7 @@
                   >
                     {{ resource.provider === 'MOOC' ? '中国大学MOOC' : 'B站' }}
                   </span>
-                  <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <span class="mr-1">⭐</span>
-                    <span>{{ resource.rating || '暂无评分' }}</span>
-                  </div>
+
                 </div>
                 
                 <h4 class="font-bold text-lg text-gray-900 dark:text-white mb-2 line-clamp-2">
