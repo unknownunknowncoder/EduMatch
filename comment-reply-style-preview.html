@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论回复样式预览</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+        
+        .preview-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .comment-wrapper {
+            margin-bottom: 16px;
+        }
+        
+        .comment-wrapper.reply-item {
+            margin-left: 40px; /* 所有回复都使用相同的缩进 */
+            position: relative;
+            padding-left: 16px; /* 添加内边距 */
+        }
+        
+        .comment-wrapper.reply-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef; /* 浅色分隔线 */
+            border-radius: 1px;
+        }
+        
+        .comment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .comment-date {
+            color: #666;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        
+        .comment-content {
+            color: #444;
+            line-height: 1.5;
+        }
+        
+        .comment-actions {
+            margin-top: 8px;
+        }
+        
+        .reply-btn {
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .reply-btn:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+        
+        .comparison-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .comparison-subtitle {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .before {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .after {
+            border-left: 4px solid #28a745;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ffeaa7;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 评论回复样式变更预览</h1>
+    
+    <div class="preview-section before">
+        <h2 class="comparison-title">🔴 修改前（递归缩进）</h2>
+        <div class="comparison-subtitle">回复的回复会继续缩进</div>
+        
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-avatar">A</div>
+                <span class="comment-author">用户A</span>
+                <span class="comment-date">2小时前</span>
+            </div>
+            <div class="comment-content">这是顶级评论</div>
+            
+            <div class="comment-wrapper" style="margin-left: 40px;">
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-avatar">B</div>
+                        <span class="comment-author">用户B</span>
+                        <span class="comment-date">1小时前</span>
+                    </div>
+                    <div class="comment-content">回复用户A（第一层缩进）</div>
+                    
+                    <div class="comment-wrapper" style="margin-left: 40px;">
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <div class="comment-avatar">C</div>
+                                <span class="comment-author">用户C</span>
+                                <span class="comment-date">30分钟前</span>
+                            </div>
+                            <div class="comment-content">回复用户B（第二层缩进）</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="highlight">
+            ❌ 问题：回复层级越多，缩进越大，难以阅读
+        </div>
+    </div>
+    
+    <div class="preview-section after">
+        <h2 class="comparison-title">✅ 修改后（统一缩进）</h2>
+        <div class="comparison-subtitle">所有回复都使用相同的缩进级别</div>
+        
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-avatar">A</div>
+                <span class="comment-author">用户A</span>
+                <span class="comment-date">2小时前</span>
+            </div>
+            <div class="comment-content">这是顶级评论</div>
+            
+            <div class="comment-wrapper reply-item">
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-avatar">B</div>
+                        <span class="comment-author">用户B</span>
+                        <span class="comment-date">1小时前</span>
+                    </div>
+                    <div class="comment-content">回复用户A（统一缩进）</div>
+                    
+                    <div class="comment-wrapper reply-item">
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <div class="comment-avatar">C</div>
+                                <span class="comment-author">用户C</span>
+                                <span class="comment-date">30分钟前</span>
+                            </div>
+                            <div class="comment-content">回复用户B（同样缩进）</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="highlight" style="background: #d4edda; border-color: #c3e6cb; color: #155724;">
+            ✅ 优势：所有回复左对齐，视觉更清晰，易于阅读
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h2 class="comparison-title">🎯 样式特点</h2>
+        <ul>
+            <li>✅ 所有回复都距离左边框40px</li>
+            <li>✅ 左侧有淡色分隔线区分回复</li>
+            <li>✅ 支持深色模式</li>
+            <li>✅ 响应式设计，移动端适配</li>
+            <li>✅ 视觉层次清晰，易于阅读</li>
+        </ul>
+        
+        <h3 class="comparison-subtitle">实现方式：</h3>
+        <ul>
+            <li>使用 <code>.reply-item</code> 类名标识回复</li>
+            <li>固定的 <code>margin-left: 40px</code> 缩进</li>
+            <li><code>::before</code> 伪元素创建分隔线</li>
+            <li>递归组件但不递增缩进</li>
+        </ul>
+    </div>
+</body>
+</html>

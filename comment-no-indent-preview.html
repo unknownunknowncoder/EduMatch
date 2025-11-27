@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完全无缩进评论效果</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+        
+        .preview-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .comment-wrapper {
+            margin-bottom: 16px;
+        }
+        
+        .comment-wrapper.reply-item {
+            position: relative;
+            margin-left: 0; /* 所有回复都不缩进 */
+            padding-left: 16px;
+        }
+        
+        /* 确保所有嵌套的回复都无缩进 */
+        .comment-wrapper .comment-wrapper.reply-item {
+            margin-left: 0 !important; /* 强制所有回复都不缩进 */
+        }
+        
+        .comment-wrapper.reply-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef; /* 浅色分隔线 */
+            border-radius: 1px;
+        }
+        
+        .comment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .comment-date {
+            color: #666;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        
+        .comment-content {
+            color: #444;
+            line-height: 1.5;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .highlight {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin: 20px 0;
+        }
+        
+        .diagram {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            margin: 20px 0;
+        }
+        
+        .code {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #e9ecef;
+            display: block;
+            margin: 8px 0;
+        }
+        
+        .arrow {
+            color: #28a745;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">📐 完全无缩进评论效果</h1>
+    
+    <div class="preview-section">
+        <div class="highlight">
+            <strong>✅ 目标效果：</strong> 所有评论（包括回复）都完全无缩进，左对齐
+        </div>
+        
+        <div class="diagram">
+            <strong>📏 布局示意图：</strong><br><br>
+            <span class="arrow">→</span> 顶级评论<br>
+            <span class="arrow">→</span> 顶级评论<br>
+            <span class="arrow">→</span> 顶级评论<br>
+            <span class="arrow">→</span> 回复1（无缩进）<br>
+            <span class="arrow">→</span> 回复2（无缩进）<br>
+            <span class="arrow">→</span> 回复3（无缩进）<br>
+            <span class="arrow">→</span> 回复4（无缩进）<br>
+            <span class="arrow">→</span> 回复5（无缩进）
+        </div>
+        
+        <div class="code">
+/* 核心CSS - 完全无缩进 */
+.comment-wrapper.reply-item {
+  margin-left: 0; /* 关键：所有回复都不缩进 */
+}
+
+.comment-wrapper .comment-wrapper.reply-item {
+  margin-left: 0 !important; /* 强制无缩进 */
+}
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h3>🎯 实际效果展示</h3>
+        
+        <!-- 顶级评论1 -->
+        <div class="comment-wrapper">
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-avatar">A</div>
+                    <span class="comment-author">用户A</span>
+                    <span class="comment-date">2小时前</span>
+                </div>
+                <div class="comment-content">这是第一条顶级评论 - 完全左对齐</div>
+            </div>
+        </div>
+        
+        <!-- 顶级评论2 -->
+        <div class="comment-wrapper">
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-avatar">B</div>
+                    <span class="comment-author">用户B</span>
+                    <span class="comment-date">1.5小时前</span>
+                </div>
+                <div class="comment-content">这是第二条顶级评论 - 同样左对齐</div>
+            </div>
+        </div>
+        
+        <!-- 回复 - 完全无缩进 -->
+        <div class="comment-wrapper reply-item">
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-avatar">C</div>
+                    <span class="comment-author">用户C</span>
+                    <span class="comment-date">1小时前</span>
+                </div>
+                <div class="comment-content">回复用户A - 完全无缩进！</div>
+                
+                <!-- 嵌套回复 - 仍然无缩进 -->
+                <div class="comment-wrapper reply-item">
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div class="comment-avatar">D</div>
+                            <span class="comment-author">用户D</span>
+                            <span class="comment-date">45分钟前</span>
+                        </div>
+                        <div class="comment-content">回复用户C - 还是无缩进！</div>
+                        
+                        <div class="comment-wrapper reply-item">
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <div class="comment-avatar">E</div>
+                                    <span class="comment-author">用户E</span>
+                                    <span class="comment-date">30分钟前</span>
+                                </div>
+                                <div class="comment-content">回复用户D - 始终无缩进！</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 另一个回复 - 同样无缩进 -->
+        <div class="comment-wrapper reply-item">
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-avatar">F</div>
+                    <span class="comment-author">用户F</span>
+                    <span class="comment-date">15分钟前</span>
+                </div>
+                <div class="comment-content">回复用户B - 完全左对齐</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h3>🎯 核心特性</h3>
+        <ul>
+            <li>✅ <strong>完全左对齐：</strong> 所有评论都在左边开始</li>
+            <li>✅ <strong>零缩进：</strong> 任何层级的回复都不缩进</li>
+            <li>✅ <strong>最大空间利用：</strong> 充分利用屏幕宽度</li>
+            <li>✅ <strong>简洁布局：</strong> 没有复杂的嵌套结构</li>
+        </ul>
+        
+        <div class="highlight">
+            <strong>💡 用户体验优势：</strong><br>
+            - 最大化的内容展示空间<br>
+            - 简洁清晰的视觉风格<br>
+            - 适合移动端显示<br>
+            - 避免深缩进导致的阅读困难<br>
+            - 所有评论的视觉权重一致
+        </div>
+        
+        <h3>🔧 修改总结</h3>
+        <div class="diagram">
+            <strong>修改的文件：</strong><br>
+            - src/components/CommentComponent.vue<br>
+            - src/views/PostDetail.vue<br><br>
+            
+            <strong>关键CSS规则：</strong><br>
+            <code class="code">margin-left: 0 !important; /* 完全无缩进 */</code>
+        </div>
+    </div>
+</body>
+</html>

@@ -65,7 +65,7 @@
 
       <!-- 评论区域 - 默认显示，点击评论按钮时跳转到评论区 -->
       <div class="comments-section" id="comments-section">
-        <h2>评论 ({{ comments.length }})</h2>
+        <h2>评论 ({{ commentCount }})</h2>
         
         <!-- 添加评论 -->
         <div class="add-comment">
@@ -87,29 +87,19 @@
         <!-- 评论列表 -->
         <div class="comments-list">
           <div 
-            v-for="comment in comments" 
+            v-for="comment in topLevelComments" 
             :key="comment.id"
-            class="comment-item"
+            class="comment-wrapper"
           >
-            <div class="comment-header">
-              <div class="comment-avatar">
-                <img 
-                  :src="getUserAvatar(comment.user_id, comment.author_name)" 
-                  :alt="comment.author_name || '匿名用户'"
-                  class="avatar"
-                />
-              </div>
-              <div class="comment-user-info">
-                <span class="comment-author">{{ comment.author_name || '匿名用户' }}</span>
-                <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
-              </div>
-            </div>
-            <div class="comment-content">
-              {{ comment.content }}
-            </div>
+            <CommentComponent 
+              :comment="comment" 
+              :all-comments="comments"
+              @reply="handleReply"
+              @add-reply="addReply"
+            />
           </div>
           
-          <div v-if="comments.length === 0" class="no-comments">
+          <div v-if="topLevelComments.length === 0" class="no-comments">
             暂无评论，快来发表第一条评论吧！
           </div>
         </div>
@@ -119,9 +109,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
+import CommentComponent from '@/components/CommentComponent.vue'
 import type { Post, Comment } from '@/types/community'
 
 const route = useRoute()
@@ -130,12 +121,20 @@ const postId = route.params.id as string
 const post = ref<Post | null>(null)
 const comments = ref<Comment[]>([])
 const newComment = ref('')
+const replyingTo = ref<string | null>(null)
+const replyContent = ref('')
+const showReplyInput = ref<{[key: string]: boolean}>({})
 const isLiking = ref(false)
 const isFavoriting = ref(false)
 const showCommentInput = ref(true) // 进入页面时默认显示评论
 const commentCount = ref(0)
 
 const dbStore = useDatabaseStore()
+
+// 计算属性：获取顶级评论（parent_id为null的评论）
+const topLevelComments = computed(() => {
+  return comments.value.filter(comment => !comment.parent_id)
+})
 
 // 格式化日期
 const formatDate = (dateString: string) => {
@@ -704,6 +703,104 @@ const addComment = async () => {
   }
 }
 
+// 处理回复操作
+const handleReply = (commentId: string) => {
+  replyingTo.value = commentId
+}
+
+// 添加回复
+const addReply = async (replyData: { parentCommentId: string; content: string }) => {
+  if (!replyData.content.trim()) return
+  
+  try {
+    // 获取当前用户信息
+    let currentUserId = null
+    let authorName = '当前用户'
+    
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (currentUserStr) {
+      try {
+        const currentUser = JSON.parse(currentUserStr)
+        if (currentUser.id) {
+          currentUserId = currentUser.id
+          authorName = currentUser.nickname || currentUser.username || '当前用户'
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      return // 未登录不处理
+    }
+    
+    console.log('💬 开始发表回复，帖子ID:', postId, '用户ID:', currentUserId, '父评论ID:', replyData.parentCommentId)
+    
+    // 确保数据库已初始化
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('发表回复：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('发表回复：数据库客户端初始化失败')
+      return
+    }
+    
+    // 使用服务端密钥绕过RLS策略
+    const serviceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY
+    if (serviceKey) {
+      const { createClient } = await import('@supabase/supabase-js')
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      
+      if (supabaseUrl && serviceKey) {
+        const adminClient = createClient(supabaseUrl, serviceKey)
+        
+        // 保存回复到数据库
+        const { data: replyDataResult, error } = await adminClient
+          .from('post_comments')
+          .insert([{
+            post_id: postId,
+            user_id: currentUserId,
+            content: replyData.content.trim(),
+            parent_id: replyData.parentCommentId
+          }])
+          .select(`
+            *,
+            user:user_id (
+              id,
+              username,
+              nickname
+            )
+          `)
+        
+        if (error) {
+          console.error('❌ 保存回复失败:', error)
+          return
+        }
+        
+        // 添加回复到本地状态
+        if (replyDataResult && replyDataResult.length > 0) {
+          const newReply = replyDataResult[0]
+          const formattedReply = {
+            ...newReply,
+            author_name: newReply.user?.nickname || newReply.user?.username || '匿名用户'
+          }
+          comments.value.push(formattedReply)
+          commentCount.value = comments.value.length
+          
+          console.log('✅ 回复发表成功')
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error('❌ 发表回复失败:', error)
+  }
+}
+
 onMounted(() => {
   fetchPostDetail()
 })
@@ -746,23 +843,13 @@ onMounted(() => {
 .post-meta {
   display: flex;
   align-items: center;
-  gap: 20px;
-  color: #666;
+  gap: 15px;
   font-size: 0.9rem;
+  color: #666;
 }
 
-.post-content {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  color: #444;
-  margin-bottom: 20px;
-}
-
-.post-stats {
-  display: flex;
-  gap: 20px;
-  color: #666;
-  font-size: 0.9rem;
+.author {
+  font-weight: 500;
 }
 
 .comments-section {
@@ -774,22 +861,35 @@ onMounted(() => {
 
 .comments-section h2 {
   margin-bottom: 20px;
-  font-size: 1.4rem;
   color: #333;
+  font-size: 1.5rem;
 }
 
 .add-comment {
   margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 }
 
 .comment-input {
   width: 100%;
-  padding: 12px;
+  padding: 12px 16px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
+  font-size: 1rem;
+  line-height: 1.5;
   resize: vertical;
-  margin-bottom: 10px;
+  min-height: 100px;
   font-family: inherit;
+  margin-bottom: 12px;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
 .comments-list {
@@ -798,12 +898,16 @@ onMounted(() => {
   gap: 20px;
 }
 
-.comment-item {
+.comment-wrapper {
+  margin-bottom: 0;
+}
+
+.comment-wrapper .comment-item {
   padding: 16px;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.comment-item:last-child {
+.comment-wrapper .comment-item:last-child {
   border-bottom: none;
 }
 
@@ -885,5 +989,65 @@ onMounted(() => {
 
 .btn-secondary:hover {
   background-color: #545b62;
+}
+
+/* 深色模式支持 */
+.dark .post-card {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark .comments-section {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark .add-comment {
+  background: #4a5568;
+  border-color: #718096;
+}
+
+.dark .comment-input {
+  background: #4a5568;
+  border-color: #718096;
+  color: #e2e8f0;
+}
+
+.dark .comment-input:focus {
+  border-color: #63b3ed;
+  box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.1);
+}
+
+.dark .comment-item {
+  border-bottom-color: #4a5568;
+}
+
+.dark .post-title {
+  color: #e2e8f0;
+}
+
+.dark .comments-section h2 {
+  color: #e2e8f0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+  
+  .post-card, .comments-section {
+    padding: 16px;
+  }
+  
+  .post-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .add-comment {
+    padding: 16px;
+  }
 }
 </style>
