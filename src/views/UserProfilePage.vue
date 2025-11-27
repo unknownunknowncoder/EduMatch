@@ -240,15 +240,8 @@ const followLoading = ref(false)
 
 // 计算属性
 const isCurrentUser = computed(() => {
-  const currentUserStr = localStorage.getItem('currentUser')
-  if (!currentUserStr) return false
-  
-  try {
-    const currentUser = JSON.parse(currentUserStr)
-    return currentUser.id === userInfo.value.id
-  } catch {
-    return false
-  }
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+  return currentUser.id === userInfo.value.id
 })
 
 // 获取用户信息
@@ -303,17 +296,20 @@ const fetchUserStats = async () => {
 // 检查关注状态
 const checkFollowStatus = async () => {
   if (!isCurrentUser.value) {
-    const currentUserStr = localStorage.getItem('currentUser')
-    if (!currentUserStr) {
-      console.log('用户未登录，跳过关注状态检查')
-      return
-    }
-    
     try {
+      const currentUserStr = localStorage.getItem('currentUser')
+      if (!currentUserStr) {
+        // 用户未登录，不需要检查关注状态
+        isFollowing.value = false
+        return
+      }
       const currentUser = JSON.parse(currentUserStr)
-      isFollowing.value = await dbStore.isFollowing(currentUser.id, userInfo.value.id)
+      if (currentUser && currentUser.id) {
+        isFollowing.value = await dbStore.isFollowing(currentUser.id, userInfo.value.id)
+      }
     } catch (error) {
       console.error('检查关注状态失败:', error)
+      isFollowing.value = false
     }
   }
 }
@@ -335,19 +331,17 @@ const fetchUserContent = async () => {
 
 // 切换关注状态
 const toggleFollow = async () => {
-  const currentUserStr = localStorage.getItem('currentUser')
-  if (!currentUserStr) {
-    console.log('用户未登录，跳过关注操作')
-    // 可以在这里显示一个提示，让用户先登录
-    alert('请先登录后再进行关注操作')
-    router.push('/login')
-    return
-  }
-  
   if (!isCurrentUser.value) {
+    // 检查用户是否登录
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      // 用户未登录，跳转到登录页面
+      router.push('/login')
+      return
+    }
+    
     followLoading.value = true
     try {
-      const currentUser = JSON.parse(currentUserStr)
       if (isFollowing.value) {
         await dbStore.unfollowUser(userInfo.value.id)
         isFollowing.value = false
@@ -369,7 +363,7 @@ const navigateToResource = (resourceId: string) => {
 }
 
 const navigateToPost = (postId: string) => {
-  router.push(`/post/${postId}`)
+  router.push(`/community/post/${postId}`)
 }
 
 // 工具方法
