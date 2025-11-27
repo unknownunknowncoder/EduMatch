@@ -1,6 +1,15 @@
 const express = require('express');
-const fetch = require('node-fetch');
 const cors = require('cors');
+
+// 确保 fetch 可用（Node.js v18+ 内置，否则使用 node-fetch）
+let fetch;
+if (typeof globalThis.fetch !== 'undefined') {
+  fetch = globalThis.fetch;
+} else {
+  // Fallback to node-fetch if global fetch is not available
+  const nodeFetch = require('node-fetch');
+  fetch = nodeFetch.default || nodeFetch;
+}
 
 const app = express();
 const PORT = 3014;
@@ -120,12 +129,12 @@ app.post('/search-resources', async (req, res) => {
     // 直接使用用户查询作为输入
     const userQuery = query.trim();
 
-    // 构建扣子API请求 - 使用官方支持的query字段
+    // 构建扣子API请求 - 使用query字段（v2 API标准格式）
     const cozeRequest = {
       conversation_id: '',
       bot_id: COZE_BOT_ID,
       user: `resource_user_${Date.now()}`,
-      query: `请根据“${userQuery}”推荐B站与中国大学MOOC的优质学习资源，严格按照以下格式返回：🎯 最推荐、📚 其他推荐、💡 学习建议，并务必包含平台来源、难度、学习时长与学习数据。`,
+      query: `请根据"${userQuery}"推荐B站与中国大学MOOC的优质学习资源，严格按照以下格式返回：🎯 最推荐、📚 其他推荐、💡 学习建议，并务必包含平台来源、难度、学习时长与学习数据。`,
       chat_history: [],
       stream: false
     };
@@ -143,12 +152,31 @@ app.post('/search-resources', async (req, res) => {
       body: JSON.stringify(cozeRequest)
     });
 
+    // 获取响应文本以便调试
+    const responseText = await response.text();
+    console.log('📩 扣子API响应状态:', response.status);
+    console.log('📩 扣子API响应内容:', responseText.substring(0, 500));
+
     if (!response.ok) {
-      throw new Error(`扣子API请求失败: ${response.status} ${response.statusText}`);
+      // 尝试解析错误响应
+      let errorData;
+      try {
+        errorData = JSON.parse(responseText);
+      } catch (e) {
+        errorData = { raw: responseText };
+      }
+      console.error('❌ 扣子API错误详情:', errorData);
+      throw new Error(`扣子API请求失败: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
     }
 
-    const data = await response.json();
-    console.log('📩 扣子API响应:', data);
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('❌ 解析扣子API响应失败:', parseError);
+      throw new Error(`扣子API响应格式错误: ${responseText.substring(0, 200)}`);
+    }
+    console.log('📩 扣子API解析后的数据:', JSON.stringify(data, null, 2).substring(0, 1000));
 
     // 检查响应格式
     if (data.messages && data.messages.length > 0) {
@@ -175,9 +203,11 @@ app.post('/search-resources', async (req, res) => {
 
   } catch (error) {
     console.error('❌ 代理服务器错误:', error.message);
+    console.error('❌ 错误堆栈:', error.stack);
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
