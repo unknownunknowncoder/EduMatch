@@ -47,8 +47,7 @@
               <!-- 评论按钮 -->
               <button 
                 @click="toggleComments"
-                class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                :class="showCommentInput ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-500' : 'bg-gray-100 dark:bg-gray-700'"
+                class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors bg-gray-100 dark:bg-gray-700"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
@@ -64,8 +63,8 @@
         </div>
       </div>
 
-      <!-- 评论区域 - 默认隐藏，点击评论按钮时显示 -->
-      <div v-if="showCommentInput" class="comments-section">
+      <!-- 评论区域 - 默认显示，点击评论按钮时跳转到评论区 -->
+      <div class="comments-section" id="comments-section">
         <h2>评论 ({{ comments.length }})</h2>
         
         <!-- 添加评论 -->
@@ -133,7 +132,7 @@ const comments = ref<Comment[]>([])
 const newComment = ref('')
 const isLiking = ref(false)
 const isFavoriting = ref(false)
-const showCommentInput = ref(false)
+const showCommentInput = ref(true) // 进入页面时默认显示评论
 const commentCount = ref(0)
 
 const dbStore = useDatabaseStore()
@@ -147,20 +146,26 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// 切换评论区域的显示状态
+// 切换评论区域的显示状态并跳转到评论区
 const toggleComments = () => {
-  showCommentInput.value = !showCommentInput.value
-  
-  // 如果显示评论区，滚动到评论区
-  if (showCommentInput.value) {
-    // 使用 setTimeout 确保 DOM 更新后再滚动
-    setTimeout(() => {
-      const commentsSection = document.querySelector('.comments-section')
-      if (commentsSection) {
-        commentsSection.scrollIntoView({ behavior: 'smooth' })
-      }
-    }, 100)
-  }
+  // 现在评论区默认显示，所以这里主要负责跳转功能
+  scrollToComments()
+}
+
+// 滚动到评论区并置顶显示
+const scrollToComments = () => {
+  // 使用 setTimeout 确保 DOM 更新后再滚动
+  setTimeout(() => {
+    const commentsSection = document.querySelector('.comments-section')
+    if (commentsSection) {
+      // 使用更精确的滚动行为，确保评论区置顶但保持页面可滚动
+      commentsSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start', // 置顶显示
+        inline: 'nearest'
+      })
+    }
+  }, 100)
 }
 
 // 切换点赞状态

@@ -1,14 +1,7 @@
 const express = require('express')
 const cors = require('cors')
-
-// 在 Node.js 18+ 中，fetch 是内置的
-// 如果是旧版本，则使用 node-fetch
-let fetchFn
-try {
-  fetchFn = fetch
-} catch (e) {
-  fetchFn = require('node-fetch')
-}
+const https = require('https')
+const http = require('http')
 
 const app = express()
 const PORT = 3001
@@ -18,9 +11,42 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static('dist'))
 
+// 简单的 HTTP 请求函数
+function makeRequest(url, options, data) {
+  return new Promise((resolve, reject) => {
+    const client = url.startsWith('https:') ? https : http
+    const req = client.request(url, options, (res) => {
+      let body = ''
+      res.on('data', (chunk) => {
+        body += chunk
+      })
+      res.on('end', () => {
+        try {
+          const result = {
+            ok: res.statusCode >= 200 && res.statusCode < 300,
+            status: res.statusCode,
+            statusText: res.statusMessage,
+            text: body
+          }
+          resolve(result)
+        } catch (error) {
+          reject(error)
+        }
+      })
+    })
+
+    req.on('error', reject)
+    if (data) {
+      req.write(data)
+    }
+    req.end()
+  })
+}
+
 // 扣子API代理端点
 app.post('/api/coze/chat', async (req, res) => {
   try {
+    console.log('📍 开始处理请求...')
     const { query, bot_id, user_id } = req.body
     
     console.log('🔍 收到扣子API请求:', { query, bot_id, user_id })
@@ -29,38 +55,8 @@ app.post('/api/coze/chat', async (req, res) => {
     const apiToken = process.env.COZE_API_TOKEN || 'cztei_hSy4b4uf36RCKawy2b8fTIhnXtW76plRFJbdwbgfNVzuRlZYGBAzs74gg32dhvsUq'
     const defaultBotId = process.env.COZE_BOT_ID || '7573579561607331840'
     
-    // 尝试OAuth获取access_token
-    let accessToken = apiToken
-    
-    try {
-      console.log('🔑 尝试获取OAuth access_token...')
-      const oauthResponse = await fetchFn('https://api.coze.cn/api/authorizations/oauth2/access_token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          client_id: apiToken,
-          grant_type: 'client_credentials'
-        })
-      })
-      
-      if (oauthResponse.ok) {
-        const tokenData = await oauthResponse.json()
-        accessToken = tokenData.access_token
-        console.log('✅ OAuth成功，token:', accessToken.substring(0, 20) + '...')
-      } else {
-        console.log('❌ OAuth失败，使用原token')
-        const errorText = await oauthResponse.text()
-        console.log('OAuth错误:', errorText)
-      }
-    } catch (oauthError) {
-      console.log('❌ OAuth异常:', oauthError.message)
-    }
-    
-    // 调用扣子API
-    const cozeApiUrl = 'https://api.coze.cn/v1/chat'
-    const requestBody = {
+    // 构建请求体
+    const requestBody = JSON.stringify({
       bot_id: bot_id || defaultBotId,
       user_id: user_id || 'user_' + Date.now(),
       additional_messages: [
@@ -81,62 +77,66 @@ app.post('/api/coze/chat', async (req, res) => {
         }
       ],
       stream: false
-    }
+    })
+    
+    const cozeApiUrl = 'https://api.coze.cn/v1/chat'
     
     console.log('📡 调用扣子API:', {
       url: cozeApiUrl,
-      token: accessToken.substring(0, 20) + '...',
       bot_id: bot_id || defaultBotId
     })
     
-    const cozeResponse = await fetchFn(cozeApiUrl, {
+    const options = {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    })
+        'Authorization': `Bearer ${apiToken}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(requestBody)
+      }
+    }
     
-    console.log('📡 扣子API响应状态:', cozeResponse.status)
+    const response = await makeRequest(cozeApiUrl, options, requestBody)
     
-    if (cozeResponse.ok) {
-      const responseText = await cozeResponse.text()
-      console.log('✅ 扣子API响应成功，长度:', responseText.length)
+    console.log('📡 扣子API响应状态:', response.status)
+    
+    if (response.ok) {
+      console.log('✅ 扣子API响应成功，长度:', response.text.length)
       
       // 尝试解析响应
-      let response
+      let parsedResponse
       try {
-        response = JSON.parse(responseText)
+        parsedResponse = JSON.parse(response.text)
       } catch (parseError) {
         console.log('📝 响应不是JSON格式，返回原始文本')
-        response = { messages: [{ content: responseText }] }
+        parsedResponse = { messages: [{ content: response.text }] }
       }
       
       res.json({
         success: true,
-        data: response
+        data: parsedResponse
       })
     } else {
-      const errorText = await cozeResponse.text()
+      const errorText = response.text
       console.log('❌ 扣子API错误:', {
-        status: cozeResponse.status,
-        statusText: cozeResponse.statusText,
+        status: response.status,
+        statusText: response.statusText,
         body: errorText
       })
       
-      res.status(cozeResponse.status).json({
+      res.status(response.status).json({
         success: false,
         error: errorText,
-        status: cozeResponse.status
+        status: response.status
       })
     }
     
   } catch (error) {
     console.error('💥 代理服务器错误:', error)
+    console.error('💥 错误堆栈:', error.stack)
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     })
   }
 })

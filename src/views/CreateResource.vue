@@ -8,7 +8,7 @@
         </svg>
         创建资源
       </h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">分享你的学习资源，帮助更多人成长</p>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">创建个人学习资源，保存到个人中心</p>
     </div>
 
     <!-- 创建表单 -->
@@ -25,126 +25,138 @@
             </h2>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- 资源标题 -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  资源标题 *
-                  <span class="text-xs text-gray-500 dark:text-gray-400 ml-2">(描述选填)</span>
+                  资源标题 <span class="text-red-500">*</span>
                 </label>
                 <input
                   v-model="formData.title"
                   type="text"
                   required
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                  placeholder="输入资源标题"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="请输入资源标题"
                 />
               </div>
               
+              <!-- 资源类型 -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  资源类型 *
+                  资源类型 <span class="text-red-500">*</span>
                 </label>
                 <select
                   v-model="formData.type"
                   required
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 >
-                  <option value="">请选择</option>
-                  <option value="video">视频课程</option>
-                  <option value="article">文章教程</option>
-                  <option value="book">电子书籍</option>
-                  <option value="course">在线课程</option>
-                  <option value="tool">学习工具</option>
+                  <option value="">请选择资源类型</option>
+                  <option value="course">课程</option>
+                  <option value="book">书籍</option>
+                  <option value="video">视频</option>
+                  <option value="article">文章</option>
+                  <option value="tool">工具</option>
                   <option value="other">其他</option>
                 </select>
               </div>
             </div>
+          </div>
 
-            <div class="mt-6">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                资源描述
-              </label>
-              <textarea
-                v-model="formData.description"
-                rows="4"
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                placeholder="详细描述你的学习资源内容（选填）..."
-              ></textarea>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+          <!-- 详细信息 -->
+          <div class="mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+              <svg class="h-5 w-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              详细信息
+            </h2>
+            
+            <div class="space-y-6">
+              <!-- 资源描述 -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  学习时长
+                  资源描述
                 </label>
-                <input
-                  v-model="formData.duration"
-                  type="text"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                  placeholder="例如：2小时"
-                />
+                <textarea
+                  v-model="formData.description"
+                  rows="4"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="请详细描述这个资源的内容和特点..."
+                ></textarea>
               </div>
               
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  难度等级
-                </label>
-                <select
-                  v-model="formData.difficulty"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="beginner">初级</option>
-                  <option value="intermediate">中级</option>
-                  <option value="advanced">高级</option>
-                </select>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 难度等级 -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    难度等级
+                  </label>
+                  <select
+                    v-model="formData.difficulty"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  >
+                    <option value="">请选择难度</option>
+                    <option value="beginner">初级</option>
+                    <option value="intermediate">中级</option>
+                    <option value="advanced">高级</option>
+                  </select>
+                </div>
+                
+                <!-- 学习时长 -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    学习时长（小时）
+                  </label>
+                  <input
+                    v-model.number="formData.duration"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="预计学习时长"
+                  />
+                </div>
               </div>
               
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 提供者 -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    提供者
+                  </label>
+                  <input
+                    v-model="formData.provider"
+                    type="text"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="资源提供者或机构"
+                  />
+                </div>
+                
+                <!-- 资源链接 -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    资源链接
+                  </label>
+                  <input
+                    v-model="formData.url"
+                    type="url"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+              
+              <!-- 标签 -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  资源标签
+                  标签
                 </label>
                 <input
                   v-model="formData.tags"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                  placeholder="用逗号分隔，如：前端,React,JavaScript"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder="请输入标签，多个标签用逗号分隔"
                 />
-              </div>
-            </div>
-          </div>
-
-          <!-- 链接信息 -->
-          <div class="mb-8">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
-              <svg class="h-5 w-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-              </svg>
-              链接信息
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  资源链接 *
-                </label>
-                <input
-                  v-model="formData.url"
-                  type="url"
-                  required
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                  placeholder="https://example.com/resource"
-                />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  提供者
-                </label>
-                <input
-                  v-model="formData.provider"
-                  type="text"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-                  placeholder="个人或机构名称"
-                />
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">例如：JavaScript, 前端, 编程</p>
               </div>
             </div>
           </div>
@@ -154,47 +166,63 @@
             <button
               type="button"
               @click="handleCancel"
-              class="px-6 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+              class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               取消
             </button>
             <button
               type="submit"
               :disabled="isSubmitting"
-              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center disabled:opacity-50"
+              class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg v-if="isSubmitting" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ isSubmitting ? '提交中...' : '发布资源' }}
+              {{ isSubmitting ? '创建中...' : '创建资源' }}
             </button>
           </div>
         </form>
       </div>
     </div>
+
+    <!-- 成功提示框 -->
+    <div 
+      v-if="showSuccessMessage"
+      class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300"
+    >
+      <div class="flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        资源创建成功，请在'个人中心-我的资源'中查看
+      </div>
+    </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabaseService } from '@/services/supabase'
 
 const router = useRouter()
-const isSubmitting = ref(false)
 
+// 表单数据
 const formData = reactive({
   title: '',
-  type: '',
   description: '',
+  type: '',
+  difficulty: '',
   duration: '',
-  difficulty: 'intermediate',
-  tags: '',
+  provider: '',
   url: '',
-  provider: ''
+  tags: ''
 })
 
+// 提交状态
+const isSubmitting = ref(false)
+
+// 成功提示框状态
+const showSuccessMessage = ref(false)
+
+// 提交表单
 const handleSubmit = async () => {
   isSubmitting.value = true
   
@@ -248,42 +276,13 @@ const handleSubmit = async () => {
       throw new Error('资源创建失败：返回数据无效')
     }
     
-    // 同时创建一个社区帖子，让资源显示在学习社区中
-    const postData = {
-      user_id: currentUserId,
-      title: formData.title,
-      content: formData.description || '分享了一个学习资源',
-      category: formData.type || 'other',
-      likes_count: 0,
-      views_count: 0
-    }
+    // 显示成功提示框
+    showSuccessMessage.value = true
     
-    try {
-      console.log('🔄 准备创建社区帖子，数据:', postData)
-      const createdPost = await supabaseService.createCommunityPost(postData)
-      console.log('✅ 社区帖子创建成功:', createdPost)
-      console.log('📊 帖子ID:', createdPost.id)
-      console.log('📊 帖子标题:', createdPost.title)
-      
-      // 显示成功消息
-      alert('发布成功！资源已添加到学习社区')
-      
-    } catch (postError) {
-      console.error('❌ 创建社区帖子失败:', postError)
-      console.error('❌ 错误详情:', postError.message)
-      console.error('❌ 错误代码:', postError.code)
-      
-        // 如果是RLS策略错误，提示用户执行SQL脚本
-        if (postError.code === '42501' || postError.message.includes('row-level security policy')) {
-          alert('发布成功！但由于数据库安全策略，资源暂时无法显示在学习社区中。\n\n请执行以下操作：\n1. 打开 Supabase SQL Editor\n2. 执行 fix-community-posts-rls.sql 文件中的SQL语句\n3. 重新发布资源')
-        } else {
-          // 其他错误
-          alert('资源发布成功！但未能添加到学习社区，请稍后手动分享')
-        }
-    }
-    
-    // 提交成功后跳转到首页
-    router.push('/')
+    // 2秒后跳转到资源详情页面
+    setTimeout(() => {
+      router.push(`/resource/${createdResource.id}`)
+    }, 2000)
   } catch (error) {
     console.error('提交失败:', error)
     alert('资源创建失败，请重试: ' + error.message)

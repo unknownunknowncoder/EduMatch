@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试社区页面</title>
+    <script>
+        function testRoute() {
+            console.log('测试路由到社区页面...');
+            fetch('/community')
+                .then(response => {
+                    console.log('响应状态:', response.status);
+                    return response.text();
+                })
+                .then(text => {
+                    console.log('页面内容长度:', text.length);
+                    console.log('是否包含Vue组件:', text.includes('app'));
+                })
+                .catch(error => {
+                    console.error('请求失败:', error);
+                });
+        }
+        
+        function testVueComponent() {
+            console.log('测试Vue组件导入...');
+            import('/src/views/CommunityPage.vue')
+                .then(module => {
+                    console.log('✅ Vue组件导入成功:', module);
+                })
+                .catch(error => {
+                    console.error('❌ Vue组件导入失败:', error);
+                });
+        }
+    </script>
+</head>
+<body>
+    <h1>测试页面</h1>
+    <button onclick="testRoute()">测试路由</button>
+    <button onclick="testVueComponent()">测试Vue组件</button>
+    <p>请打开浏览器控制台查看结果</p>
+</body>
+</html>
