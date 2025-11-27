@@ -211,8 +211,8 @@ export class SupabaseService {
     title: string
     content: string
     category?: string
-    likes_count?: number
-    views_count?: number
+    tags?: string[]
+    author?: string
   }) {
     console.log('🔄 Supabase服务：准备创建社区帖子，数据:', postData)
     const client = this.getClient()

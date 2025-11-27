@@ -1,0 +1,4 @@
+🚀 扣子API代理服务器启动成功！
+📍 地址: http://localhost:3001
+🔗 API代理: http://localhost:3001/api/coze/chat
+❤️  健康检查: http://localhost:3001/health

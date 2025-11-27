@@ -167,16 +167,6 @@
             查看全部 {{ myPosts.length }} 个帖子
           </button>
         </div>
-        
-        <!-- 查看全部按钮 -->
-        <div v-if="myResources.length > 3" class="text-center mt-6">
-          <button 
-            @click="navigateToAllResources"
-            class="px-6 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
-          >
-            查看全部 {{ myResources.length }} 个资源
-          </button>
-        </div>
       </div>
     </div>
 

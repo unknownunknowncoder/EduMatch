@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>帖子详情评论功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-description {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .feature-list {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .feature-list li {
+            margin: 8px 0;
+        }
+        .test-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .test-link:hover {
+            background: #0056b3;
+        }
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 帖子详情评论功能测试页面</h1>
+    
+    <div class="test-description">
+        <h2>🎯 测试目标</h2>
+        <p>验证帖子详情页面的评论显示和跳转功能是否符合用户需求：</p>
+        <ul>
+            <li>进入帖子详情时，一开始就显示评论</li>
+            <li>点击评论按钮时可以跳转评论区</li>
+            <li>评论区置顶显示但不影响上下滑动查看帖子</li>
+        </ul>
+    </div>
+
+    <div class="feature-list">
+        <h3>✅ 已实现的功能</h3>
+        <ul>
+            <li><strong>默认显示评论：</strong>进入帖子详情页面时，评论区自动显示，无需点击按钮展开</li>
+            <li><strong>评论按钮跳转：</strong>点击评论按钮会平滑滚动到评论区位置</li>
+            <li><strong>置顶显示：</strong>使用 scrollIntoView 的 block: 'start' 确保评论区置顶显示</li>
+            <li><strong>保持滚动性：</strong>页面仍然可以自由上下滚动查看帖子内容和评论区</li>
+            <li><strong>用户提示：</strong>在评论区添加了提示文字，告知用户可以通过点击评论按钮快速跳转</li>
+            <li><strong>响应式设计：</strong>评论区头部采用弹性布局，在不同屏幕尺寸下都能良好显示</li>
+        </ul>
+    </div>
+
+    <div class="note">
+        <h3>💡 使用说明</h3>
+        <p>要测试此功能，请按照以下步骤操作：</p>
+        <ol>
+            <li>点击下面的链接进入学习社区页面</li>
+            <li>点击任意帖子进入详情页面</li>
+            <li>观察评论区是否默认显示</li>
+            <li>点击评论按钮，观察是否平滑跳转到评论区</li>
+            <li>测试页面是否仍可以正常上下滚动</li>
+        </ol>
+    </div>
+
+    <a href="http://localhost:3014/community" class="test-link">🚀 进入学习社区测试</a>
+
+    <div class="note">
+        <h3>🔧 技术实现细节</h3>
+        <ul>
+            <li><strong>showCommentInput 默认值：</strong>从 false 改为 true，使评论区默认显示</li>
+            <li><strong>移除条件渲染：</strong>删除了 v-if="showCommentInput"，让评论区始终显示</li>
+            <li><strong>优化滚动行为：</strong>使用 scrollIntoView({ behavior: 'smooth', block: 'start' }) 实现平滑跳转</li>
+            <li><strong>添加视觉提示：</strong>在评论区头部添加了操作提示文字</li>
+            <li><strong>保持交互一致性：</strong>评论按钮仍然保留，作为快速跳转的快捷方式</li>
+        </ul>
+    </div>
+
+    <div class="test-description">
+        <h3>📋 测试检查清单</h3>
+        <ul>
+            <li>☐ 进入帖子详情页面时，评论区是否立即显示？</li>
+            <li>☐ 评论区的评论数量是否正确显示？</li>
+            <li>☐ 点击评论按钮是否平滑跳转到评论区？</li>
+            <li>☐ 跳转后评论区是否置顶显示？</li>
+            <li>☐ 页面是否仍然可以正常上下滚动？</li>
+            <li>☐ 滚动到评论区后，是否仍可以滚动回帖子内容区域？</li>
+            <li>☐ 评论区提示文字是否正确显示？</li>
+            <li>☐ 在移动设备上是否也能正常工作？</li>
+        </ul>
+    </div>
+
+    <script>
+        // 添加一些交互提示
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 帖子详情评论功能测试页面已加载');
+            console.log('📝 请按照页面说明进行功能测试');
+        });
+    </script>
+</body>
+</html>

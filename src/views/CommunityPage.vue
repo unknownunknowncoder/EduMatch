@@ -343,6 +343,52 @@
               class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               placeholder="详细描述你的学习经验、遇到的问题和解决方法..."
             ></textarea>
+            
+            <!-- 从资源中选择按钮 -->
+            <div class="mt-2">
+              <button
+                type="button"
+                @click="showResourceSelector = true"
+                class="flex items-center space-x-2 px-3 py-2 bg-purple-100 dark:bg-purple-900/20 hover:bg-purple-200 dark:hover:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg text-sm transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                </svg>
+                <span>从我的资源中选择</span>
+              </button>
+            </div>
+            
+            <!-- 已选择的资源显示 -->
+            <div v-if="selectedResource" class="mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div class="flex items-start justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-purple-700 dark:text-purple-300">已选择资源</span>
+                  </div>
+                  <div class="text-sm text-gray-700 dark:text-gray-300">
+                    <span class="font-medium">{{ selectedResource.title }}</span>
+                    <span v-if="selectedResource.type" class="ml-2 px-2 py-0.5 bg-purple-200 dark:bg-purple-800 text-purple-700 dark:text-purple-300 rounded-full text-xs">
+                      {{ selectedResource.type }}
+                    </span>
+                  </div>
+                  <div v-if="selectedResource.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {{ selectedResource.description }}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  @click="removeSelectedResource"
+                  class="ml-2 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -423,6 +469,204 @@
         </form>
       </div>
     </div>
+
+    <!-- 资源选择器模态框 -->
+    <div v-if="showResourceSelector" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+            <svg class="w-6 h-6 mr-2 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            选择资源进行经验分享
+          </h2>
+          <button 
+            @click="showResourceSelector = false"
+            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto max-h-[60vh]">
+          <!-- 加载状态 -->
+          <div v-if="isLoadingResources" class="text-center py-8">
+            <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-purple-500 hover:bg-purple-400 transition ease-in-out duration-150">
+              <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              加载我的资源...
+            </div>
+          </div>
+
+          <!-- 空状态 -->
+          <div v-else-if="myResources.length === 0" class="text-center py-8">
+            <svg class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">暂无资源</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">您还没有创建任何学习资源</p>
+            <button 
+              @click="navigateToCreateResource"
+              class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+            >
+              创建第一个资源
+            </button>
+          </div>
+
+          <!-- 资源列表 -->
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div 
+              v-for="resource in paginatedResources"
+              :key="resource.id"
+              class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer hover:border-purple-300 dark:hover:border-purple-600"
+              @click="selectResource(resource)"
+            >
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-2">
+                    <h4 class="font-semibold text-gray-900 dark:text-white">{{ resource.title }}</h4>
+                    <span :class="`px-2 py-1 text-xs rounded-full ${getResourceTypeColor(resource.type)}`">
+                      {{ resource.type }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                    {{ resource.description }}
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 资源详细信息 -->
+              <div class="flex flex-wrap items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                <div v-if="resource.category" class="flex items-center">
+                  <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                  </svg>
+                  {{ resource.category }}
+                </div>
+                <div v-if="resource.difficulty" class="flex items-center">
+                  <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                  {{ resource.difficulty }}
+                </div>
+                <div v-if="resource.duration" class="flex items-center">
+                  <svg class="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  {{ resource.duration }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 分页控件 -->
+          <div v-if="myResources.length > 0 && resourceTotalPages > 1" class="flex flex-col items-center space-y-4 mt-6">
+            <!-- 第一行：导航按钮 -->
+            <div class="flex justify-center items-center space-x-2">
+              <!-- 上一页按钮 -->
+              <button
+                @click="changeResourcePage(resourceCurrentPage - 1)"
+                :disabled="resourceCurrentPage <= 1"
+                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+
+              <!-- 页码按钮 -->
+              <div class="flex space-x-1">
+                <button
+                  v-for="page in getVisiblePages()"
+                  :key="page"
+                  @click="changeResourcePage(page)"
+                  :class="`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    resourceCurrentPage === page
+                      ? 'bg-purple-600 text-white'
+                      : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700'
+                  }`"
+                >
+                  {{ page }}
+                </button>
+              </div>
+
+              <!-- 省略号和最后一页 -->
+              <template v-if="resourceTotalPages > 5">
+                <span class="text-sm text-gray-500 dark:text-gray-400">...</span>
+                <button
+                  @click="changeResourcePage(resourceTotalPages)"
+                  :class="`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    resourceCurrentPage === resourceTotalPages
+                      ? 'bg-purple-600 text-white'
+                      : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700'
+                  }`"
+                >
+                  {{ resourceTotalPages }}
+                </button>
+              </template>
+
+              <!-- 下一页按钮 -->
+              <button
+                @click="changeResourcePage(resourceCurrentPage + 1)"
+                :disabled="resourceCurrentPage >= resourceTotalPages"
+                class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:bg-gray-700"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+
+            <!-- 第二行：页面跳转输入框 -->
+            <div class="flex items-center justify-center space-x-3">
+              <span class="text-sm text-gray-500 dark:text-gray-400">跳转到页面：</span>
+              
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="gotoPageInput"
+                  @keyup.enter="handleGotoPage"
+                  type="number"
+                  :min="1"
+                  :max="resourceTotalPages"
+                  class="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300"
+                  placeholder="页码"
+                />
+                
+                <button
+                  @click="handleGotoPage"
+                  :disabled="!gotoPageInput || gotoPageInput < 1 || gotoPageInput > resourceTotalPages"
+                  class="px-3 py-1 text-sm font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  跳转
+                </button>
+              </div>
+              
+              <span class="text-sm text-gray-400 dark:text-gray-500">（共{{ resourceTotalPages }}页）</span>
+            </div>
+          </div>
+
+          <!-- 分页信息 -->
+          <div v-if="myResources.length > 0" class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+            显示第 {{ (resourceCurrentPage - 1) * resourcePageSize + 1 }} - {{ Math.min(resourceCurrentPage * resourcePageSize, myResources.length) }} 个资源，共 {{ myResources.length }} 个
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              @click="showResourceSelector = false"
+              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg"
+            >
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -444,6 +688,7 @@ const isLoading = ref(true)
 const hasError = ref(false)
 const errorMessage = ref('')
 const showCreatePostModal = ref(false)
+const showResourceSelector = ref(false)
 const isSubmitting = ref(false)
 const isLiking = ref(false)
 const isFavoriting = ref(false)
@@ -454,6 +699,16 @@ const newPost = ref({
   tags: []
 })
 const customTag = ref('')
+const myResources = ref<any[]>([])
+const selectedResource = ref<any>(null)
+const isLoadingResources = ref(false)
+
+// 资源选择器分页相关
+const resourceCurrentPage = ref(1)
+const resourcePageSize = ref(6) // 每页显示6个资源
+const resourceTotalPages = ref(0)
+const paginatedResources = ref<any[]>([])
+const gotoPageInput = ref('') // 页面跳转输入框
 
 const dbStore = useDatabaseStore()
 
@@ -921,9 +1176,7 @@ const loadPosts = async () => {
           id,
           username,
           nickname
-        ),
-        post_likes!post_likes_post_id_fkey(count),
-        post_favorites(count)
+        )
       `)
       .order('created_at', { ascending: false })
     
@@ -955,9 +1208,9 @@ const loadPosts = async () => {
       // 默认点赞和收藏状态为false
       is_liked: false,
       is_favorited: false,
-      // 从关联表中获取点赞和收藏数量
-      like_count: post.post_likes?.[0]?.count || 0,
-      favorite_count: post.post_favorites?.[0]?.count || 0
+      // 使用默认的点赞和收藏数量
+      like_count: 0, // 暂时使用默认值，因为数据库中likes_count字段不存在
+      favorite_count: 0
     }))
     
     // 如果用户已登录，加载点赞和收藏状态
@@ -1215,10 +1468,7 @@ const createPost = async () => {
         content: newPost.value.content,
         category: newPost.value.category || '学习经验',
         tags: newPost.value.tags,
-        user_id: currentUserId,
-        likes_count: 0,
-        views_count: 0,
-        comments_count: 0
+        user_id: currentUserId
       }])
       .select(`
         *,
@@ -1226,9 +1476,7 @@ const createPost = async () => {
           id,
           username,
           nickname
-        ),
-        post_likes!post_likes_post_id_fkey(count),
-        post_favorites(count)
+        )
       `)
     
     if (error) {
@@ -1247,9 +1495,9 @@ const createPost = async () => {
         // 默认点赞和收藏状态为false
         is_liked: false,
         is_favorited: false,
-        // 从关联表中获取点赞和收藏数量
-        like_count: data[0].post_likes?.[0]?.count || 0,
-        favorite_count: data[0].post_favorites?.[0]?.count || 0
+        // 使用默认的点赞和收藏数量
+        like_count: 0, // 暂时使用默认值，因为数据库中likes_count字段不存在
+        favorite_count: 0
       }
       posts.value.unshift(newPostData)
       
@@ -1301,6 +1549,246 @@ const closeCreatePostModal = () => {
     tags: []
   }
   customTag.value = ''
+  selectedResource.value = null
+}
+
+// 加载用户资源
+const loadMyResources = async () => {
+  isLoadingResources.value = true
+  try {
+    console.log('🔄 开始加载用户资源...')
+    
+    // 重置分页状态
+    resourceCurrentPage.value = 1
+    paginatedResources.value = []
+    
+    // 获取当前用户ID
+    let currentUserId = null
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      try {
+        const user = JSON.parse(currentUser)
+        if (user.id) {
+          currentUserId = user.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      console.log('⚠️ 用户未登录')
+      myResources.value = []
+      return
+    }
+    
+    // 使用数据库客户端
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('资源加载：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('资源加载：数据库客户端初始化失败')
+      myResources.value = []
+      return
+    }
+    
+    console.log('🔍 查询用户资源...')
+    const { data, error } = await client
+      .from('resources')
+      .select('*')
+      .eq('created_by', currentUserId)
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('❌ 获取我的资源失败:', error)
+      myResources.value = []
+      return
+    }
+    
+    if (!data || data.length === 0) {
+      console.log('ℹ️ 该用户没有创建任何资源')
+      myResources.value = []
+      return
+    }
+    
+    // 转换数据格式
+    myResources.value = data.map(resource => ({
+      id: resource.id,
+      title: resource.title,
+      description: resource.description || '',
+      type: resource.type || 'other',
+      category: resource.category,
+      difficulty: resource.difficulty,
+      duration: resource.duration,
+      provider: resource.provider,
+      url: resource.url,
+      views: resource.views || 0,
+      likes: resource.likes || 0,
+      created_at: resource.created_at
+    }))
+    
+    // 计算分页
+    updateResourcePagination()
+    
+    console.log('✅ 成功加载我的资源:', myResources.value.length)
+    
+  } catch (error) {
+    console.error('❌ 加载我的资源时出错:', error)
+    myResources.value = []
+  } finally {
+    isLoadingResources.value = false
+  }
+}
+
+// 更新资源分页
+const updateResourcePagination = () => {
+  const total = myResources.value.length
+  resourceTotalPages.value = Math.ceil(total / resourcePageSize.value)
+  
+  // 确保当前页不超出范围
+  if (resourceCurrentPage.value > resourceTotalPages.value && resourceTotalPages.value > 0) {
+    resourceCurrentPage.value = resourceTotalPages.value
+  }
+  
+  // 计算当前页的数据
+  const startIndex = (resourceCurrentPage.value - 1) * resourcePageSize.value
+  const endIndex = startIndex + resourcePageSize.value
+  paginatedResources.value = myResources.value.slice(startIndex, endIndex)
+  
+  console.log(`📄 资源分页: 第${resourceCurrentPage.value}/${resourceTotalPages.value}页，显示${paginatedResources.value.length}个资源`)
+}
+
+// 切换资源页码
+const changeResourcePage = (page: number) => {
+  if (page >= 1 && page <= resourceTotalPages.value) {
+    resourceCurrentPage.value = page
+    updateResourcePagination()
+  }
+}
+
+// 获取可见的页码列表（智能显示）
+const getVisiblePages = () => {
+  const total = resourceTotalPages.value
+  const current = resourceCurrentPage.value
+  
+  if (total <= 5) {
+    // 如果总页数不超过5页，显示所有页码
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+  
+  // 否则智能显示页码
+  const pages = []
+  const half = Math.floor(5 / 2) // 一边显示2个，中间是当前页
+  
+  let start = Math.max(1, current - half)
+  let end = Math.min(total, start + 4)
+  
+  // 如果当前页靠近开头，从1开始
+  if (current <= 3) {
+    start = 1
+    end = 5
+  }
+  
+  // 如果当前页靠近结尾，显示最后5页
+  if (current >= total - 2) {
+    start = total - 4
+    end = total
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  
+  return pages
+}
+
+// 处理页面跳转
+const handleGotoPage = () => {
+  const targetPage = parseInt(gotoPageInput.value)
+  
+  if (!targetPage || isNaN(targetPage)) {
+    gotoPageInput.value = ''
+    return
+  }
+  
+  if (targetPage < 1) {
+    gotoPageInput.value = '1'
+    return
+  }
+  
+  if (targetPage > resourceTotalPages.value) {
+    gotoPageInput.value = resourceTotalPages.value.toString()
+    return
+  }
+  
+  changeResourcePage(targetPage)
+  gotoPageInput.value = '' // 清空输入框
+}
+
+// 选择资源
+const selectResource = (resource: any) => {
+  selectedResource.value = resource
+  
+  // 根据选择的资源自动填充表单
+  if (resource.title) {
+    newPost.value.title = `基于《${resource.title}》的学习经验分享`
+  }
+  
+  if (resource.description) {
+    newPost.value.content = `我在学习《${resource.title}》时，有了一些心得体会想和大家分享：
+
+${resource.description}
+
+通过这个资源，我学到了很多，希望对大家也有帮助！`
+  }
+  
+  if (resource.category) {
+    newPost.value.category = resource.category
+  }
+  
+  if (resource.type) {
+    if (!newPost.value.tags.includes(resource.type)) {
+      newPost.value.tags.push(resource.type)
+    }
+  }
+  
+  // 关闭资源选择器
+  showResourceSelector.value = false
+  
+  console.log('✅ 已选择资源:', resource)
+}
+
+// 移除选中的资源
+const removeSelectedResource = () => {
+  selectedResource.value = null
+  
+  // 清空相关字段但保留用户已输入的内容
+  if (selectedResource.value && newPost.value.title.includes(`基于《${selectedResource.value.title}》`)) {
+    newPost.value.title = ''
+  }
+}
+
+// 获取资源类型颜色
+const getResourceTypeColor = (type: string) => {
+  const colors: Record<string, string> = {
+    video: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
+    article: 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+    book: 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400',
+    course: 'bg-orange-100 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
+    tool: 'bg-pink-100 text-pink-600 dark:bg-pink-900/20 dark:text-pink-400',
+    other: 'bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400'
+  }
+  return colors[type] || colors.other
+}
+
+// 跳转到创建资源页面
+const navigateToCreateResource = () => {
+  router.push('/create-resource')
+  showResourceSelector.value = false
 }
 
 // 全局键盘事件处理
@@ -1333,7 +1821,8 @@ onMounted(async () => {
     // 并行加载数据以提高性能
     await Promise.all([
       loadPosts(),
-      loadPopularTags()
+      loadPopularTags(),
+      loadMyResources()
     ])
     
     console.log('🎉 CommunityPage 初始化完成')

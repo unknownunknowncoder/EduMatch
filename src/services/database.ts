@@ -463,7 +463,7 @@ export class DatabaseService {
         currentUser.id = 'b6c871eb-717c-4a40-859b-b639cf8ccd08'
       }
 
-      // 转换字段名
+      // 转换字段名 - 只使用实际存在的字段
       const convertedPost = {
         user_id: currentUser.id,
         title: postData.title,
@@ -471,9 +471,6 @@ export class DatabaseService {
         category: postData.category || (postData.tags.length > 0 ? postData.tags.join(', ') : '学习经验'),
         tags: postData.tags || [],
         author: postData.author || '管理员',
-        likes_count: 0,
-        views_count: 0,
-        comments_count: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -497,8 +494,8 @@ export class DatabaseService {
           
         case 'mysql':
           const sql = `
-            INSERT INTO community_posts (user_id, title, content, category, tags, author, likes_count, views_count, comments_count, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO community_posts (user_id, title, content, category, tags, author, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `
           result = await this.client.execute(sql, [
             convertedPost.user_id,
@@ -507,9 +504,6 @@ export class DatabaseService {
             convertedPost.category,
             JSON.stringify(convertedPost.tags), // MySQL 中将数组转为 JSON 字符串
             convertedPost.author,
-            convertedPost.likes_count,
-            convertedPost.views_count,
-            convertedPost.comments_count,
             convertedPost.created_at,
             convertedPost.updated_at
           ])
@@ -517,8 +511,8 @@ export class DatabaseService {
           
         case 'postgresql':
           const pgResult = await this.client.query(`
-            INSERT INTO community_posts (user_id, title, content, category, tags, author, likes_count, views_count, comments_count, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            INSERT INTO community_posts (user_id, title, content, category, tags, author, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
           `, [
             convertedPost.user_id,
@@ -527,9 +521,6 @@ export class DatabaseService {
             convertedPost.category,
             convertedPost.tags,
             convertedPost.author,
-            convertedPost.likes_count,
-            convertedPost.views_count,
-            convertedPost.comments_count,
             convertedPost.created_at,
             convertedPost.updated_at
           ])
