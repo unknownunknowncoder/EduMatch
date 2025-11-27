@@ -68,6 +68,30 @@
         <div class="prose prose-lg max-w-none text-slate-700 leading-relaxed">
           <p class="whitespace-pre-wrap">{{ post.content }}</p>
         </div>
+
+        <div 
+          v-if="post.resource" 
+          class="mt-8 p-6 bg-indigo-50/80 border border-indigo-100 rounded-2xl"
+        >
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold text-indigo-900">{{ post.resource.title }}</p>
+              <p class="text-xs text-indigo-500 mt-1">{{ post.resource.category || '未分类' }}</p>
+              <p class="text-sm text-slate-600 mt-3 whitespace-pre-wrap">
+                {{ post.resource.description || '该资源暂无描述' }}
+              </p>
+            </div>
+            <a
+              v-if="post.resource.url"
+              :href="post.resource.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 whitespace-nowrap"
+            >
+              查看资源
+            </a>
+          </div>
+        </div>
       </div>
 
       <!-- 评论区域 - 默认显示 -->
@@ -320,7 +344,7 @@ const toggleLike = async (post: Post) => {
     }
     
     if (!currentUserId) {
-      alert('请先登录后再点赞')
+      router.push('/login')
       return
     }
     
@@ -431,7 +455,7 @@ const toggleFavorite = async (post: Post) => {
     }
     
     if (!currentUserId) {
-      alert('请先登录后再收藏')
+      router.push('/login')
       return
     }
     
@@ -548,6 +572,13 @@ const fetchPostDetail = async () => {
           id,
           username,
           nickname
+        ),
+        resource:resource_id (
+          id,
+          title,
+          description,
+          category,
+          url
         )
       `)
       .eq('id', postId)
@@ -591,7 +622,8 @@ const fetchPostDetail = async () => {
       ...postData,
       author_name: postData.user?.nickname || postData.user?.username || '匿名用户',
       is_favorited: isFavorited,
-      favorite_count: postData.favorite_count || 0
+      favorite_count: postData.favorite_count || 0,
+      resource: postData.resource || null
     }
     
     console.log('✅ 帖子详情加载成功:', post.value)

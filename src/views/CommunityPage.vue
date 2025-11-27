@@ -143,6 +143,30 @@
               <p class="text-slate-600 text-sm leading-relaxed mb-4 line-clamp-2">
                  {{ post.content }}
               </p>
+              <div
+                v-if="post.resource"
+                class="mb-4 p-4 rounded-2xl border border-indigo-100 bg-indigo-50/60"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold text-indigo-900">{{ post.resource.title }}</p>
+                    <p class="text-xs text-indigo-500">{{ post.resource.category || '未分类' }}</p>
+                    <p class="text-sm text-slate-600 mt-2 line-clamp-2">
+                      {{ post.resource.description || '暂无资源描述' }}
+                    </p>
+                  </div>
+                  <a
+                    v-if="post.resource.url"
+                    :href="post.resource.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800 whitespace-nowrap"
+                    @click.stop
+                  >
+                    查看资源
+                  </a>
+                </div>
+              </div>
 
               <!-- 底部：标签与互动 -->
               <div class="flex items-center justify-between pt-4 border-t border-slate-50">
@@ -302,6 +326,44 @@
                    />
                 </div>
              </div>
+
+             <!-- 关联我的资源 -->
+             <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">关联我的资源</label>
+                <div class="space-y-2">
+                  <p v-if="isLoadingResources" class="text-sm text-slate-500">正在加载资源...</p>
+                  <p v-else-if="resourcesError" class="text-sm text-red-500">{{ resourcesError }}</p>
+                  <div v-else-if="myResources.length === 0" class="text-sm text-slate-500 flex flex-wrap items-center gap-2">
+                    你还没有创建学习资源
+                    <button 
+                      @click="router.push('/my-all-resources')" 
+                      class="text-indigo-600 hover:underline font-medium"
+                    >
+                      前往创建
+                    </button>
+                  </div>
+                  <div v-else class="space-y-3">
+                    <select 
+                      v-model="newPostForm.resourceId"
+                      class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-slate-600"
+                    >
+                      <option value="">不关联资源</option>
+                      <option 
+                        v-for="resource in myResources" 
+                        :key="resource.id" 
+                        :value="resource.id"
+                      >
+                        {{ resource.title }}
+                      </option>
+                    </select>
+                    <div v-if="selectedResource" class="p-3 rounded-xl border border-slate-200 bg-slate-50">
+                      <p class="text-sm font-semibold text-slate-800">{{ selectedResource.title }}</p>
+                      <p class="text-xs text-slate-500">{{ selectedResource.category || '未分类' }}</p>
+                      <p class="text-sm text-slate-600 mt-1 line-clamp-2">{{ selectedResource.description || '暂无描述' }}</p>
+                    </div>
+                  </div>
+                </div>
+             </div>
           </div>
 
           <!-- Footer -->
@@ -345,6 +407,14 @@ import {
 } from 'lucide-vue-next';
 
 // --- 类型定义 ---
+interface LinkedResource {
+  id: string
+  title: string
+  description?: string
+  category?: string
+  url?: string
+}
+
 interface Post {
   id: string;
   title: string;
@@ -358,6 +428,8 @@ interface Post {
   favorite_count: number;
   comment_count: number;
   tags: string[];
+  resource_id?: string | null;
+  resource?: LinkedResource | null;
   is_liked?: boolean;
   is_favorited?: boolean;
 }
@@ -375,6 +447,9 @@ const showModal = ref(false);
 const isSubmitting = ref(false);
 const isLiking = ref(false);
 const isFavoriting = ref(false);
+const myResources = ref<LinkedResource[]>([])
+const isLoadingResources = ref(false)
+const resourcesError = ref('')
 
 // 分页状态
 const currentPage = ref(1);
@@ -391,9 +466,14 @@ const newPostForm = reactive({
   title: '',
   content: '',
   category: '',
-  tags: [] as string[]
+  tags: [] as string[],
+  resourceId: '' as string | null
 });
 const tagInput = ref('');
+const selectedResource = computed(() => {
+  if (!newPostForm.resourceId) return null
+  return myResources.value.find(res => res.id === newPostForm.resourceId) || null
+})
 
 // --- 计算属性 ---
 const displayedPosts = computed(() => {
@@ -530,6 +610,27 @@ const filterByTag = async (tagName: string) => {
   updatePagination();
 };
 
+const loadMyResources = async (userId: string) => {
+  isLoadingResources.value = true;
+  resourcesError.value = '';
+  try {
+    const resources = await dbStore.getUserResources(userId);
+    myResources.value = (resources || []).map((res: any) => ({
+      id: res.id,
+      title: res.title || '未命名资源',
+      description: res.description,
+      category: res.category,
+      url: res.url
+    }));
+  } catch (error) {
+    console.error('获取用户资源失败:', error);
+    resourcesError.value = '加载资源失败，请稍后再试';
+    myResources.value = [];
+  } finally {
+    isLoadingResources.value = false;
+  }
+};
+
 // --- 点赞收藏功能 ---
 const toggleLike = async (post: any) => {
   if (isLiking.value) return;
@@ -551,7 +652,7 @@ const toggleLike = async (post: any) => {
     }
     
     if (!currentUserId) {
-      alert('请先登录后再点赞');
+      router.push('/login');
       return;
     }
     
@@ -649,7 +750,7 @@ const toggleFavorite = async (post: any) => {
     }
     
     if (!currentUserId) {
-      alert('请先登录后再收藏');
+      router.push('/login');
       return;
     }
     
@@ -750,6 +851,54 @@ const loadPosts = async () => {
     if (postsError) {
       throw postsError;
     }
+
+    // 获取作者信息
+    const userIds = Array.from(new Set((postsData || [])
+      .map((post: any) => post.user_id)
+      .filter((id: string | null): id is string => !!id)));
+
+    const userMap: Record<string, { id: string; username?: string; nickname?: string }> = {};
+    if (userIds.length > 0) {
+      const { data: usersData, error: usersError } = await client
+        .from('users')
+        .select('id, username, nickname')
+        .in('id', userIds);
+
+      if (usersError) {
+        console.warn('加载用户信息失败:', usersError);
+      } else {
+        usersData?.forEach((user: any) => {
+          userMap[user.id] = user;
+        });
+      }
+    }
+
+    // 获取与帖子关联的资源
+    const resourceIds = Array.from(new Set((postsData || [])
+      .map((post: any) => post.resource_id)
+      .filter((id: string | null): id is string => !!id)));
+
+    const resourceMap: Record<string, LinkedResource> = {};
+    if (resourceIds.length > 0) {
+      const { data: resourcesData, error: resourcesError } = await client
+        .from('resources')
+        .select('id, title, description, category, url')
+        .in('id', resourceIds);
+
+      if (resourcesError) {
+        console.warn('加载资源信息失败:', resourcesError);
+      } else {
+        resourcesData?.forEach((res: any) => {
+          resourceMap[res.id] = {
+            id: res.id,
+            title: res.title || '未命名资源',
+            description: res.description,
+            category: res.category,
+            url: res.url
+          };
+        });
+      }
+    }
     
     // 获取所有帖子的评论数
     const { data: commentsData, error: commentsError } = await client
@@ -771,28 +920,37 @@ const loadPosts = async () => {
     }
     
     // 获取当前用户ID以检查收藏状态
-    let currentUserId = null;
+    let currentUserId: string | null = null;
+    let currentUserName = '';
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
       try {
         const user = JSON.parse(currentUser);
         if (user.id) {
           currentUserId = user.id;
+          currentUserName = user.nickname || user.username || '';
         }
       } catch (error) {
         console.error('解析用户信息失败:', error);
       }
     }
     
-    posts.value = (postsData || []).map((post: any) => ({
-      ...post,
-      author: '用户' + (post.user_id?.substring(0, 8) || '匿名'),
-      is_liked: false,
-      is_favorited: false,
-      like_count: post.like_count || 0,
-      favorite_count: post.favorite_count || 0,
-      comment_count: commentCounts[post.id] || 0 // 使用实时计算的评论数
-    }));
+    posts.value = (postsData || []).map((post: any) => {
+      const userInfo = post.user_id ? userMap[post.user_id] : null;
+      const authorName = userInfo?.nickname || userInfo?.username || (post.user_id ? `用户${post.user_id.substring(0, 8)}` : '匿名用户');
+      const linkedResource = post.resource_id ? (resourceMap[post.resource_id] || null) : null;
+
+      return {
+        ...post,
+        author: authorName,
+        is_liked: false,
+        is_favorited: false,
+        like_count: post.like_count || 0,
+        favorite_count: post.favorite_count || 0,
+        comment_count: commentCounts[post.id] || 0,
+        resource: linkedResource
+      };
+    });
     
     // 如果用户已登录，加载点赞和收藏状态
     if (currentUserId) {
@@ -911,7 +1069,25 @@ const retryLoading = async () => {
 };
 
 // --- 模态框与表单逻辑 ---
-const openModal = () => showModal.value = true;
+const openModal = async () => {
+  // 检查用户是否登录
+  const currentUserStr = localStorage.getItem('currentUser');
+  if (!currentUserStr) {
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const currentUser = JSON.parse(currentUserStr);
+    if (currentUser?.id) {
+      await loadMyResources(currentUser.id);
+    }
+  } catch (error) {
+    console.error('解析当前用户失败:', error);
+  }
+
+  showModal.value = true;
+};
 
 const closeModal = () => {
   showModal.value = false;
@@ -919,6 +1095,7 @@ const closeModal = () => {
   newPostForm.content = '';
   newPostForm.category = '';
   newPostForm.tags = [];
+  newPostForm.resourceId = '';
   tagInput.value = '';
 };
 
@@ -952,13 +1129,15 @@ const submitPost = async () => {
     }
     
     // 获取当前用户ID
-    let currentUserId = null;
+    let currentUserId: string | null = null;
+    let currentUserName = '';
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
       try {
         const user = JSON.parse(currentUser);
         if (user.id) {
           currentUserId = user.id;
+          currentUserName = user.nickname || user.username || '';
         }
       } catch (error) {
         console.error('解析用户信息失败:', error);
@@ -966,7 +1145,7 @@ const submitPost = async () => {
     }
     
     if (!currentUserId) {
-      alert('请先登录后再发布帖子');
+      router.push('/login');
       isSubmitting.value = false;
       return;
     }
@@ -978,6 +1157,7 @@ const submitPost = async () => {
         content: newPostForm.content,
         category: newPostForm.category || '学习经验',
         tags: newPostForm.tags,
+        resource_id: newPostForm.resourceId || null,
         user_id: currentUserId,
         like_count: 0,
         favorite_count: 0,
@@ -991,14 +1171,19 @@ const submitPost = async () => {
     }
     
     if (data && data[0]) {
+      const linkedResource = newPostForm.resourceId
+        ? myResources.value.find(res => res.id === newPostForm.resourceId) || null
+        : null;
+
       const newPostData = {
         ...data[0],
-        author: '用户' + (currentUserId?.substring(0, 8) || '匿名'),
+        author: currentUserName || (currentUserId ? `用户${currentUserId.substring(0, 8)}` : '匿名'),
         is_liked: false,
         is_favorited: false,
         like_count: data[0].like_count || 0,
         favorite_count: data[0].favorite_count || 0,
-        comment_count: data[0].comment_count || 0
+        comment_count: data[0].comment_count || 0,
+        resource: linkedResource
       };
       posts.value.unshift(newPostData);
       

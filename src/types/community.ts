@@ -1,5 +1,13 @@
 // 社区相关类型定义
 
+export interface LinkedResource {
+  id: string
+  title: string
+  description?: string | null
+  category?: string | null
+  url?: string | null
+}
+
 export interface Post {
   id: string
   title: string
@@ -12,6 +20,8 @@ export interface Post {
   favorite_count?: number
   is_favorited?: boolean
   is_liked?: boolean
+  resource_id?: string | null
+  resource?: LinkedResource | null
 }
 
 export interface Comment {

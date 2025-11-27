@@ -316,13 +316,6 @@ const loadUserInteractions = async () => {
                 id,
                 username,
                 nickname
-              ),
-              post_likes!post_likes_post_id_fkey!inner(
-                user:user_id (
-                  id,
-                  username,
-                  nickname
-                )
               )
             )
           `)
@@ -338,11 +331,6 @@ const loadUserInteractions = async () => {
           // 处理点赞帖子数据
           likedResources.value = (likedPosts || []).map((item: any) => {
             const post = item.posts
-            
-            // 获取所有点赞该帖子的用户信息
-            const likedUsers = post.post_likes?.map((like: any) => 
-              like.user?.nickname || like.user?.username || '匿名用户'
-            ) || []
             
             // 获取作者信息
             const author = post.user?.nickname || post.user?.username || '匿名用户'
@@ -361,8 +349,8 @@ const loadUserInteractions = async () => {
                 saved: false,
                 likesCount: post.like_count || 0
               },
-              // 添加点赞用户信息
-              likedUsers: likedUsers,
+              // 当前用户点赞了该帖子
+              likedUsers: ['当前用户'],
               favoritedUsers: [], // 收藏用户信息在收藏部分单独处理
               likeCount: post.like_count || 0,
               favoriteCount: post.favorite_count || 0,
@@ -406,13 +394,6 @@ const loadUserInteractions = async () => {
                 id,
                 username,
                 nickname
-              ),
-              post_favorites!inner(
-                user:user_id (
-                  id,
-                  username,
-                  nickname
-                )
               )
             )
           `)
@@ -428,11 +409,6 @@ const loadUserInteractions = async () => {
           // 处理收藏帖子数据
           favoritedResources.value = (favoritedPosts || []).map((item: any) => {
             const post = item.posts
-            
-            // 获取所有收藏该帖子的用户信息
-            const favoritedUsers = post.post_favorites?.map((fav: any) => 
-              fav.user?.nickname || fav.user?.username || '匿名用户'
-            ) || []
             
             // 获取作者信息
             const author = post.user?.nickname || post.user?.username || '匿名用户'
@@ -451,9 +427,9 @@ const loadUserInteractions = async () => {
                 saved: true,
                 likesCount: post.like_count || 0
               },
-              // 添加收藏用户信息
+              // 当前用户收藏了该帖子
               likedUsers: [], // 点赞用户信息在点赞部分单独处理
-              favoritedUsers: favoritedUsers,
+              favoritedUsers: ['当前用户'],
               likeCount: post.like_count || 0,
               favoriteCount: post.favorite_count || 0,
               // 添加帖子详情信息
