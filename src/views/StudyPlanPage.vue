@@ -192,46 +192,46 @@
     </div>
 
     <!-- 创建学习计划弹窗 -->
-    <div v-if="showCreatePlanModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div v-if="showCreatePlanModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
         <!-- 弹窗头部 -->
-        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">创建学习计划</h2>
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <h2 class="text-lg font-bold text-slate-800">创建学习计划</h2>
           <button 
             @click="showCreatePlanModal = false"
-            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
           >
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         </div>
 
         <!-- 表单内容 -->
-        <form @submit.prevent="handleCreatePlan" class="p-6 space-y-4">
+        <form @submit.prevent="handleCreatePlan" class="p-6 overflow-y-auto space-y-5">
           <!-- 计划标题 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               计划标题 *
             </label>
             <input
               v-model="newPlan.title"
               type="text"
               required
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="例如：前端开发进阶"
             />
           </div>
 
           <!-- 计划描述 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               计划描述
             </label>
             <textarea
               v-model="newPlan.description"
               rows="3"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
               placeholder="描述你的学习目标和内容（选填）"
             ></textarea>
           </div>
@@ -240,7 +240,7 @@
 
           <!-- 关联学习资源 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               关联学习资源
             </label>
             <div class="space-y-3">
@@ -249,7 +249,7 @@
                 <input
                   v-model="newPlan.resourceName"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="输入关联的学习资源名称（选填）"
                 />
               </div>
@@ -258,13 +258,13 @@
                 <input
                   v-model="newPlan.resourceUrl"
                   type="url"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="输入资源链接（选填）"
                 />
               </div>
               <!-- 学习总时长 -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
                   学习总时长（小时）
                 </label>
                 <div class="relative">
@@ -273,19 +273,19 @@
                     type="number"
                     min="0"
                     step="0.5"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white no-spinner"
+                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none no-spinner"
                     placeholder="例如：10.5（选填）"
                   />
-                  <span class="absolute right-4 top-2 text-gray-500 dark:text-gray-400">小时</span>
+                  <span class="absolute right-4 top-2.5 text-slate-500">小时</span>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">填写该资源的总学习时长（可选）</p>
+                <p class="text-xs text-slate-500 mt-1">填写该资源的总学习时长（可选）</p>
               </div>
               <!-- 从我的资源中选择 -->
               <div>
                   <button
                     type="button"
                     @click="handleOpenResourceModal"
-                    class="w-full px-4 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-300 dark:border-purple-600 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center"
+                    class="w-full px-4 py-2.5 bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-xl hover:bg-indigo-200 transition-colors flex items-center justify-center font-medium"
                   >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -296,35 +296,22 @@
             </div>
           </div>
 
-          <!-- 开始和目标日期 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                开始日期 *
-              </label>
-              <input
-                v-model="newPlan.startDate"
-                type="date"
-                required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                目标日期 *
-              </label>
-              <input
-                v-model="newPlan.targetDate"
-                type="date"
-                required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              />
-            </div>
+          <!-- 开始日期 -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              开始日期 *
+            </label>
+            <input
+              v-model="newPlan.startDate"
+              type="date"
+              required
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
           </div>
 
           <!-- 每日学习时间 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               每日学习时间（小时） *
             </label>
             <div class="relative">
@@ -335,27 +322,61 @@
                 max="24"
                 step="0.5"
                 required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white appearance-none"
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none"
                 placeholder="例如：2.5"
                 style="-moz-appearance: textfield; -webkit-appearance: none; appearance: none;"
               />
-              <span class="absolute right-4 top-2 text-gray-500 dark:text-gray-400">小时</span>
+              <span class="absolute right-4 top-2.5 text-slate-500">小时</span>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">建议每日学习0.5到24小时</p>
+            <p class="text-xs text-slate-500 mt-1">建议每日学习0.5到24小时</p>
+          </div>
+
+          <!-- 学习天数和预计完成日期 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                学习天数
+              </label>
+              <div class="relative">
+                <input
+                  :value="calculatedStudyDays"
+                  type="number"
+                  readonly
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700"
+                />
+                <span class="absolute right-4 top-2.5 text-slate-500">天</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                预计完成日期
+              </label>
+              <div class="relative">
+                <input
+                  :value="estimatedCompletionDate"
+                  type="text"
+                  readonly
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700"
+                />
+                <svg class="absolute right-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            </div>
           </div>
 
           <!-- 按钮组 -->
-          <div class="flex justify-end space-x-3 pt-4">
+          <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
             <button
               type="button"
               @click="closeCreatePlanModal"
-              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+              class="px-5 py-2 text-slate-600 font-medium hover:bg-white border border-transparent hover:border-slate-200 rounded-lg transition-all"
             >
               取消
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
             >
               创建计划
             </button>
@@ -454,7 +475,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { supabaseService } from '@/services/supabase'
 import { useDatabaseStore } from '@/stores/database'
 
@@ -538,7 +559,6 @@ const newPlan = ref({
   title: '',
   description: '',
   startDate: '',
-  targetDate: '',
   dailyHours: 2, // 默认每日学习2小时
   totalHours: '', // 学习总时长（可选）
   resourceName: '',
@@ -547,6 +567,43 @@ const newPlan = ref({
 
 // 学习计划数据（从数据库动态加载）
 const currentPlans = ref<StudyPlan[]>([])
+
+// 计算学习天数
+const calculatedStudyDays = computed(() => {
+  const totalHours = parseFloat(newPlan.value.totalHours)
+  const dailyHours = parseFloat(newPlan.value.dailyHours)
+  
+  if (!totalHours || !dailyHours || dailyHours <= 0) {
+    return 0
+  }
+  
+  // 向上取整，确保有足够的天数完成学习
+  return Math.ceil(totalHours / dailyHours)
+})
+
+// 计算预计完成日期
+const estimatedCompletionDate = computed(() => {
+  if (!newPlan.value.startDate || calculatedStudyDays.value === 0) {
+    return ''
+  }
+  
+  const startDate = new Date(newPlan.value.startDate)
+  const studyDays = calculatedStudyDays.value
+  
+  if (isNaN(startDate.getTime())) {
+    return ''
+  }
+  
+  // 计算完成日期（开始日期 + 学习天数 - 1，因为当天也算第一天）
+  const completionDate = new Date(startDate)
+  completionDate.setDate(startDate.getDate() + studyDays - 1)
+  
+  return completionDate.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+})
 
 // 从数据库加载学习计划 - 修复版本
 const loadDatabasePlans = async () => {
@@ -736,32 +793,29 @@ const handleCreatePlan = async () => {
     return
   }
 
-  if (!newPlan.value.targetDate || newPlan.value.targetDate.trim() === '') {
-    alert('请选择目标日期')
-    return
-  }
-
-  // 验证日期逻辑
+  // 验证开始日期逻辑
   const start = new Date(newPlan.value.startDate)
-  const target = new Date(newPlan.value.targetDate)
   
   if (isNaN(start.getTime())) {
     alert('开始日期格式不正确')
     return
   }
 
-  if (isNaN(target.getTime())) {
-    alert('目标日期格式不正确')
+  // 验证学习总时长和每日学习时间是否都能计算天数
+  const totalHours = parseFloat(newPlan.value.totalHours)
+  const dailyHours = parseFloat(newPlan.value.dailyHours)
+  
+  if (!totalHours || totalHours <= 0) {
+    alert('请填写学习总时长')
     return
   }
 
-  if (target <= start) {
-    alert('目标日期必须晚于开始日期')
+  if (totalHours < dailyHours) {
+    alert('学习总时长不能小于每日学习时间')
     return
   }
 
   // 验证每日学习时间
-  const dailyHours = parseFloat(newPlan.value.dailyHours)
   if (isNaN(dailyHours) || dailyHours < 0.5 || dailyHours > 24) {
     alert('每日学习时间必须在0.5到24小时之间')
     return
@@ -799,6 +853,15 @@ const handleCreatePlan = async () => {
       return
     }
     
+    // 计算目标日期
+    let targetDateISO = null
+    if (newPlan.value.startDate && calculatedStudyDays.value > 0) {
+      const startDate = new Date(newPlan.value.startDate)
+      const completionDate = new Date(startDate)
+      completionDate.setDate(startDate.getDate() + calculatedStudyDays.value - 1)
+      targetDateISO = completionDate.toISOString().split('T')[0]
+    }
+
     // 准备数据库插入数据
     const dbPlanData = {
       user_id: currentUser.id,
@@ -807,7 +870,7 @@ const handleCreatePlan = async () => {
       progress: 0,
       status: 'in_progress',
       start_date: newPlan.value.startDate,
-      target_date: newPlan.value.targetDate,
+      target_date: targetDateISO,
       daily_hours: newPlan.value.dailyHours,
       total_hours: newPlan.value.totalHours ? parseFloat(newPlan.value.totalHours) : null,
       resource_name: newPlan.value.resourceName,
@@ -846,14 +909,14 @@ const handleCreatePlan = async () => {
       progress: createdPlan.progress || 0,
       status: createdPlan.status || 'in_progress',
       startDate: createdPlan.start_date || newPlan.value.startDate,
-      targetDate: createdPlan.target_date || newPlan.value.targetDate,
+      targetDate: createdPlan.target_date || targetDateISO,
       dailyHours: createdPlan.daily_hours || newPlan.value.dailyHours,
       resourceName: createdPlan.resource_name || newPlan.value.resourceName,
       resourceUrl: createdPlan.resource_url || newPlan.value.resourceUrl,
       // 初始化打卡相关数据
       checkinCount: 0,
-      totalDays: 0,
-      remainingDays: 0,
+      totalDays: calculatedStudyDays.value,
+      remainingDays: calculatedStudyDays.value,
       isTodayChecked: false,
       checkins: []
     }
@@ -880,7 +943,6 @@ const handleCreatePlan = async () => {
       title: '',
       description: '',
       startDate: '',
-      targetDate: '',
       dailyHours: 2, // 重置为默认值
       totalHours: '',
       resourceName: '',
@@ -902,7 +964,6 @@ const closeCreatePlanModal = () => {
       title: '',
       description: '',
       startDate: '',
-      targetDate: '',
       dailyHours: 2, // 重置为默认值
       totalHours: '',
       resourceName: '',
