@@ -18,16 +18,15 @@ app.post('/api/coze/chat', async (req, res) => {
     console.log('🔍 收到扣子API请求:', { query, bot_id, user_id })
     
     // 从环境变量获取token
-    const apiToken = process.env.COZE_API_TOKEN || 'cztei_hSy4b4uf36RCKawy2b8fTIhnXtW76plRFJbdwbgfNVzuRlZYGBAzs74gg32dhvsUq'
+    const apiToken = process.env.COZE_API_TOKEN || 'pat_v7ZUGQxfsN0oiwf3B2mn4WDZxM9r3wDlSR5oJ8NCI2VAUcb1IkaqpTwODmFtlpaz'
     const defaultBotId = process.env.COZE_BOT_ID || '7573579561607331840'
     
-    // 构建请求体
+    // 构建请求体 - 使用最新的API格式
     const requestBody = JSON.stringify({
+      conversation_id: "",
       bot_id: bot_id || defaultBotId,
-      user_id: user_id || 'user_' + Date.now(),
-      additional_messages: [
-        {
-          content: `你是一个专业的教育资源推荐助手。请推荐${query}相关的优质学习资源。要求：
+      user: user_id || 'user_' + Date.now(),
+      query: `你是一个专业的教育资源推荐助手。请推荐${query}相关的优质学习资源。要求：
 1. 推荐B站视频资源和中国大学MOOC课程，比例约为6:4
 2. 每个资源包含：名称、平台、难度、时长、学习数据
 3. 按照以下格式输出：
@@ -37,12 +36,8 @@ app.post('/api/coze/chat', async (req, res) => {
 - [课程2] - [平台] - [难度]
 💡 学习建议：[个性化建议]
 4. 确保推荐的资源真实可用，播放量和学习人数合理`,
-          content_type: "text",
-          role: "user",
-          type: "question"
-        }
-      ],
-      stream: false
+      stream: false,
+      auto_save_history: false
     })
     
     const cozeApiUrl = 'https://api.coze.cn/open_api/v2/chat'

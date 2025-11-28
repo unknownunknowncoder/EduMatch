@@ -25,6 +25,9 @@
                 活跃学习者
               </span>
             </div>
+            <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl">
+              {{ userInfo.bio || '这个人很懒，还没有写个人签名~' }}
+            </p>
           </div>
         </div>
 
@@ -213,6 +216,43 @@
             </div>
           </div>
 
+          <!-- 编辑个人签名 -->
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h3 class="font-medium text-gray-900 dark:text-white">个人签名</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">向大家简单介绍一下自己</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 4H7a2 2 0 01-2-2v-4a2 2 0 012-2h10a2 2 0 012 2v4a2 2 0 01-2 2zM9 4h6a2 2 0 012 2v4H7V6a2 2 0 012-2z"></path>
+              </svg>
+            </div>
+            <textarea
+              v-model="bioInput"
+              rows="3"
+              maxlength="200"
+              placeholder="例：全栈开发者，正在冲刺前端高级工程师～"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white resize-none"
+            ></textarea>
+            <div class="flex items-center justify-between mt-3 text-sm text-gray-500 dark:text-gray-400">
+              <span>{{ bioInput.length }}/200</span>
+              <div class="flex gap-2">
+                <button
+                  @click="bioInput = userInfo.bio || ''"
+                  class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900"
+                >
+                  恢复
+                </button>
+                <button
+                  @click="updateBio"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  保存签名
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- 修改密码 -->
           <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
@@ -314,6 +354,7 @@ interface UserInfo {
   name: string
   email: string
   avatar?: string
+  bio?: string
 }
 
 
@@ -364,7 +405,8 @@ const getUserInfo = (): UserInfo => {
       const user = JSON.parse(currentUser)
       return {
         name: user.nickname || user.username || '演示用户',
-        email: user.email || 'demo@example.com'
+        email: user.email || 'demo@example.com',
+        bio: user.bio || ''
       }
     } catch (error) {
       console.error('解析用户信息失败:', error)
@@ -374,7 +416,8 @@ const getUserInfo = (): UserInfo => {
   // 如果没有用户信息，返回默认值
   return {
     name: '演示用户',
-    email: 'demo@example.com'
+    email: 'demo@example.com',
+    bio: ''
   }
 }
 
@@ -382,6 +425,7 @@ const userInfo = ref<UserInfo>(getUserInfo())
 
 // 账户管理状态
 const nicknameInput = ref('')
+const bioInput = ref(userInfo.value.bio || '')
 const passwordForm = reactive({
   currentPassword: '',
   newPassword: '',
@@ -571,6 +615,52 @@ const loadMyPosts = async () => {
   }
 }
 
+const loadUserProfile = async () => {
+  try {
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      return
+    }
+    const currentUser = JSON.parse(currentUserStr)
+    if (!currentUser?.id) {
+      console.error('无法获取当前用户ID')
+      return
+    }
+
+    const client = supabaseService.getClient()
+    const { data, error } = await client
+      .from('users')
+      .select('id, username, nickname, email, bio')
+      .eq('id', currentUser.id)
+      .single()
+
+    if (error) {
+      console.error('加载用户资料失败:', error)
+      return
+    }
+
+    if (data) {
+      userInfo.value = {
+        name: data.nickname || data.username || '演示用户',
+        email: data.email || userInfo.value.email,
+        bio: data.bio || ''
+      }
+      bioInput.value = userInfo.value.bio || ''
+
+      const updatedLocalUser = {
+        ...currentUser,
+        nickname: data.nickname || currentUser.nickname,
+        username: data.username || currentUser.username,
+        email: data.email || currentUser.email,
+        bio: data.bio || ''
+      }
+      localStorage.setItem('currentUser', JSON.stringify(updatedLocalUser))
+    }
+  } catch (error) {
+    console.error('加载用户资料时出错:', error)
+  }
+}
+
 const loadMyResources = async () => {
   isLoadingResources.value = true
   try {
@@ -710,6 +800,43 @@ const updateNickname = async () => {
   }
 }
 
+const updateBio = async () => {
+  try {
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      alert('请先登录后再编辑个人签名')
+      return
+    }
+
+    const currentUser = JSON.parse(currentUserStr)
+    if (!currentUser?.id) {
+      alert('无法获取当前用户信息')
+      return
+    }
+
+    const client = supabaseService.getClient()
+    const newBio = bioInput.value.trim()
+
+    const { error } = await client
+      .from('users')
+      .update({ bio: newBio })
+      .eq('id', currentUser.id)
+
+    if (error) {
+      throw error
+    }
+
+    userInfo.value.bio = newBio
+    currentUser.bio = newBio
+    localStorage.setItem('currentUser', JSON.stringify(currentUser))
+
+    alert('个人签名已更新！')
+  } catch (error) {
+    console.error('更新个人签名失败:', error)
+    alert('更新失败: ' + (error instanceof Error ? error.message : '未知错误'))
+  }
+}
+
 // 修改密码
 const updatePassword = async () => {
   if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
@@ -826,6 +953,7 @@ const logout = () => {
 }
 
 onMounted(() => {
+  loadUserProfile()
   loadMyResources()
   loadMyPosts()
 })

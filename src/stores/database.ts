@@ -7,6 +7,7 @@ export const useDatabaseStore = defineStore('database', () => {
   // 响应式数据
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const followFeatureAvailable = ref(true)
 
   // 计算属性
   const isConnected = computed(() => connection.status === 'connected')
@@ -54,6 +55,11 @@ export const useDatabaseStore = defineStore('database', () => {
     avatar_url?: string
   }) {
     return supabaseService.createUser(userData)
+  }
+
+  // 根据用户ID获取用户
+  async function getUserById(userId: string) {
+    return supabaseService.getUserById(userId)
   }
 
   // 根据用户名获取用户
@@ -111,6 +117,179 @@ export const useDatabaseStore = defineStore('database', () => {
     return supabaseService.getFavorites(userId)
   }
 
+  // 获取用户资源数量
+  async function getUserResourceCount(userId: string) {
+    try {
+      const client = await getClient()
+      const { count, error } = await client
+        .from('resources')
+        .select('*', { count: 'exact', head: true })
+        .eq('created_by', userId)
+      
+      if (error) throw error
+      return count || 0
+    } catch (error) {
+      console.error('获取用户资源数量失败:', error)
+      return 0
+    }
+  }
+
+  // 获取用户帖子数量
+  async function getUserPostCount(userId: string) {
+    try {
+      const client = await getClient()
+      const { count, error } = await client
+        .from('community_posts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+      
+      if (error) throw error
+      return count || 0
+    } catch (error) {
+      console.error('获取用户帖子数量失败:', error)
+      return 0
+    }
+  }
+
+  // 获取用户发布的资源
+  async function getUserResources(userId: string) {
+    try {
+      const client = await getClient()
+      const { data, error } = await client
+        .from('resources')
+        .select('*')
+        .eq('created_by', userId)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('获取用户资源失败:', error)
+      return []
+    }
+  }
+
+  // 获取用户发布的帖子
+  async function getUserPosts(userId: string) {
+    try {
+      const client = await getClient()
+      const { data, error } = await client
+        .from('community_posts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('获取用户帖子失败:', error)
+      return []
+    }
+  }
+
+  // 检查是否关注了某用户
+  async function isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    if (!followFeatureAvailable.value) {
+      return false
+    }
+    try {
+      const client = await getClient()
+      const { data, error } = await client
+        .from('user_follows')
+        .select('*')
+        .eq('follower_id', followerId)
+        .eq('following_id', followingId)
+        .single()
+
+      if (error) {
+        if (error.code === 'PGRST205') {
+          followFeatureAvailable.value = false
+          console.warn('用户关注功能未启用：缺少 user_follows 表')
+          return false
+        }
+        if (error.code !== 'PGRST116') throw error
+      }
+      return !!data
+    } catch (err: any) {
+      if (err?.code === 'PGRST205') {
+        followFeatureAvailable.value = false
+        console.warn('用户关注功能未启用：缺少 user_follows 表')
+        return false
+      }
+      console.error('检查关注状态失败:', err)
+      return false
+    }
+  }
+
+  // 关注用户
+  async function followUser(followingId: string) {
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      if (!currentUser.id) {
+        throw new Error('用户未登录')
+      }
+
+      if (!followFeatureAvailable.value) {
+        throw new Error('当前环境尚未启用关注功能')
+      }
+
+      const client = await getClient()
+      const { data, error } = await client
+        .from('user_follows')
+        .insert([{
+          follower_id: currentUser.id,
+          following_id: followingId,
+          created_at: new Date().toISOString()
+        }])
+        .select()
+
+      if (error) {
+        if (error.code === 'PGRST205') {
+          followFeatureAvailable.value = false
+          throw new Error('当前环境尚未启用关注功能')
+        }
+        throw error
+      }
+      return data?.[0]
+    } catch (error) {
+      console.error('关注用户失败:', error)
+      throw error
+    }
+  }
+
+  // 取消关注用户
+  async function unfollowUser(followingId: string) {
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      if (!currentUser.id) {
+        throw new Error('用户未登录')
+      }
+
+      if (!followFeatureAvailable.value) {
+        throw new Error('当前环境尚未启用关注功能')
+      }
+
+      const client = await getClient()
+      const { error } = await client
+        .from('user_follows')
+        .delete()
+        .eq('follower_id', currentUser.id)
+        .eq('following_id', followingId)
+
+      if (error) {
+        if (error.code === 'PGRST205') {
+          followFeatureAvailable.value = false
+          throw new Error('当前环境尚未启用关注功能')
+        }
+        throw error
+      }
+      return true
+    } catch (error) {
+      console.error('取消关注失败:', error)
+      throw error
+    }
+  }
+
   // 添加到收藏
   async function addToFavorites(userId: string, resourceId: string) {
     return supabaseService.addToFavorites(userId, resourceId)
@@ -144,6 +323,7 @@ export const useDatabaseStore = defineStore('database', () => {
     getClient,
     getUsers,
     createUser,
+    getUserById,
     getUserByUsername,
     getUserByEmail,
     getUserByNickname,
@@ -155,6 +335,13 @@ export const useDatabaseStore = defineStore('database', () => {
     getFavorites,
     addToFavorites,
     removeFromFavorites,
+    getUserResourceCount,
+    getUserPostCount,
+    getUserResources,
+    getUserPosts,
+    isFollowing,
+    followUser,
+    unfollowUser,
     reconnect
   }
 })

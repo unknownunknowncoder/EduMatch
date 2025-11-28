@@ -31,8 +31,7 @@ const routes = [
   {
     path: '/resource/:id',
     name: 'ResourceDetails',
-    component: () => import('@/views/ResourceDetails.vue'),
-    meta: { requiresAuth: true }
+    component: () => import('@/views/ResourceDetails.vue')
   },
   {
     path: '/create-resource',
@@ -43,14 +42,12 @@ const routes = [
   {
     path: '/community',
     name: 'Community',
-    component: () => import('@/views/CommunityPage.vue'),
-    meta: { requiresAuth: true }
+    component: () => import('@/views/CommunityPage.vue')
   },
   {
     path: '/post/:id',
     name: 'PostDetail',
-    component: () => import('@/views/PostDetail.vue'),
-    meta: { requiresAuth: true }
+    component: () => import('@/views/PostDetail.vue')
   },
 
   {
@@ -82,6 +79,11 @@ const routes = [
     name: 'MyAllResources',
     component: () => import('@/views/MyAllResourcesPage.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/user/:userId',
+    name: 'UserProfile',
+    component: () => import('@/views/UserProfilePage.vue')
   },
   {
     path: '/:pathMatch(.*)*',

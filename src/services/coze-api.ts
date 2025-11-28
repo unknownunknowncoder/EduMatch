@@ -19,6 +19,7 @@ export interface CozeResource {
   study_data: string
   bv_number?: string
   brief_description?: string
+  reason?: string
 }
 
 export interface CozeSearchResponse {
@@ -61,7 +62,7 @@ class CozeAPIService {
     console.log('🔍 通过代理服务器搜索扣子API:', request)
     
     // 直接使用代理服务器
-    const response = await fetch('http://localhost:3002/api/coze/chat', {
+    const response = await fetch('http://localhost:3003/api/coze/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -90,7 +91,7 @@ class CozeAPIService {
     console.log('🔍 通过代理服务器搜索扣子API:', request)
     
     // 直接使用代理服务器
-    const response = await fetch('http://localhost:3002/api/coze/chat', {
+    const response = await fetch('http://localhost:3003/api/coze/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
