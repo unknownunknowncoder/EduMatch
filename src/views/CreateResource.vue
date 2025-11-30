@@ -182,17 +182,14 @@
       </div>
     </div>
 
-    <!-- 成功提示框 -->
+    <!-- 通用提示框 -->
     <div 
-      v-if="showSuccessMessage"
-      class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity duration-300"
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      class="flex items-center space-x-2"
     >
-      <div class="flex items-center">
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        资源创建成功，请在'个人中心-我的资源'中查看
-      </div>
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
     </div>
   </div>
 </template>
@@ -201,6 +198,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabaseService } from '@/services/supabase'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
 
 const router = useRouter()
 
@@ -219,8 +217,7 @@ const formData = reactive({
 // 提交状态
 const isSubmitting = ref(false)
 
-// 成功提示框状态
-const showSuccessMessage = ref(false)
+
 
 // 提交表单
 const handleSubmit = async () => {
@@ -244,7 +241,7 @@ const handleSubmit = async () => {
     
     // 如果没有登录用户，提示登录
     if (!currentUserId) {
-      alert('请先登录后再发布资源')
+      showToast('请先登录后再发布资源', 'warning')
       isSubmitting.value = false
       return
     }
@@ -276,8 +273,8 @@ const handleSubmit = async () => {
       throw new Error('资源创建失败：返回数据无效')
     }
     
-    // 显示成功提示框
-    showSuccessMessage.value = true
+    // 显示成功提示
+    showToast('资源创建成功，请在\'个人中心-我的资源\'中查看', 'success')
     
     // 2秒后跳转到资源详情页面
     setTimeout(() => {
@@ -285,7 +282,7 @@ const handleSubmit = async () => {
     }, 2000)
   } catch (error) {
     console.error('提交失败:', error)
-    alert('资源创建失败，请重试: ' + error.message)
+    showToast('资源创建失败，请重试: ' + error.message, 'error')
   } finally {
     isSubmitting.value = false
   }

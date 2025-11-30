@@ -1,5 +1,14 @@
 <template>
   <div class="min-h-screen bg-[#F3F4F6] font-sans text-slate-800 py-8">
+    <!-- 通用提示框 -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      class="flex items-center space-x-2"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- 返回按钮 -->
       <div class="mb-6">
@@ -80,6 +89,7 @@
           <p class="whitespace-pre-wrap">{{ post.content }}</p>
         </div>
 
+        <!-- 关联资源信息 -->
         <div 
           v-if="post.resource" 
           class="mt-8 p-6 bg-indigo-50/80 border border-indigo-100 rounded-2xl"
@@ -101,6 +111,22 @@
             >
               查看资源
             </a>
+          </div>
+        </div>
+
+        <!-- 资源已删除提示 -->
+        <div 
+          v-else-if="post.resource_id && !post.resource" 
+          class="mt-8 p-6 bg-gray-50/80 border border-gray-200 rounded-2xl"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+              <p class="text-sm font-medium text-gray-600">发布者已删除</p>
+              <p class="text-xs text-gray-500 mt-1">该帖子关联的学习资源已被发布者删除</p>
+            </div>
           </div>
         </div>
       </div>
@@ -246,6 +272,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import type { Post, Comment } from '@/types/community'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
 
 const route = useRoute()
 const router = useRouter()
@@ -381,7 +408,7 @@ const toggleLike = async (post: Post) => {
       }
     } catch (error) {
       console.error('❌ 数据库连接失败:', error.message)
-      alert('数据库连接失败，请稍后重试')
+      showToast('数据库连接失败，请稍后重试', 'error')
       return
     }
     
@@ -439,7 +466,7 @@ const toggleLike = async (post: Post) => {
     
   } catch (error) {
     console.error('❌ 点赞操作失败:', error)
-    alert('操作失败，请稍后重试')
+    showToast('操作失败，请稍后重试', 'error')
     
     // 恢复原始状态
     post.is_liked = !post.is_liked
@@ -492,7 +519,7 @@ const toggleFavorite = async (post: Post) => {
       }
     } catch (error) {
       console.error('❌ 数据库连接失败:', error.message)
-      alert('数据库连接失败，请稍后重试')
+      showToast('数据库连接失败，请稍后重试', 'error')
       return
     }
     
@@ -550,7 +577,7 @@ const toggleFavorite = async (post: Post) => {
     
   } catch (error) {
     console.error('❌ 收藏操作失败:', error)
-    alert('操作失败，请稍后重试')
+    showToast('操作失败，请稍后重试', 'error')
     
     // 恢复原始状态
     post.is_favorited = !post.is_favorited

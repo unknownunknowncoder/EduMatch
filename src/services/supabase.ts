@@ -231,6 +231,64 @@ export class SupabaseService {
     return data[0]
   }
 
+  // 获取用户发布的社区帖子
+  async getCommunityPostsByUserId(userId: string) {
+    console.log('🔄 获取用户发布的社区帖子，用户ID:', userId)
+    const client = this.getClient()
+    
+    const { data, error } = await client
+      .from('community_posts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('❌ 获取用户社区帖子失败:', error)
+      throw error
+    }
+    
+    console.log('✅ 成功获取用户社区帖子:', data?.length || 0, '条')
+    return data
+  }
+
+  // 删除社区帖子
+  async deleteCommunityPost(postId: string) {
+    console.log('🔄 删除社区帖子，帖子ID:', postId)
+    const client = this.getClient()
+    
+    const { error } = await client
+      .from('community_posts')
+      .delete()
+      .eq('id', postId)
+    
+    if (error) {
+      console.error('❌ 删除社区帖子失败:', error)
+      throw error
+    }
+    
+    console.log('✅ 成功删除社区帖子')
+  }
+
+  // 获取帖子评论数
+  async getPostCommentsCount(postId: string) {
+    console.log('🔄 获取帖子评论数，帖子ID:', postId)
+    const client = this.getClient()
+    
+    const { data, error } = await client
+      .from('post_comments')
+      .select('id')
+      .eq('post_id', postId)
+    
+    if (error) {
+      console.error('❌ 获取帖子评论数失败:', error)
+      return 0
+    }
+    
+    const count = data ? data.length : 0
+    console.log('✅ 成功获取帖子评论数:', count)
+    return count
+  }
+
   // 学习记录相关操作
   async addLearningRecord(recordData: {
     user_id: string

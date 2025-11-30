@@ -1,5 +1,14 @@
 <template>
   <div class="min-h-screen bg-[#F3F4F6] font-sans text-slate-800 pb-10">
+    <!-- 通用提示框 -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      class="flex items-center space-x-2"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
     
     <!-- 1. 顶部 Hero 区域 -->
     <div class="bg-white border-b border-slate-200 pt-8 pb-12 mb-8">
@@ -303,7 +312,7 @@
                 <textarea 
                   v-model="newPostForm.content" 
                   rows="6" 
-                  placeholder="详细分享你的经验、心得或问题..." 
+                  placeholder="详细分享你的经验、心得或问题...（选填）" 
                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
                 ></textarea>
              </div>
@@ -389,6 +398,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDatabaseStore } from '@/stores/database';
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message';
 import { 
   Search, 
   Plus, 
@@ -670,7 +680,7 @@ const toggleLike = async (post: any) => {
       }
     } catch (error) {
       console.error('❌ 数据库连接失败:', error.message);
-      alert('数据库连接失败，请稍后重试');
+      showToast('数据库连接失败，请稍后重试', 'error');
       return;
     }
     
@@ -724,7 +734,7 @@ const toggleLike = async (post: any) => {
     }
   } catch (error) {
     console.error('❌ 点赞操作失败:', error);
-    alert('操作失败，请稍后重试');
+    showToast('操作失败，请稍后重试', 'error');
   } finally {
     isLiking.value = false;
   }
@@ -768,7 +778,7 @@ const toggleFavorite = async (post: any) => {
       }
     } catch (error) {
       console.error('❌ 数据库连接失败:', error.message);
-      alert('数据库连接失败，请稍后重试');
+      showToast('数据库连接失败，请稍后重试', 'error');
       return;
     }
     
@@ -822,7 +832,7 @@ const toggleFavorite = async (post: any) => {
     }
   } catch (error) {
     console.error('❌ 收藏操作失败:', error);
-    alert('操作失败，请稍后重试');
+    showToast('操作失败，请稍后重试', 'error');
   } finally {
     isFavoriting.value = false;
   }
@@ -1112,7 +1122,8 @@ const removeTag = (index: number) => {
 };
 
 const submitPost = async () => {
-  if (!newPostForm.title.trim() || !newPostForm.content.trim()) {
+  if (!newPostForm.title.trim()) {
+    showToast('请填写标题', 'warning');
     return;
   }
   
@@ -1194,9 +1205,12 @@ const submitPost = async () => {
     closeModal();
     loadPopularTags();
     
+    // 显示成功提示
+    showToast('发布经验成功', 'success');
+    
   } catch (error) {
     console.error('❌ 发布帖子失败:', error);
-    alert('发布失败，请重试');
+    showToast('发布失败，请重试', 'error');
   } finally {
     isSubmitting.value = false;
   }
