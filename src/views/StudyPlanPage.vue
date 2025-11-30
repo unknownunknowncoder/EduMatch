@@ -737,8 +737,8 @@ const loadDatabasePlans = async () => {
               ? Math.max(1, Math.ceil((target.getTime() - start.getTime()) / msPerDay))
               : 1
             const remainingDays = (target && !isNaN(target.getTime()))
-              ? Math.max(0, Math.ceil((target.getTime() - todayDate.getTime()) / msPerDay))
-              : 0
+              ? Math.max(1, Math.ceil((target.getTime() - todayDate.getTime()) / msPerDay))
+              : 1
             const progress = totalDays > 0
               ? Math.min(100, Math.round((checkinCount / totalDays) * 100))
               : (plan.progress || 0)
@@ -1127,6 +1127,22 @@ const handleCheckin = async (plan: StudyPlan) => {
     
     const currentUser = JSON.parse(storedUser)
     console.log('✅ 获取到当前用户:', { id: currentUser.id, username: currentUser.username })
+    
+    // 验证打卡日期不能早于计划开始日期
+    const planStartDate = plan.startDate || plan.start_date
+    if (planStartDate) {
+      const now = new Date()
+      const today = now.toISOString().split('T')[0]
+      const startDate = new Date(planStartDate).toISOString().split('T')[0]
+      
+      console.log(`📅 验证日期: 今天=${today}, 开始日期=${startDate}`)
+      
+      if (today < startDate) {
+        showToast(`打卡日期不能早于计划开始日期 ${formatDate(planStartDate)}`, 'warning')
+        isCheckingIn.value = false
+        return
+      }
+    }
     
     // 计算今日日期，供查询与写入复用
     const now = new Date()
