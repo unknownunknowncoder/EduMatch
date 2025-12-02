@@ -231,6 +231,77 @@ export class SupabaseService {
     return data[0]
   }
 
+  // 获取用户发布的社区帖子
+  async getCommunityPostsByUserId(userId: string) {
+    console.log('🔄 获取用户发布的社区帖子，用户ID:', userId)
+    const client = this.getClient()
+    
+    const { data, error } = await client
+      .from('community_posts')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    
+    if (error) {
+      console.error('❌ 获取用户社区帖子失败:', error)
+      throw error
+    }
+    
+    console.log('✅ 成功获取用户社区帖子:', data?.length || 0, '条')
+    return data
+  }
+
+  // 获取社区帖子详情
+  async getPostById(id: string) {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('community_posts')
+      .select('*')
+      .eq('id', id)
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  // 删除社区帖子
+  async deleteCommunityPost(postId: string) {
+    console.log('🔄 删除社区帖子，帖子ID:', postId)
+    const client = this.getClient()
+    
+    const { error } = await client
+      .from('community_posts')
+      .delete()
+      .eq('id', postId)
+    
+    if (error) {
+      console.error('❌ 删除社区帖子失败:', error)
+      throw error
+    }
+    
+    console.log('✅ 成功删除社区帖子')
+  }
+
+  // 获取帖子评论数
+  async getPostCommentsCount(postId: string) {
+    console.log('🔄 获取帖子评论数，帖子ID:', postId)
+    const client = this.getClient()
+    
+    const { data, error } = await client
+      .from('post_comments')
+      .select('id')
+      .eq('post_id', postId)
+    
+    if (error) {
+      console.error('❌ 获取帖子评论数失败:', error)
+      return 0
+    }
+    
+    const count = data ? data.length : 0
+    console.log('✅ 成功获取帖子评论数:', count)
+    return count
+  }
+
   // 学习记录相关操作
   async addLearningRecord(recordData: {
     user_id: string
@@ -355,11 +426,116 @@ export class SupabaseService {
     return data
   }
 
+  // 学习计划相关操作
+  async getStudyPlanById(id: string) {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('study_plans')
+      .select(`
+        *,
+        user:user_id (
+          id,
+          username,
+          nickname
+        )
+      `)
+      .eq('id', id)
+      .single()
+    
+    if (error) throw error
+    return data
+  }
+
+  async deleteStudyPlan(id: string) {
+    const client = this.getClient()
+    const { error } = await client
+      .from('study_plans')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+    return true
+  }
+
+  async deleteResource(id: string) {
+    const client = this.getClient()
+    const { error } = await client
+      .from('resources')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+    return true
+  }
+
+  async updateStudyPlan(id: string, updates: any) {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('study_plans')
+      .update(updates)
+      .eq('id', id)
+      .select()
+    
+    if (error) throw error
+    return data[0]
+  }
+
+  async deleteStudyPlan(id: string) {
+    const client = this.getClient()
+    const { error } = await client
+      .from('study_plans')
+      .delete()
+      .eq('id', id)
+    
+    if (error) throw error
+    return true
+  }
+
+  async getStudyPlanCheckins(planId: string) {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('study_plan_checkins')
+      .select('*')
+      .eq('plan_id', planId)
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data
+  }
+
+  async addStudyPlanCheckin(planId: string, checkinData: {
+    hours: number
+    notes?: string
+    date?: string
+  }) {
+    const client = this.getClient()
+    
+    // 获取当前用户ID
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
+    if (!currentUser.id) {
+      throw new Error('用户未登录')
+    }
+    
+    const { data, error } = await client
+      .from('study_plan_checkins')
+      .insert([{
+        plan_id: planId,
+        user_id: currentUser.id,
+        hours: checkinData.hours,
+        notes: checkinData.notes,
+        checkin_date: checkinData.date || new Date().toISOString().split('T')[0],
+        created_at: new Date().toISOString()
+      }])
+      .select()
+    
+    if (error) throw error
+    return data[0]
+  }
+
   // 通用查询方法
   async customQuery<T = any>(table: string, options: any = {}) {
     return dbService.query(table, options) as Promise<T[]>
   }
 }
 
-// 导出单例实例
 export const supabaseService = new SupabaseService()

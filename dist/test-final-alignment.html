@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论缩进修复测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 复制CommentComponent.vue的样式 */
+        .comment-wrapper {
+            margin-bottom: 16px;
+        }
+
+        /* 一级评论：无缩进 */
+        .comment-wrapper.level-1 {
+            margin-left: 0;
+        }
+
+        /* 二级评论：有缩进 */
+        .comment-wrapper.level-2 {
+            position: relative;
+            margin-left: 40px;
+            padding-left: 16px;
+        }
+
+        /* 三级及以上评论：与二级评论完全对齐 */
+        .comment-wrapper.level-3-plus {
+            position: relative;
+            margin-left: 40px !important; /* 与二级评论相同的缩进 */
+            padding-left: 16px !important;
+        }
+
+        /* 关键：强制所有嵌套在level-3-plus中的评论都不额外缩进 */
+        .comment-wrapper.level-3-plus .comment-wrapper,
+        .comment-wrapper.level-3-plus .comment-wrapper.level-2,
+        .comment-wrapper.level-3-plus .comment-wrapper.level-3-plus {
+            margin-left: 0 !important; /* 强制所有子级评论相对父级不缩进 */
+            padding-left: 16px !important; /* 保持与父级的对齐 */
+        }
+
+        /* 特别确保replies-section不产生额外缩进 */
+        .comment-wrapper.level-3-plus .replies-section,
+        .level-3-plus .replies-section {
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+        }
+
+        /* 强制所有深层嵌套的评论都与二级评论对齐 */
+        .comment-wrapper .comment-wrapper .comment-wrapper {
+            margin-left: 0 !important;
+            padding-left: 16px !important;
+        }
+
+        .comment-wrapper .comment-wrapper .comment-wrapper .comment-wrapper {
+            margin-left: 0 !important;
+            padding-left: 16px !important;
+        }
+
+        .replies-section {
+            margin-top: 16px;
+            padding-left: 0 !important;
+            border-left: none;
+            margin-left: 0 !important;
+        }
+
+        /* 确保所有嵌套的replies-section都没有缩进 */
+        .level-3-plus .replies-section,
+        .level-2 .replies-section,
+        .level-3-plus .level-3-plus .replies-section,
+        .level-2 .level-3-plus .replies-section {
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+        }
+
+        /* 强制所有深层嵌套的replies-section都不缩进 */
+        .replies-section .replies-section,
+        .replies-section .replies-section .replies-section {
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+        }
+
+        /* 为二级及以上添加分隔线 */
+        .comment-wrapper.level-2::before,
+        .comment-wrapper.level-3-plus::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+            border-radius: 1px;
+        }
+
+        .comment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .comment-avatar .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #f0f0f0;
+        }
+
+        .comment-user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .comment-date {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        .comment-content {
+            color: #444;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .reply-prefix {
+            color: #007bff;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+
+        .has-reply-prefix {
+            margin-left: 4px;
+        }
+
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .reply-btn {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .reply-btn:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+
+        .level-indicator {
+            position: absolute;
+            left: -80px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .debug-border {
+            border: 2px solid red;
+        }
+
+        .help-text {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="test-container">
+        <h1 class="text-2xl font-bold mb-4">评论缩进修复测试</h1>
+        
+        <div class="help-text">
+            <h3 class="font-bold mb-2">预期效果：</h3>
+            <ul class="list-disc list-inside space-y-1 text-sm">
+                <li>一级评论（L1）：无缩进，靠最左边</li>
+                <li>二级评论（L2）：有缩进，向右40px</li>
+                <li>三级及以上评论（L3+）：与二级评论对齐，不再额外缩进</li>
+                <li>所有L3+评论应该在一条垂直线上</li>
+            </ul>
+        </div>
+
+        <!-- 一级评论 -->
+        <div class="comment-wrapper level-1">
+            <div class="level-indicator">L1</div>
+            <div class="comment-item debug-border">
+                <div class="comment-header">
+                    <div class="comment-avatar">
+                        <div class="avatar bg-blue-500 text-white flex items-center justify-center">A</div>
+                    </div>
+                    <div class="comment-user-info">
+                        <span class="comment-author">用户A</span>
+                        <span class="comment-date">2024-01-01 10:00</span>
+                    </div>
+                </div>
+                <div class="comment-content">
+                    这是一级评论，应该没有缩进，靠在最左边。
+                </div>
+                <div class="comment-actions">
+                    <button class="reply-btn">↩️ 回复</button>
+                </div>
+            </div>
+            
+            <!-- 二级评论 -->
+            <div class="replies-section">
+                <div class="comment-wrapper level-2">
+                    <div class="level-indicator">L2</div>
+                    <div class="comment-item debug-border">
+                        <div class="comment-header">
+                            <div class="comment-avatar">
+                                <div class="avatar bg-green-500 text-white flex items-center justify-center">B</div>
+                            </div>
+                            <div class="comment-user-info">
+                                <span class="comment-author">用户B</span>
+                                <span class="comment-date">2024-01-01 10:05</span>
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            <span class="reply-prefix">回复：用户A</span>
+                            <span class="has-reply-prefix">这是二级评论，应该有缩进，向右40px。</span>
+                        </div>
+                        <div class="comment-actions">
+                            <button class="reply-btn">↩️ 回复</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 三级评论 -->
+                    <div class="replies-section">
+                        <div class="comment-wrapper level-3-plus">
+                            <div class="level-indicator">L3</div>
+                            <div class="comment-item debug-border">
+                                <div class="comment-header">
+                                    <div class="comment-avatar">
+                                        <div class="avatar bg-purple-500 text-white flex items-center justify-center">C</div>
+                                    </div>
+                                    <div class="comment-user-info">
+                                        <span class="comment-author">用户C</span>
+                                        <span class="comment-date">2024-01-01 10:10</span>
+                                    </div>
+                                </div>
+                                <div class="comment-content">
+                                    <span class="reply-prefix">回复：用户B</span>
+                                    <span class="has-reply-prefix">这是三级评论，应该与二级评论对齐，不再额外缩进。</span>
+                                </div>
+                                <div class="comment-actions">
+                                    <button class="reply-btn">↩️ 回复</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 四级评论 -->
+                            <div class="replies-section">
+                                <div class="comment-wrapper level-3-plus">
+                                    <div class="level-indicator">L4</div>
+                                    <div class="comment-item debug-border">
+                                        <div class="comment-header">
+                                            <div class="comment-avatar">
+                                                <div class="avatar bg-red-500 text-white flex items-center justify-center">D</div>
+                                            </div>
+                                            <div class="comment-user-info">
+                                                <span class="comment-author">用户D</span>
+                                                <span class="comment-date">2024-01-01 10:15</span>
+                                            </div>
+                                        </div>
+                                        <div class="comment-content">
+                                            <span class="reply-prefix">回复：用户C</span>
+                                            <span class="has-reply-prefix">这是四级评论，应该与二级、三级评论在同一垂直线上，对齐。</span>
+                                        </div>
+                                        <div class="comment-actions">
+                                            <button class="reply-btn">↩️ 回复</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 另一个二级评论 -->
+                <div class="comment-wrapper level-2">
+                    <div class="level-indicator">L2</div>
+                    <div class="comment-item debug-border">
+                        <div class="comment-header">
+                            <div class="comment-avatar">
+                                <div class="avatar bg-yellow-500 text-white flex items-center justify-center">E</div>
+                            </div>
+                            <div class="comment-user-info">
+                                <span class="comment-author">用户E</span>
+                                <span class="comment-date">2024-01-01 10:20</span>
+                            </div>
+                        </div>
+                        <div class="comment-content">
+                            这是另一个二级评论，应该与上面的二级评论对齐。
+                        </div>
+                        <div class="comment-actions">
+                            <button class="reply-btn">↩️ 回复</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="help-text mt-8">
+            <h3 class="font-bold mb-2">检查要点：</h3>
+            <ul class="list-disc list-inside space-y-1 text-sm">
+                <li>所有红色边框的评论框的左边缘应该对齐到相应位置</li>
+                <li>L2、L3、L4的红色边框应该在一条垂直线上</li>
+                <li>L1评论单独在左边，无缩进</li>
+                <li>L3+评论没有额外的margin-left叠加</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

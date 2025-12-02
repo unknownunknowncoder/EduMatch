@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试：真正无缩进</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        /* 确保所有容器都没有缩进 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        .comment-wrapper {
+            margin: 0 !important; /* 强制无缩进 */
+            padding: 0 !important; /* 强制无内边距 */
+            margin-bottom: 10px;
+        }
+        
+        .comment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: 8px;
+            background: #fafafa;
+            margin-left: 0 !important; /* 强制无缩进 */
+            margin-right: 0 !important;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .comment-date {
+            color: #666;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        
+        .comment-content {
+            color: #444;
+            line-height: 1.5;
+        }
+        
+        .test-border {
+            border: 2px solid red;
+            background: #fffbf0;
+        }
+        
+        .debug {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 测试：真正无缩进</h1>
+    
+    <div class="debug">
+        调试信息：所有容器的 margin 和 padding 都被设置为 0
+    </div>
+    
+    <!-- 顶级评论1 -->
+    <div class="comment-wrapper test-border">
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-avatar">A</div>
+                <span class="comment-author">用户A</span>
+                <span class="comment-date">2小时前</span>
+            </div>
+            <div class="comment-content">顶级评论 - 应该完全左对齐</div>
+        </div>
+    </div>
+    
+    <!-- 顶级评论2 -->
+    <div class="comment-wrapper test-border">
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-avatar">B</div>
+                <span class="comment-author">用户B</span>
+                <span class="comment-date">1小时前</span>
+            </div>
+            <div class="comment-content">顶级评论 - 应该完全左对齐</div>
+        </div>
+    </div>
+    
+    <!-- 回复1 -->
+    <div class="comment-wrapper test-border">
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-avatar">C</div>
+                <span class="comment-author">用户C</span>
+                <span class="comment-date">45分钟前</span>
+            </div>
+            <div class="comment-content">回复 - 应该完全左对齐</div>
+            
+            <!-- 嵌套回复 -->
+            <div class="comment-wrapper test-border">
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-avatar">D</div>
+                        <span class="comment-author">用户D</span>
+                        <span class="comment-date">30分钟前</span>
+                    </div>
+                    <div class="comment-content">嵌套回复 - 应该完全左对齐</div>
+                    
+                    <div class="comment-wrapper test-border">
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <div class="comment-avatar">E</div>
+                                <span class="comment-author">用户E</span>
+                                <span class="comment-date">15分钟前</span>
+                            </div>
+                            <div class="comment-content">深层嵌套 - 应该完全左对齐</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 回复2 -->
+    <div class="comment-wrapper test-border">
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-avatar">F</div>
+                <span class="comment-author">用户F</span>
+                <span class="comment-date">5分钟前</span>
+            </div>
+            <div class="comment-content">另一个回复 - 应该完全左对齐</div>
+        </div>
+    </div>
+    
+    <div class="debug">
+        ✅ 如果所有评论框的红边框都在同一条垂直线上，说明无缩进成功<br>
+        ❌ 如果有任何评论框向右偏移，说明仍有缩进问题
+    </div>
+</body>
+</html>

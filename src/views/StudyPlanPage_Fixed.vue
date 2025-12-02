@@ -2,6 +2,9 @@
 <!-- 在原始 StudyPlanPage.vue 的打卡函数中替换 -->
 
 <script setup lang="ts">
+// 导入提示工具
+import { showToast } from '@/utils/message'
+
 // 修复后的打卡功能
 const handleCheckin = async (plan: StudyPlan) => {
   if (isCheckingIn.value) return
@@ -47,7 +50,7 @@ const handleCheckin = async (plan: StudyPlan) => {
     }
     
     if (existingCheckins && existingCheckins.length > 0) {
-      alert('今天已经打过卡了！')
+      showToast('今天已经打过卡了！', 'info')
       return
     }
     
@@ -90,7 +93,7 @@ const handleCheckin = async (plan: StudyPlan) => {
     
   } catch (error: any) {
     console.error('❌ 打卡功能错误:', error)
-    alert(`打卡失败: ${error.message}`)
+    showToast(`打卡失败: ${error.message}`, 'error')
   } finally {
     isCheckingIn.value = false
   }

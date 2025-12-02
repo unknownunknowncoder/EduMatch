@@ -30,13 +30,16 @@ export interface CozeSearchResponse {
 class CozeAPIService {
   private apiToken: string
   private botId: string
+  private proxyBaseUrl: string
 
   constructor() {
     this.apiToken = import.meta.env.VITE_COZE_API_TOKEN || ''
     this.botId = import.meta.env.VITE_COZE_BOT_ID || ''
+    this.proxyBaseUrl = import.meta.env.VITE_COZE_PROXY_URL || 'http://localhost:3003'
     console.log('Coze API配置:', { 
       hasToken: !!this.apiToken, 
       hasBotId: !!this.botId,
+      proxy: this.proxyBaseUrl,
       note: '通过代理服务器调用扣子API'
     })
   }
@@ -60,7 +63,7 @@ class CozeAPIService {
   async searchRecommendations(request: CozeSearchRequest): Promise<CozeSearchResponse> {
     console.log('🔍 开始搜索扣子API:', request)
     
-    const response = await fetch('http://localhost:3014/api/coze/chat', {
+    const response = await fetch(`${this.proxyBaseUrl}/api/coze/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

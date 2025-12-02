@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { isAdminLoggedIn, autoLogoutIfExpired } from '@/utils/adminAuth'
 
 const routes = [
   {
@@ -69,6 +70,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/study-plan/:id',
+    name: 'StudyPlanDetail',
+    component: () => import('@/views/StudyPlanDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/my-all-posts',
     name: 'MyAllPosts',
     component: () => import('@/views/MyAllPostsPage.vue'),
@@ -85,6 +92,42 @@ const routes = [
     name: 'UserProfile',
     component: () => import('@/views/UserProfilePage.vue')
   },
+  
+  {
+    path: '/admin',
+    name: 'AdminDatabase',
+    component: () => import('@/views/AdminDatabase.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/user/:userId',
+    name: 'UserDetailAdmin',
+    component: () => import('@/views/UserDetailAdmin.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/post/:id',
+    name: 'AdminPostDetail',
+    component: () => import('@/views/AdminPostDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/plan/:id',
+    name: 'AdminPlanDetail',
+    component: () => import('@/views/AdminPlanDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/resource/:id',
+    name: 'AdminResourceDetail',
+    component: () => import('@/views/AdminResourceDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/login',
+    name: 'AdminLogin',
+    component: () => import('@/views/AdminLogin.vue')
+  },
   {
     path: '/:pathMatch(.*)*',
     redirect: '/login'
@@ -96,9 +139,36 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫 - 简化版本
+// 路由守卫
 router.beforeEach((to, _from, next) => {
-  // 检查该路由是否需要认证
+  // 检查是否是管理员路由
+  if (to.path.startsWith('/admin')) {
+    // 检查登录状态是否过期
+    if (autoLogoutIfExpired()) {
+      next('/admin/login')
+      return
+    }
+    
+    // 管理员登录页面不需要认证
+    if (to.path === '/admin/login') {
+      next()
+      return
+    }
+    
+    // 其他管理员页面需要管理员认证
+    if (!isAdminLoggedIn()) {
+      next({
+        path: '/admin/login',
+        query: { redirect: to.fullPath }
+      })
+      return
+    }
+    
+    next()
+    return
+  }
+  
+  // 普通用户认证检查
   if (to.meta.requiresAuth) {
     // 获取当前用户信息
     const currentUser = localStorage.getItem('currentUser')

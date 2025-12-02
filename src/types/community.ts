@@ -30,6 +30,11 @@ export interface Comment {
   content: string
   author_name: string
   created_at: string
+  parent_id?: string | null
+  user_id: string
+  replies?: Comment[]
+  reply_count?: number
+  comment_type?: 'comment' | 'reply'
 }
 
 // 帖子收藏类型

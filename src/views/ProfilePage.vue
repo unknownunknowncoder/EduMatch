@@ -1,5 +1,14 @@
 <template>
   <div class="p-6 md:p-8">
+    <!-- 通用提示框 -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      class="flex items-center space-x-2"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
     <!-- 页面标题 -->
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
@@ -18,16 +27,43 @@
           <div class="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl font-bold mr-6">
             {{ userAvatar }}
           </div>
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">{{ userInfo.name }}</h2>
-            <div class="flex items-center">
+          <div class="flex-1">
+            <!-- 昵称行 -->
+            <div class="flex items-center mb-2">
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ userInfo.name }}</h2>
+              <button
+                @click="editNickname"
+                class="ml-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                title="编辑昵称"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- 状态标签行 -->
+            <div class="flex items-center mb-3">
               <span class="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full text-sm font-medium">
                 活跃学习者
               </span>
             </div>
-            <p class="mt-3 text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl">
-              {{ userInfo.bio || '这个人很懒，还没有写个人签名~' }}
-            </p>
+            
+            <!-- 个人签名行 -->
+            <div class="flex items-start">
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed max-w-2xl">
+                {{ userInfo.bio || '这个人很懒，还没有写个人签名~' }}
+                <button
+                  @click="editBio"
+                  class="ml-1 inline-flex p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors align-middle"
+                  title="编辑个人签名"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </button>
+              </p>
+            </div>
           </div>
         </div>
 
@@ -189,70 +225,6 @@
       <div class="p-6 border-b border-gray-100 dark:border-gray-700">
         <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">账户管理</h4>
         <div class="space-y-4">
-          <!-- 编辑昵称 -->
-          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div>
-                <h3 class="font-medium text-gray-900 dark:text-white">编辑昵称</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">修改你在平台上的显示名称</p>
-              </div>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-              </svg>
-            </div>
-            <div class="flex gap-3">
-              <input 
-                v-model="nicknameInput"
-                type="text" 
-                placeholder="输入新昵称"
-                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white"
-              >
-              <button 
-                @click="updateNickname"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                更新昵称
-              </button>
-            </div>
-          </div>
-
-          <!-- 编辑个人签名 -->
-          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div>
-                <h3 class="font-medium text-gray-900 dark:text-white">个人签名</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">向大家简单介绍一下自己</p>
-              </div>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 4H7a2 2 0 01-2-2v-4a2 2 0 012-2h10a2 2 0 012 2v4a2 2 0 01-2 2zM9 4h6a2 2 0 012 2v4H7V6a2 2 0 012-2z"></path>
-              </svg>
-            </div>
-            <textarea
-              v-model="bioInput"
-              rows="3"
-              maxlength="200"
-              placeholder="例：全栈开发者，正在冲刺前端高级工程师～"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-white resize-none"
-            ></textarea>
-            <div class="flex items-center justify-between mt-3 text-sm text-gray-500 dark:text-gray-400">
-              <span>{{ bioInput.length }}/200</span>
-              <div class="flex gap-2">
-                <button
-                  @click="bioInput = userInfo.bio || ''"
-                  class="px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-gray-900"
-                >
-                  恢复
-                </button>
-                <button
-                  @click="updateBio"
-                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  保存签名
-                </button>
-              </div>
-            </div>
-          </div>
-
           <!-- 修改密码 -->
           <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
@@ -294,52 +266,17 @@
         </div>
       </div>
 
-      <!-- 账户操作 -->
-      <div class="p-6">
-        <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">账户操作</h4>
-        <div class="space-y-4">
-          <!-- 切换账号 -->
-          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div>
-                <h3 class="font-medium text-gray-900 dark:text-white">切换账号</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400">退出当前账号并登录其他账号</p>
-              </div>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
-              </svg>
-            </div>
-            <button 
-              @click="switchAccount"
-              class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-            >
-              切换账号
-            </button>
-          </div>
-
-          <!-- 退出登录 -->
-          <div class="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-              <div>
-                <h3 class="font-medium text-red-900 dark:text-red-100">退出登录</h3>
-                <p class="text-sm text-red-600 dark:text-red-300">安全退出当前账号</p>
-              </div>
-              <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-              </svg>
-            </div>
-            <button 
-              @click="logout"
-              class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-            >
-              退出登录
-            </button>
-          </div>
-        </div>
-      </div>
-
 
     </div>
+
+    <!-- 编辑用户信息弹窗 -->
+    <EditUserDialog
+      ref="editDialog"
+      :title="editDialogTitle"
+      :edit-type="editType"
+      :initial-value="editInitialValue"
+      @confirm="handleEditConfirm"
+    />
 
   </div>
 </template>
@@ -349,6 +286,8 @@ import { computed, onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import { supabaseService } from '@/services/supabase'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
+import EditUserDialog from '@/components/EditUserDialog.vue'
 
 interface UserInfo {
   name: string
@@ -392,6 +331,15 @@ interface MyPost {
 
 const router = useRouter()
 const databaseStore = useDatabaseStore()
+
+// 编辑对话框的引用
+const editDialog = ref<InstanceType<typeof EditUserDialog>>()
+
+// 编辑弹窗相关状态
+const editType = ref<'nickname' | 'bio'>('nickname')
+const editDialogTitle = ref('')
+const editInitialValue = ref('')
+
 const myResources = ref<MyResource[]>([])
 const myPosts = ref<MyPost[]>([])
 const isLoadingResources = ref(false)
@@ -424,8 +372,6 @@ const getUserInfo = (): UserInfo => {
 const userInfo = ref<UserInfo>(getUserInfo())
 
 // 账户管理状态
-const nicknameInput = ref('')
-const bioInput = ref(userInfo.value.bio || '')
 const passwordForm = reactive({
   currentPassword: '',
   newPassword: '',
@@ -630,7 +576,7 @@ const loadUserProfile = async () => {
     const client = supabaseService.getClient()
     const { data, error } = await client
       .from('users')
-      .select('id, username, nickname, email, bio')
+      .select('id, username, nickname, bio')
       .eq('id', currentUser.id)
       .single()
 
@@ -642,7 +588,7 @@ const loadUserProfile = async () => {
     if (data) {
       userInfo.value = {
         name: data.nickname || data.username || '演示用户',
-        email: data.email || userInfo.value.email,
+        email: userInfo.value.email, // 保持原有的email值
         bio: data.bio || ''
       }
       bioInput.value = userInfo.value.bio || ''
@@ -651,7 +597,6 @@ const loadUserProfile = async () => {
         ...currentUser,
         nickname: data.nickname || currentUser.nickname,
         username: data.username || currentUser.username,
-        email: data.email || currentUser.email,
         bio: data.bio || ''
       }
       localStorage.setItem('currentUser', JSON.stringify(updatedLocalUser))
@@ -721,136 +666,22 @@ const loadMyResources = async () => {
   }
 }
 
-// 更新昵称
-const updateNickname = async () => {
-  if (!nicknameInput.value.trim()) {
-    alert('请输入新昵称')
-    return
-  }
-  
-  try {
-    // 获取当前用户ID
-    const client = supabaseService.getClient()
-    let currentUserId = 'demo-user-id'
-    
-    // 从localStorage获取当前用户信息
-    const currentUser = localStorage.getItem('currentUser')
-    if (currentUser) {
-      const user = JSON.parse(currentUser)
-      if (user.id) {
-        currentUserId = user.id
-      }
-    } else {
-      // 如果没有本地用户信息，获取admin用户
-      const adminUser = await supabaseService.getUserByUsername('admin')
-      
-      if (adminUser) {
-        currentUserId = adminUser.id
-      } else {
-        alert('无法获取用户信息')
-        return
-      }
-    }
-    
-    // 尝试更新昵称到数据库
-    try {
-      await supabaseService.updateUserNickname(currentUserId, nicknameInput.value.trim())
-    } catch (dbError: any) {
-      // 如果nickname列不存在，使用username作为替代方案
-      if (dbError.message && dbError.message.includes('nickname')) {
-        console.log('nickname列不存在，暂时更新username')
-        const { error: updateError } = await client
-          .from('users')
-          .update({ username: nicknameInput.value.trim() })
-          .eq('id', currentUserId)
-        
-        if (updateError) {
-          throw new Error('数据库中缺少nickname列，且username更新失败: ' + updateError.message)
-        }
-        
-        // 同时更新本地存储中的用户名
-        if (currentUser) {
-          const user = JSON.parse(currentUser)
-          user.username = nicknameInput.value.trim()
-          user.nickname = nicknameInput.value.trim() // 本地存储中保存昵称
-          localStorage.setItem('currentUser', JSON.stringify(user))
-        }
-        
-        alert('用户名更新成功！（数据库中暂无昵称列，已更新用户名作为替代）')
-        nicknameInput.value = ''
-        return
-      }
-      throw dbError
-    }
-    
-    alert('昵称更新成功！')
-    
-    // 更新本地存储中的用户信息
-    if (currentUser) {
-      const user = JSON.parse(currentUser)
-      user.nickname = nicknameInput.value.trim()
-      localStorage.setItem('currentUser', JSON.stringify(user))
-    }
-    
-    nicknameInput.value = ''
-    
-  } catch (error) {
-    console.error('更新昵称失败:', error)
-    alert('更新失败: ' + (error instanceof Error ? error.message : '未知错误'))
-  }
-}
 
-const updateBio = async () => {
-  try {
-    const currentUserStr = localStorage.getItem('currentUser')
-    if (!currentUserStr) {
-      alert('请先登录后再编辑个人签名')
-      return
-    }
-
-    const currentUser = JSON.parse(currentUserStr)
-    if (!currentUser?.id) {
-      alert('无法获取当前用户信息')
-      return
-    }
-
-    const client = supabaseService.getClient()
-    const newBio = bioInput.value.trim()
-
-    const { error } = await client
-      .from('users')
-      .update({ bio: newBio })
-      .eq('id', currentUser.id)
-
-    if (error) {
-      throw error
-    }
-
-    userInfo.value.bio = newBio
-    currentUser.bio = newBio
-    localStorage.setItem('currentUser', JSON.stringify(currentUser))
-
-    alert('个人签名已更新！')
-  } catch (error) {
-    console.error('更新个人签名失败:', error)
-    alert('更新失败: ' + (error instanceof Error ? error.message : '未知错误'))
-  }
-}
 
 // 修改密码
 const updatePassword = async () => {
   if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-    alert('请填写所有密码字段')
+    showToast('请填写所有密码字段', 'warning')
     return
   }
   
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-    alert('新密码和确认密码不一致')
+    showToast('新密码和确认密码不一致', 'warning')
     return
   }
   
   if (passwordForm.newPassword.length < 6) {
-    alert('新密码长度至少为6位')
+    showToast('新密码长度至少为6位', 'warning')
     return
   }
   
@@ -875,17 +706,17 @@ const updatePassword = async () => {
           // 验证当前密码
           const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, adminUser.password_hash)
           if (!isCurrentPasswordValid) {
-            alert('当前密码不正确')
+            showToast('当前密码不正确', 'error')
             return
           }
           currentUserId = adminUser.id
         } else {
-          alert('无法获取用户信息')
+          showToast('无法获取用户信息', 'error')
           return
         }
       } catch (error) {
         console.error('获取admin用户失败:', error)
-        alert('无法获取用户信息')
+        showToast('无法获取用户信息', 'error')
         return
       }
     }
@@ -896,18 +727,18 @@ const updatePassword = async () => {
         const userData = await supabaseService.getUserById(currentUserId)
         
         if (!userData) {
-          alert('无法获取用户信息')
+          showToast('无法获取用户信息', 'error')
           return
         }
         
         const isCurrentPasswordValid = await supabaseService.verifyPassword(passwordForm.currentPassword, userData.password_hash)
         if (!isCurrentPasswordValid) {
-          alert('当前密码不正确')
+          showToast('当前密码不正确', 'error')
           return
         }
       } catch (error) {
         console.error('获取用户数据失败:', error)
-        alert('获取用户信息失败')
+        showToast('获取用户信息失败', 'error')
         return
       }
     }
@@ -915,7 +746,7 @@ const updatePassword = async () => {
     // 更新密码
     await supabaseService.updateUserPassword(currentUserId, passwordForm.newPassword)
     
-    alert('密码修改成功！')
+    showToast('密码修改成功！', 'success')
     
     // 清空表单
     passwordForm.currentPassword = ''
@@ -924,31 +755,144 @@ const updatePassword = async () => {
     
   } catch (error) {
     console.error('修改密码失败:', error)
-    alert('密码修改失败: ' + (error instanceof Error ? error.message : '未知错误'))
+    showToast('密码修改失败: ' + (error instanceof Error ? error.message : '未知错误'), 'error')
   }
 }
 
-// 切换账号
-const switchAccount = () => {
-  if (confirm('确定要切换账号吗？这将退出当前账号并跳转到登录页面。')) {
-    // 清除本地存储的用户信息
-    localStorage.removeItem('userToken')
-    localStorage.removeItem('userInfo')
-    
-    // 跳转到登录页面
-    router.push('/login')
+
+
+// 编辑昵称
+const editNickname = () => {
+  editType.value = 'nickname'
+  editDialogTitle.value = '编辑昵称'
+  editInitialValue.value = userInfo.value.name
+  editDialog.value?.show()
+}
+
+// 编辑个人签名
+const editBio = () => {
+  editType.value = 'bio'
+  editDialogTitle.value = '编辑个人签名'
+  editInitialValue.value = userInfo.value.bio || ''
+  editDialog.value?.show()
+}
+
+// 处理编辑确认
+const handleEditConfirm = async (value: string) => {
+  if (editType.value === 'nickname') {
+    await updateNicknameFromDialog(value)
+  } else if (editType.value === 'bio') {
+    await updateBioFromDialog(value)
   }
 }
 
-// 退出登录
-const logout = () => {
-  if (confirm('确定要退出登录吗？')) {
-    // 清除本地存储的用户信息
-    localStorage.removeItem('userToken')
-    localStorage.removeItem('userInfo')
+// 从弹窗更新昵称
+const updateNicknameFromDialog = async (newNickname: string) => {
+  if (!newNickname.trim()) {
+    showToast('请输入新昵称', 'warning')
+    return
+  }
+  
+  try {
+    // 获取当前用户ID
+    const client = supabaseService.getClient()
+    let currentUserId = 'demo-user-id'
     
-    // 跳转到登录页面
-    router.push('/login')
+    // 从localStorage获取当前用户信息
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      if (user.id) {
+        currentUserId = user.id
+      }
+    } else {
+      showToast('无法获取用户信息', 'error')
+      return
+    }
+    
+    // 尝试更新昵称到数据库
+    try {
+      await supabaseService.updateUserNickname(currentUserId, newNickname.trim())
+    } catch (dbError: any) {
+      // 如果nickname列不存在，使用username作为替代方案
+      if (dbError.message && dbError.message.includes('nickname')) {
+        console.log('nickname列不存在，暂时更新username')
+        const { error: updateError } = await client
+          .from('users')
+          .update({ username: newNickname.trim() })
+          .eq('id', currentUserId)
+        
+        if (updateError) {
+          throw new Error('数据库中缺少nickname列，且username更新失败: ' + updateError.message)
+        }
+        
+        // 同时更新本地存储中的用户名
+        if (currentUser) {
+          const user = JSON.parse(currentUser)
+          user.username = newNickname.trim()
+          user.nickname = newNickname.trim() // 本地存储中保存昵称
+          localStorage.setItem('currentUser', JSON.stringify(user))
+        }
+        
+        showToast('用户名更新成功！（数据库中暂无昵称列，已更新用户名作为替代）', 'success')
+        userInfo.value.name = newNickname.trim()
+        return
+      }
+      throw dbError
+    }
+    
+    showToast('昵称更新成功！', 'success')
+    
+    // 更新本地存储中的用户信息
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      user.nickname = newNickname.trim()
+      localStorage.setItem('currentUser', JSON.stringify(user))
+    }
+    
+    userInfo.value.name = newNickname.trim()
+    
+  } catch (error) {
+    console.error('更新昵称失败:', error)
+    showToast('更新失败: ' + (error instanceof Error ? error.message : '未知错误'), 'error')
+  }
+}
+
+// 从弹窗更新个人签名
+const updateBioFromDialog = async (newBio: string) => {
+  try {
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      showToast('请先登录后再编辑个人签名', 'warning')
+      return
+    }
+
+    const currentUser = JSON.parse(currentUserStr)
+    if (!currentUser?.id) {
+      showToast('无法获取当前用户信息', 'error')
+      return
+    }
+
+    const client = supabaseService.getClient()
+    const trimmedBio = newBio.trim()
+
+    const { error } = await client
+      .from('users')
+      .update({ bio: trimmedBio })
+      .eq('id', currentUser.id)
+
+    if (error) {
+      throw error
+    }
+
+    userInfo.value.bio = trimmedBio
+    currentUser.bio = trimmedBio
+    localStorage.setItem('currentUser', JSON.stringify(currentUser))
+
+    showToast('个人签名已更新！', 'success')
+  } catch (error) {
+    console.error('更新个人签名失败:', error)
+    showToast('更新失败: ' + (error instanceof Error ? error.message : '未知错误'), 'error')
   }
 }
 

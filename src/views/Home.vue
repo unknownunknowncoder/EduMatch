@@ -27,6 +27,7 @@ import {
 // 导入 Coze API 服务
 import { cozeAPIService } from '@/services/coze-api';
 import { useDatabaseStore } from '@/stores/database';
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message';
 
 const dbStore = useDatabaseStore();
 
@@ -111,7 +112,7 @@ const featureCards = [
 const logout = () => {
   localStorage.removeItem('currentUser');
   currentUser.value = null;
-  alert('已退出登录');
+  showToast('已退出登录', 'success');
 };
 
 // 登录注册模态框状态
@@ -661,6 +662,15 @@ onMounted(() => {
 
 <template>
   <div class="min-h-screen bg-[#F3F4F6] font-sans text-slate-800 selection:bg-indigo-100 selection:text-indigo-700 pb-20 lg:pb-0">
+    <!-- 通用提示框 -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      class="flex items-center space-x-2"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
     
     <!-- 顶部导航栏 -->
     <header class="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/70 border-b border-white/50 shadow-sm transition-all duration-300">

@@ -232,6 +232,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import ResourceCard from '@/components/ResourceCard.vue'
+import { showToast } from '@/utils/message'
 import { 
   ArrowLeft, 
   User, 
@@ -388,8 +389,8 @@ const toggleFollow = async () => {
       }
     } catch (error) {
       console.error('关注操作失败:', error)
-    const message = error instanceof Error ? error.message : '关注操作失败，请稍后再试'
-    alert(message)
+      const message = error instanceof Error ? error.message : '关注操作失败，请稍后再试'
+      showToast(message, 'error')
     } finally {
       followLoading.value = false
     }

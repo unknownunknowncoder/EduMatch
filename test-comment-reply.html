@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论回复功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-step {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            background: white;
+        }
+        .sql-code {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        .warning {
+            color: #ffc107;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .checklist li:before {
+            content: "□ ";
+            color: #007bff;
+            font-weight: bold;
+        }
+        .checklist li.checked:before {
+            content: "✓ ";
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <h1>📝 评论回复功能测试指南</h1>
+    
+    <div class="test-section">
+        <h2>🔧 数据库迁移测试</h2>
+        
+        <div class="test-step">
+            <h3>步骤 1: 执行数据库迁移</h3>
+            <p>在 Supabase SQL 编辑器中运行以下文件：</p>
+            <div class="sql-code">apply-comment-reply-migration.sql</div>
+            <p>或者在命令行中：</p>
+            <div class="sql-code">psql -h your-host -U your-user -d your-database -f apply-comment-reply-migration.sql</div>
+        </div>
+        
+        <div class="test-step">
+            <h3>步骤 2: 验证数据库结构</h3>
+            <p>检查 post_comments 表是否包含 parent_id 字段：</p>
+            <div class="sql-code">
+SELECT column_name, data_type, is_nullable 
+FROM information_schema.columns 
+WHERE table_name = 'post_comments' AND column_name = 'parent_id';
+            </div>
+            <p class="success">✓ 如果看到 parent_id 字段，说明迁移成功</p>
+        </div>
+        
+        <div class="test-step">
+            <h3>步骤 3: 测试数据库约束</h3>
+            <p>尝试插入一条回复评论：</p>
+            <div class="sql-code">
+-- 插入顶级评论
+INSERT INTO post_comments (post_id, user_id, content, parent_id) 
+VALUES ('your-post-id', 'your-user-id', '这是一条顶级评论', NULL);
+
+-- 插入回复评论
+INSERT INTO post_comments (post_id, user_id, content, parent_id) 
+VALUES ('your-post-id', 'your-user-id', '这是一条回复评论', 'parent-comment-id');
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎨 前端功能测试</h2>
+        
+        <h3>功能检查清单：</h3>
+        <ul class="checklist" id="checklist">
+            <li>打开任意帖子详情页面</li>
+            <li>查看评论区是否正常显示</li>
+            <li>检查每条评论是否有"回复"按钮</li>
+            <li>点击回复按钮是否显示回复输入框</li>
+            <li>输入回复内容并提交</li>
+            <li>检查回复是否正确显示在父评论下方</li>
+            <li>检查回复的缩进是否正确</li>
+            <li>测试多层级回复（回复的回复）</li>
+            <li>检查回复数量统计是否正确</li>
+            <li>测试深色模式下的显示效果</li>
+            <li>测试移动端响应式布局</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🐛 常见问题排查</h2>
+        
+        <div class="test-step">
+            <h3>问题 1: 回复按钮不显示</h3>
+            <p>可能原因：</p>
+            <ul>
+                <li>CommentComponent 组件未正确注册</li>
+                <li>Vue 编译错误</li>
+                <li>组件导入路径错误</li>
+            </ul>
+        </div>
+        
+        <div class="test-step">
+            <h3>问题 2: 回复提交失败</h3>
+            <p>可能原因：</p>
+            <ul>
+                <li>数据库 RLS 策略阻止插入</li>
+                <li>用户未登录或 token 过期</li>
+                <li>parent_id 字段不存在</li>
+            </ul>
+            <p>解决方案：运行数据库迁移脚本并检查 RLS 策略</p>
+        </div>
+        
+        <div class="test-step">
+            <h3>问题 3: 回复不显示</h3>
+            <p>可能原因：</p>
+            <ul>
+                <li>loadComments 函数未正确获取 parent_id</li>
+                <li>递归组件逻辑错误</li>
+                <li>CSS 样式导致隐藏</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 性能测试</h2>
+        
+        <div class="test-step">
+            <h3>大量回复测试</h3>
+            <p>创建一个有大量回复的评论，测试：</p>
+            <ul>
+                <li>页面加载速度</li>
+                <li>滚动性能</li>
+                <li>内存使用情况</li>
+            </ul>
+        </div>
+        
+        <div class="test-step">
+            <h3>并发测试</h3>
+            <p>多个用户同时回复同一条评论，检查：</p>
+            <ul>
+                <li>数据库并发处理</li>
+                <li>前端状态同步</li>
+                <li>回复计数准确性</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>✅ 测试完成确认</h2>
+        <p>请逐项检查以上所有功能，确保评论回复功能完全正常工作。</p>
+        <p class="info">💡 提示：可以在浏览器开发者工具中监控网络请求和错误信息。</p>
+    </div>
+    
+    <script>
+        // 简单的检查清单交互
+        document.addEventListener('DOMContentLoaded', function() {
+            const checklistItems = document.querySelectorAll('.checklist li');
+            checklistItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.toggle('checked');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

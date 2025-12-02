@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评论回复对齐效果预览</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+        
+        .preview-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .comment-wrapper {
+            margin-bottom: 16px;
+        }
+        
+        .comment-wrapper.reply-item {
+            position: relative;
+            margin-left: 40px; /* 所有回复都使用相同的缩进 */
+            padding-left: 16px;
+        }
+        
+        /* 关键：所有嵌套的回复都重置为相同的位置 */
+        .comment-wrapper .comment-wrapper.reply-item {
+            margin-left: 40px; /* 强制所有回复使用相同的缩进 */
+        }
+        
+        .comment-wrapper.reply-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef; /* 浅色分隔线 */
+            border-radius: 1px;
+        }
+        
+        .comment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .comment-date {
+            color: #666;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        
+        .comment-content {
+            color: #444;
+            line-height: 1.5;
+        }
+        
+        .visual-guide {
+            position: absolute;
+            left: 40px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #28a745, #28a745);
+            z-index: 10;
+        }
+        
+        .alignment-line {
+            position: absolute;
+            left: 40px;
+            width: 100px;
+            height: 2px;
+            background-color: #dc3545;
+            top: 20px;
+            z-index: 10;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .highlight {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin: 20px 0;
+        }
+        
+        .diagram {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            margin: 20px 0;
+        }
+        
+        .code {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">📐 评论回复完美对齐效果</h1>
+    
+    <div class="preview-section">
+        <div class="highlight">
+            <strong>✅ 目标效果：</strong> 所有回复（包括回复的回复）都在同一条垂直线上对齐
+        </div>
+        
+        <div class="diagram">
+            <strong>📏 对齐示意图：</strong><br>
+            顶级评论<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│ ← 所有回复都在这条线上<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├─ 回复1<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├─ 回复2<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├─ 回复回复1<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;└─ 回复回复2
+        </div>
+        
+        <div class="comment-item">
+            <div class="comment-header">
+                <div class="comment-avatar">A</div>
+                <span class="comment-author">用户A</span>
+                <span class="comment-date">2小时前</span>
+            </div>
+            <div class="comment-content">这是顶级评论</div>
+            
+            <!-- 可视化对齐线 -->
+            <div class="visual-guide"></div>
+            <div class="alignment-line"></div>
+            
+            <div class="comment-wrapper reply-item">
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-avatar">B</div>
+                        <span class="comment-author">用户B</span>
+                        <span class="comment-date">1小时前</span>
+                    </div>
+                    <div class="comment-content">回复用户A（在红线上）</div>
+                    
+                    <div class="comment-wrapper reply-item">
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <div class="comment-avatar">C</div>
+                                <span class="comment-author">用户C</span>
+                                <span class="comment-date">30分钟前</span>
+                            </div>
+                            <div class="comment-content">回复用户B（也在红线上！）</div>
+                            
+                            <div class="comment-wrapper reply-item">
+                                <div class="comment-item">
+                                    <div class="comment-header">
+                                        <div class="comment-avatar">D</div>
+                                        <span class="comment-author">用户D</span>
+                                        <span class="comment-date">10分钟前</span>
+                                    </div>
+                                    <div class="comment-content">回复用户C（还是在红线上！）</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comment-wrapper reply-item">
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <div class="comment-avatar">E</div>
+                        <span class="comment-author">用户E</span>
+                        <span class="comment-date">5分钟前</span>
+                    </div>
+                    <div class="comment-content">直接回复用户A（同样在红线上）</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h3>🎯 实现原理</h3>
+        
+        <div class="diagram">
+            <strong>关键CSS规则：</strong><br>
+            <br>
+            <code class="code">.comment-wrapper.reply-item {</code><br>
+            <code class="code">&nbsp;&nbsp;margin-left: 40px;</code><br>
+            <code class="code">}</code><br>
+            <br>
+            <code class="code">/* 重置嵌套缩进 */</code><br>
+            <code class="code">.comment-wrapper .comment-wrapper.reply-item {</code><br>
+            <code class="code">&nbsp;&nbsp;margin-left: 40px; /* 强制相同缩进 */</code><br>
+            <code class="code">}</code>
+        </div>
+        
+        <h3>✨ 效果特点</h3>
+        <ul>
+            <li>✅ 所有回复都距离左边框 40px</li>
+            <li>✅ 嵌套回复不会继续缩进</li>
+            <li>✅ 形成清晰的垂直对齐线</li>
+            <li>✅ 视觉层次分明，易于阅读</li>
+            <li>✅ 支持无限层级的回复</li>
+        </ul>
+        
+        <div class="highlight">
+            <strong>💡 用户体验优势：</strong><br>
+            - 回复之间的时间关系更清晰<br>
+            - 避免过度的缩进导致的阅读困难<br>
+            - 节省屏幕空间，显示更多内容<br>
+            - 视觉上更整洁统一
+        </div>
+    </div>
+</body>
+</html>

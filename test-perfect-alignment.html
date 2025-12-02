@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>完美对齐测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .preview-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+        }
+        
+        .comment-wrapper {
+            margin-bottom: 16px;
+        }
+        
+        /* 一级评论：无缩进 */
+        .comment-wrapper.level-1 {
+            margin-left: 0;
+        }
+        
+        /* 二级评论：有缩进 */
+        .comment-wrapper.level-2 {
+            position: relative;
+            margin-left: 40px;
+            padding-left: 16px;
+        }
+        
+        /* 三级及以上评论：与二级评论完全对齐 */
+        .comment-wrapper.level-3-plus {
+            position: relative;
+            margin-left: 40px; /* 与二级评论相同的缩进 */
+            padding-left: 16px;
+        }
+        
+        /* 关键：确保嵌套在level-3-plus中的评论也不额外缩进 */
+        .comment-wrapper.level-3-plus .comment-wrapper.level-3-plus {
+            margin-left: 0 !important; /* 强制相对于父级不缩进 */
+        }
+        
+        /* 为二级及以上添加分隔线 */
+        .comment-wrapper.level-2::before,
+        .comment-wrapper.level-3-plus::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #e9ecef;
+            border-radius: 1px;
+        }
+        
+        .comment-item {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .comment-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .comment-date {
+            color: #666;
+            font-size: 0.8rem;
+            margin-left: auto;
+        }
+        
+        .comment-content {
+            color: #444;
+            line-height: 1.5;
+        }
+        
+        .level-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .level-1-badge {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .level-2-badge {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .level-3-plus-badge {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alignment-guide {
+            position: absolute;
+            left: 40px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #28a745, #28a745);
+            z-index: 10;
+        }
+        
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .highlight {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin: 20px 0;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            margin: 20px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin: 20px 0;
+        }
+        
+        .arrow {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .check {
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="title">🎯 完美对齐测试</h1>
+    
+    <div class="preview-section">
+        <div class="success">
+            <strong>✅ 目标验证：</strong> 
+            三级及以上评论与二级评论完美对齐，相对二级评论无额外缩进
+        </div>
+        
+        <div class="warning">
+            <strong>🔍 测试重点：</strong><br>
+            - 二级评论在绿线位置<br>
+            - 三级评论也在绿线位置<br>
+            - 四级评论还在绿线位置<br>
+            <strong>所有L2、L3、L4...都在同一垂直线上！</strong>
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h3>🎯 对齐效果测试</h3>
+        
+        <!-- 对齐参考线 -->
+        <div class="alignment-guide"></div>
+        
+        <!-- 一级评论 -->
+        <div class="comment-wrapper level-1">
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-avatar">A</div>
+                    <span class="comment-author">用户A</span>
+                    <span class="comment-date">2小时前</span>
+                    <span class="level-badge level-1-badge">L1</span>
+                </div>
+                <div class="comment-content">一级评论 - 无缩进，在左边</div>
+            </div>
+        </div>
+        
+        <!-- 二级评论 -->
+        <div class="comment-wrapper level-2">
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-avatar">B</div>
+                    <span class="comment-author">用户B</span>
+                    <span class="comment-date">1小时前</span>
+                    <span class="level-badge level-2-badge">L2</span>
+                </div>
+                <div class="comment-content">二级评论 - 有缩进，在绿线位置</div>
+                
+                <!-- 三级评论 -->
+                <div class="comment-wrapper level-3-plus">
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div class="comment-avatar">C</div>
+                            <span class="comment-author">用户C</span>
+                            <span class="comment-date">30分钟前</span>
+                            <span class="level-badge level-3-plus-badge">L3</span>
+                        </div>
+                        <div class="comment-content">三级评论 - 应该与二级对齐，在绿线位置</div>
+                        
+                        <!-- 四级评论 -->
+                        <div class="comment-wrapper level-3-plus">
+                            <div class="comment-item">
+                                <div class="comment-header">
+                                    <div class="comment-avatar">D</div>
+                                    <span class="comment-author">用户D</span>
+                                    <span class="comment-date">15分钟前</span>
+                                    <span class="level-badge level-3-plus-badge">L4</span>
+                                </div>
+                                <div class="comment-content">四级评论 - 应该与二级、三级对齐，在绿线位置</div>
+                                
+                                <!-- 五级评论 -->
+                                <div class="comment-wrapper level-3-plus">
+                                    <div class="comment-item">
+                                        <div class="comment-header">
+                                            <div class="comment-avatar">E</div>
+                                            <span class="comment-author">用户E</span>
+                                            <span class="comment-date">5分钟前</span>
+                                            <span class="level-badge level-3-plus-badge">L5</span>
+                                        </div>
+                                        <div class="comment-content">五级评论 - 应该与所有L2+评论对齐，在绿线位置</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 另一个二级评论 -->
+        <div class="comment-wrapper level-2">
+            <div class="comment-item">
+                <div class="comment-header">
+                    <div class="comment-avatar">F</div>
+                    <span class="comment-author">用户F</span>
+                    <span class="comment-date">45分钟前</span>
+                    <span class="level-badge level-2-badge">L2</span>
+                </div>
+                <div class="comment-content">另一个二级评论 - 在绿线位置</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h3>✅ 验证标准</h3>
+        <div class="success">
+            <strong>如果看到以下效果，说明对齐成功：</strong><br><br>
+            <span class="check">✓</span> 绿色垂直线穿过所有L2、L3、L4、L5评论的左边缘<br>
+            <span class="check">✓</span> L3、L4、L5评论相对于L2评论没有任何额外缩进<br>
+            <span class="check">✓</span> 所有二级及以上评论都形成整齐的垂直列<br>
+            <span class="check">✓</span> 一级评论(L1)在更左边，无缩进<br><br>
+            
+            <strong>🎯 最终效果：</strong><br>
+            <span class="arrow">→</span> L1 (一级评论)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="check">✓</span> L2 (二级评论)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="check">✓</span> L3 (三级评论)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="check">✓</span> L4 (四级评论)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="check">✓</span> L5 (五级评论)
+        </div>
+        
+        <div class="warning">
+            <strong>🔧 关键CSS修复：</strong><br>
+            <code>
+.comment-wrapper.level-3-plus .comment-wrapper.level-3-plus {
+  margin-left: 0 !important; /* 强制相对于父级不缩进 */
+}
+            </code><br><br>
+            这个规则确保了嵌套在三级及以上评论中的评论不会继续缩进。
+        </div>
+    </div>
+</body>
+</html>

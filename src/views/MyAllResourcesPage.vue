@@ -1,5 +1,15 @@
 <template>
   <div class="p-6 md:p-8">
+    <!-- 通用提示框 -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      :style="getMessageStyles()"
+      class="flex items-center space-x-2"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
     <!-- 页面标题和返回按钮 -->
     <div class="flex items-center mb-8">
       <button 
@@ -70,15 +80,27 @@
                 </div>
                 <p class="text-gray-600 dark:text-gray-400">{{ resource.description }}</p>
               </div>
-              <button
-                @click.stop="showDeleteConfirm(resource)"
-                class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                title="删除资源"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-              </button>
+              <div class="flex items-center space-x-2">
+                <button
+                  @click.stop="navigateToResource(resource.id)"
+                  class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                  title="查看详情"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                </button>
+                <button
+                  @click.stop="showDeleteConfirm(resource)"
+                  class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  title="删除资源"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
             
             <!-- 资源详细信息 -->
@@ -122,11 +144,13 @@
       </div>
     </div>
 
-    <!-- 删除确认对话框 -->
-    <DeleteConfirmDialog
-      :show="showDeleteDialog"
-      :message="`确定要删除资源「${selectedResource?.title}」吗？删除后无法恢复。`"
-      @confirm="handleDeleteResource"
+    <!-- 级联删除对话框 -->
+    <CascadeDeleteDialog
+      ref="cascadeDeleteDialog"
+      title="删除资源确认"
+      :message="`确定要删除资源「${selectedResource?.title}」吗？`"
+      :relatedPosts="relatedPosts"
+      @confirm="handleCascadeDelete"
       @cancel="hideDeleteConfirm"
     />
   </div>
@@ -136,7 +160,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabaseService } from '@/services/supabase'
-import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue'
+import CascadeDeleteDialog from '@/components/CascadeDeleteDialog.vue'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon, getMessageStyles } from '@/utils/message'
 
 interface MyResource {
   id: string
@@ -158,6 +183,8 @@ const myResources = ref<MyResource[]>([])
 const isLoading = ref(false)
 const showDeleteDialog = ref(false)
 const selectedResource = ref<MyResource | null>(null)
+const relatedPosts = ref<any[]>([])
+const cascadeDeleteDialog = ref<InstanceType<typeof CascadeDeleteDialog>>()
 
 
 
@@ -194,9 +221,30 @@ const formatDate = (dateString: string) => {
   })
 }
 
-const showDeleteConfirm = (resource: MyResource) => {
+const showDeleteConfirm = async (resource: MyResource) => {
   selectedResource.value = resource
-  showDeleteDialog.value = true
+  
+  // 检查关联的帖子
+  try {
+    const client = supabaseService.getClient()
+    const { data: posts, error } = await client
+      .from('community_posts')
+      .select('id, title')
+      .eq('resource_id', resource.id)
+    
+    if (error) {
+      console.error('❌ 检查关联帖子失败:', error)
+      relatedPosts.value = []
+    } else {
+      relatedPosts.value = posts || []
+    }
+  } catch (error) {
+    console.error('❌ 检查关联帖子异常:', error)
+    relatedPosts.value = []
+  }
+  
+  // 显示级联删除对话框
+  cascadeDeleteDialog.value?.show()
 }
 
 const hideDeleteConfirm = () => {
@@ -204,82 +252,137 @@ const hideDeleteConfirm = () => {
   selectedResource.value = null
 }
 
-const handleDeleteResource = async () => {
+const handleCascadeDelete = async (option: string) => {
   if (!selectedResource.value) return
   
+  const resourceTitle = selectedResource.value.title
+  const resourceId = selectedResource.value.id
+  
   try {
-    console.log('🗑️ 开始删除资源:', selectedResource.value.id)
-    
     const client = supabaseService.getClient()
-    let retryCount = 0
-    const maxRetries = 3
-    let deleteError = null
     
-    // 重试机制
-    while (retryCount < maxRetries) {
-      try {
-        console.log(`🔄 尝试删除资源 (${retryCount + 1}/${maxRetries})...`)
-        
-        // 删除资源
-        const { error } = await client
-          .from('resources')
+    if (option === 'cascade') {
+      // 级联删除：先删除关联的帖子，再删除资源
+      console.log('🔄 执行级联删除...')
+      
+      // 先删除所有关联的帖子
+      if (relatedPosts.value.length > 0) {
+        const { error: postsDeleteError } = await client
+          .from('community_posts')
           .delete()
-          .eq('id', selectedResource.value.id)
+          .eq('resource_id', resourceId)
         
-        deleteError = error
-        
-        if (!error) {
-          console.log('✅ 资源删除成功')
-          break
-        } else {
-          console.error(`❌ 删除失败 (${retryCount + 1}/${maxRetries}):`, error)
-          if (retryCount < maxRetries - 1) {
-            // 等待1秒后重试
-            await new Promise(resolve => setTimeout(resolve, 1000))
-          }
+        if (postsDeleteError) {
+          console.error('❌ 删除关联帖子失败:', postsDeleteError)
+          showToast('删除关联帖子失败，请稍后重试', 'error')
+          return
         }
-      } catch (err) {
-        console.error(`❌ 删除异常 (${retryCount + 1}/${maxRetries}):`, err)
-        deleteError = err
+        
+        console.log(`✅ 已删除 ${relatedPosts.value.length} 个关联帖子`)
+      }
+      
+      // 然后删除资源
+      await performResourceDeletion(resourceId, resourceTitle)
+      
+    } else if (option === 'resource_only') {
+      // 仅删除资源：先将关联帖子的resource_id设置为null，然后删除资源
+      console.log('🔄 执行仅删除资源...')
+      
+      // 先将所有关联帖子的resource_id设置为null
+      if (relatedPosts.value.length > 0) {
+        const { error: updateError } = await client
+          .from('community_posts')
+          .update({ resource_id: null })
+          .eq('resource_id', resourceId)
+        
+        if (updateError) {
+          console.error('❌ 解除关联失败:', updateError)
+          showToast('解除资源关联失败，请稍后重试', 'error')
+          return
+        }
+        
+        console.log(`✅ 已解除 ${relatedPosts.value.length} 个帖子的资源关联`)
+      }
+      
+      // 然后删除资源
+      await performResourceDeletion(resourceId, resourceTitle)
+    }
+    
+  } catch (error) {
+    console.error('❌ 级联删除失败:', error)
+    showToast('删除失败，请稍后重试', 'error')
+  }
+}
+
+const performResourceDeletion = async (resourceId: string, resourceTitle: string) => {
+  const client = supabaseService.getClient()
+  let retryCount = 0
+  const maxRetries = 3
+  let deleteError = null
+  
+  // 重试机制
+  while (retryCount < maxRetries) {
+    try {
+      console.log(`🔄 尝试删除资源 (${retryCount + 1}/${maxRetries})...`)
+      
+      // 删除资源
+      const { error } = await client
+        .from('resources')
+        .delete()
+        .eq('id', resourceId)
+      
+      deleteError = error
+      
+      if (!error) {
+        console.log('✅ 资源删除成功')
+        break
+      } else {
+        console.error(`❌ 删除失败 (${retryCount + 1}/${maxRetries}):`, error)
         if (retryCount < maxRetries - 1) {
+          // 等待1秒后重试
           await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
-      
-      retryCount++
-    }
-    
-    if (deleteError) {
-      console.error('❌ 删除资源最终失败:', deleteError)
-      
-      // 更详细的错误信息
-      let errorMessage = '删除失败，请稍后重试'
-      if (deleteError.message) {
-        if (deleteError.message.includes('Failed to fetch')) {
-          errorMessage = '网络连接失败，请检查网络连接后重试'
-        } else if (deleteError.message.includes('permission')) {
-          errorMessage = '没有删除权限，请联系管理员'
-        } else if (deleteError.message.includes('row-level security')) {
-          errorMessage = '安全策略阻止删除，请联系管理员'
-        } else {
-          errorMessage = `删除失败: ${deleteError.message}`
-        }
+    } catch (err) {
+      console.error(`❌ 删除异常 (${retryCount + 1}/${maxRetries}):`, err)
+      deleteError = err
+      if (retryCount < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
       }
-      
-      alert(errorMessage)
-      return
     }
     
-    // 从本地列表中移除
-    myResources.value = myResources.value.filter(resource => resource.id !== selectedResource.value!.id)
-    
-    // 关闭对话框
-    hideDeleteConfirm()
-    
-  } catch (error) {
-    console.error('❌ 删除资源时出现意外错误:', error)
-    alert('删除过程中出现意外错误，请稍后重试')
+    retryCount++
   }
+  
+  if (deleteError) {
+    console.error('❌ 删除资源最终失败:', deleteError)
+    
+    // 更详细的错误信息
+    let errorMessage = '删除失败，请稍后重试'
+    if (deleteError.message) {
+      if (deleteError.message.includes('Failed to fetch')) {
+        errorMessage = '网络连接失败，请检查网络连接后重试'
+      } else if (deleteError.message.includes('permission')) {
+        errorMessage = '没有删除权限，请联系管理员'
+      } else if (deleteError.message.includes('row-level security')) {
+        errorMessage = '安全策略阻止删除，请联系管理员'
+      } else {
+        errorMessage = `删除失败: ${deleteError.message}`
+      }
+    }
+    
+    showToast(errorMessage, 'error')
+    return
+  }
+  
+  // 从本地列表中移除
+  myResources.value = myResources.value.filter(resource => resource.id !== resourceId)
+  
+  // 关闭对话框
+  hideDeleteConfirm()
+  
+  // 显示成功提示
+  showToast(`资源「${resourceTitle}」已成功删除`, 'success')
 }
 
 const loadMyResources = async () => {

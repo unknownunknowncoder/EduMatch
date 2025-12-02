@@ -1,5 +1,15 @@
 <template>
   <div class="p-6 md:p-8">
+    <!-- 通用提示框 -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      :style="getMessageStyles()"
+      class="flex items-center space-x-2"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
     <!-- 页面标题 -->
     <div class="mb-8">
       <button 
@@ -25,10 +35,13 @@
       <div class="p-6">
         <!-- 加载状态 -->
         <div v-if="isLoadingPosts" class="text-center py-12">
-          <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
-          <p class="text-gray-500 dark:text-gray-400 mt-2">加载中...</p>
+          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-green-500 hover:bg-green-400 transition ease-in-out duration-150">
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            加载中...
+          </div>
         </div>
 
         <!-- 空状态 -->
@@ -70,15 +83,27 @@
                   </span>
                 </div>
               </div>
-              <button
-                @click.stop="showDeleteConfirm(post)"
-                class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                title="删除帖子"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-              </button>
+              <div class="flex items-center space-x-2">
+                <button
+                  @click.stop="navigateToPost(post.id)"
+                  class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                  title="查看详情"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                </button>
+                <button
+                  @click.stop="showDeleteConfirm(post)"
+                  class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  title="删除帖子"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
             
             <div class="text-sm text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-200 dark:border-gray-600">
@@ -109,6 +134,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabaseService } from '@/services/supabase'
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon, getMessageStyles } from '@/utils/message'
 
 interface MyPost {
   id: string
@@ -165,77 +191,42 @@ const handleDeletePost = async () => {
   if (!selectedPost.value) return
   
   try {
-    console.log('🗑️ 开始删除帖子:', selectedPost.value.id)
+    // 保存帖子标题，避免在hideDeleteConfirm()后访问
+    const postTitle = selectedPost.value.title
+    const postId = selectedPost.value.id
     
-    const client = supabaseService.getClient()
-    let retryCount = 0
-    const maxRetries = 3
-    let deleteError = null
+    console.log('🗑️ 开始删除帖子:', postId)
     
-    // 重试机制
-    while (retryCount < maxRetries) {
-      try {
-        console.log(`🔄 尝试删除帖子 (${retryCount + 1}/${maxRetries})...`)
-        
-        // 删除帖子
-        const { error } = await client
-          .from('community_posts')
-          .delete()
-          .eq('id', selectedPost.value.id)
-        
-        deleteError = error
-        
-        if (!error) {
-          console.log('✅ 帖子删除成功')
-          break
-        } else {
-          console.error(`❌ 删除失败 (${retryCount + 1}/${maxRetries}):`, error)
-          if (retryCount < maxRetries - 1) {
-            // 等待1秒后重试
-            await new Promise(resolve => setTimeout(resolve, 1000))
-          }
-        }
-      } catch (err) {
-        console.error(`❌ 删除异常 (${retryCount + 1}/${maxRetries}):`, err)
-        deleteError = err
-        if (retryCount < maxRetries - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1000))
-        }
-      }
-      
-      retryCount++
-    }
-    
-    if (deleteError) {
-      console.error('❌ 删除帖子最终失败:', deleteError)
-      
-      // 更详细的错误信息
-      let errorMessage = '删除失败，请稍后重试'
-      if (deleteError.message) {
-        if (deleteError.message.includes('Failed to fetch')) {
-          errorMessage = '网络连接失败，请检查网络连接后重试'
-        } else if (deleteError.message.includes('permission')) {
-          errorMessage = '没有删除权限，请联系管理员'
-        } else if (deleteError.message.includes('row-level security')) {
-          errorMessage = '安全策略阻止删除，请联系管理员'
-        } else {
-          errorMessage = `删除失败: ${deleteError.message}`
-        }
-      }
-      
-      alert(errorMessage)
-      return
-    }
+    // 使用新的服务方法删除帖子
+    await supabaseService.deleteCommunityPost(postId)
     
     // 从本地列表中移除
-    myPosts.value = myPosts.value.filter(post => post.id !== selectedPost.value!.id)
+    myPosts.value = myPosts.value.filter(post => post.id !== postId)
     
     // 关闭对话框
     hideDeleteConfirm()
     
+    // 显示成功提示
+    showToast(`帖子「${postTitle}」已成功删除`, 'success')
+    
   } catch (error) {
-    console.error('❌ 删除帖子时出现意外错误:', error)
-    alert('删除过程中出现意外错误，请稍后重试')
+    console.error('❌ 删除帖子失败:', error)
+    
+    // 更详细的错误信息
+    let errorMessage = '删除失败，请稍后重试'
+    if (error instanceof Error) {
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = '网络连接失败，请检查网络连接后重试'
+      } else if (error.message.includes('permission')) {
+        errorMessage = '没有删除权限，请联系管理员'
+      } else if (error.message.includes('row-level security')) {
+        errorMessage = '安全策略阻止删除，请联系管理员'
+      } else {
+        errorMessage = `删除失败: ${error.message}`
+      }
+    }
+    
+    showToast(errorMessage, 'error')
   }
 }
 
@@ -245,7 +236,6 @@ const loadMyPosts = async () => {
     console.log('🔄 开始加载用户全部帖子...')
     
     // 获取当前用户ID
-    const client = supabaseService.getClient()
     let currentUserId = null
     
     const currentUser = localStorage.getItem('currentUser')
@@ -260,65 +250,70 @@ const loadMyPosts = async () => {
     if (!currentUserId) {
       console.error('❌ 用户未登录')
       myPosts.value = []
+      showToast('请先登录后再查看您的帖子', 'warning')
       return
     }
     
-    // 查询用户发布的所有帖子
-    const { data, error } = await client
-      .from('community_posts')
-      .select('*')
-      .eq('user_id', currentUserId)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('❌ 获取我的帖子失败:', error)
-      myPosts.value = []
-      return
-    }
+    // 使用新的服务方法获取用户发布的帖子
+    const posts = await supabaseService.getCommunityPostsByUserId(currentUserId)
     
-    if (!data || data.length === 0) {
+    if (!posts || posts.length === 0) {
       console.log('ℹ️ 该用户没有发布任何帖子')
       myPosts.value = []
       return
     }
     
     // 转换数据格式并添加评论数
-    const postsWithComments = []
+    const postsWithDetails = []
     
-    for (let i = 0; i < data.length; i++) {
-      const post = data[i]
-      
-      // 查询评论数
-      const { data: commentData, error: commentError } = await client
-        .from('post_comments')
-        .select('id')
-        .eq('post_id', post.id)
-      
-      const commentCount = commentError ? 0 : (commentData ? commentData.length : 0)
-      
-      const transformedPost = {
-        id: post.id,
-        title: post.title,
-        content: post.content || '',
-        category: post.category,
-        tags: [],
-        status: 'published',
-        views: post.views_count || 0,
-        likes: post.likes_count || 0,
-        comments: commentCount,
-        created_at: post.created_at,
-        updated_at: post.updated_at
+    for (const post of posts) {
+      try {
+        // 获取评论数
+        const commentCount = await supabaseService.getPostCommentsCount(post.id)
+        
+        const transformedPost = {
+          id: post.id,
+          title: post.title || '无标题',
+          content: post.content || '',
+          category: post.category || '未分类',
+          tags: [],
+          status: 'published',
+          views: post.views_count || 0,
+          likes: post.likes_count || 0,
+          comments: commentCount,
+          created_at: post.created_at,
+          updated_at: post.updated_at
+        }
+        
+        postsWithDetails.push(transformedPost)
+      } catch (error) {
+        console.error('❌ 处理帖子详情时出错:', post.id, error)
+        // 即使获取评论数失败，也保留帖子基本信息
+        const transformedPost = {
+          id: post.id,
+          title: post.title || '无标题',
+          content: post.content || '',
+          category: post.category || '未分类',
+          tags: [],
+          status: 'published',
+          views: post.views_count || 0,
+          likes: post.likes_count || 0,
+          comments: 0,
+          created_at: post.created_at,
+          updated_at: post.updated_at
+        }
+        
+        postsWithDetails.push(transformedPost)
       }
-      
-      postsWithComments.push(transformedPost)
     }
     
-    myPosts.value = postsWithComments
+    myPosts.value = postsWithDetails
     console.log('✅ 成功加载我的全部帖子:', myPosts.value.length)
     
   } catch (error) {
     console.error('❌ 加载我的帖子时出错:', error)
     myPosts.value = []
+    showToast('加载帖子失败，请稍后重试', 'error')
   } finally {
     isLoadingPosts.value = false
   }

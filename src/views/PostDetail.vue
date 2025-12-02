@@ -1,5 +1,14 @@
 <template>
   <div class="min-h-screen bg-[#F3F4F6] font-sans text-slate-800 py-8">
+    <!-- 通用提示框 -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      class="flex items-center space-x-2"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- 返回按钮 -->
       <div class="mb-6">
@@ -62,6 +71,17 @@
               </svg>
               <span class="text-sm font-medium">{{ post.favorite_count || 0 }}</span>
             </button>
+            
+            <!-- 评论按钮 -->
+            <button 
+              @click="scrollToComments"
+              class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors bg-gray-100 dark:bg-gray-700"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+              </svg>
+              <span class="text-sm font-medium">{{ totalComments }}</span>
+            </button>
           </div>
         </div>
         
@@ -69,6 +89,7 @@
           <p class="whitespace-pre-wrap">{{ post.content }}</p>
         </div>
 
+        <!-- 关联资源信息 -->
         <div 
           v-if="post.resource" 
           class="mt-8 p-6 bg-indigo-50/80 border border-indigo-100 rounded-2xl"
@@ -92,10 +113,26 @@
             </a>
           </div>
         </div>
+
+        <!-- 资源已删除提示 -->
+        <div 
+          v-else-if="post.resource_id && !post.resource" 
+          class="mt-8 p-6 bg-gray-50/80 border border-gray-200 rounded-2xl"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+              <p class="text-sm font-medium text-gray-600">发布者已删除</p>
+              <p class="text-xs text-gray-500 mt-1">该帖子关联的学习资源已被发布者删除</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 评论区域 - 默认显示 -->
-      <div class="bg-white rounded-2xl shadow-md p-8">
+      <!-- 评论区域 -->
+      <div class="bg-white rounded-2xl shadow-md p-8" id="comments-section">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,11 +269,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import type { Post, Comment } from '@/types/community'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
 
 const route = useRoute()
+const router = useRouter()
 const postId = route.params.id as string
 
 const post = ref<Post | null>(null)
@@ -312,6 +351,14 @@ const goToPage = (page: number) => {
   }
 }
 
+// 滚动到评论区
+const scrollToComments = () => {
+  const commentsSection = document.getElementById('comments-section')
+  if (commentsSection) {
+    commentsSection.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+
 // 格式化日期
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
@@ -321,9 +368,7 @@ const formatDate = (dateString: string) => {
   })
 }
 
-
-
-// 切换点赞状态 - 修复版本
+// 切换点赞状态
 const toggleLike = async (post: Post) => {
   if (isLiking.value) return
   
@@ -363,7 +408,7 @@ const toggleLike = async (post: Post) => {
       }
     } catch (error) {
       console.error('❌ 数据库连接失败:', error.message)
-      alert('数据库连接失败，请稍后重试')
+      showToast('数据库连接失败，请稍后重试', 'error')
       return
     }
     
@@ -421,7 +466,7 @@ const toggleLike = async (post: Post) => {
     
   } catch (error) {
     console.error('❌ 点赞操作失败:', error)
-    alert('操作失败，请稍后重试')
+    showToast('操作失败，请稍后重试', 'error')
     
     // 恢复原始状态
     post.is_liked = !post.is_liked
@@ -434,7 +479,7 @@ const toggleLike = async (post: Post) => {
   }
 }
 
-// 切换收藏状态 - 修复版本
+// 切换收藏状态
 const toggleFavorite = async (post: Post) => {
   if (isFavoriting.value) return
   
@@ -474,7 +519,7 @@ const toggleFavorite = async (post: Post) => {
       }
     } catch (error) {
       console.error('❌ 数据库连接失败:', error.message)
-      alert('数据库连接失败，请稍后重试')
+      showToast('数据库连接失败，请稍后重试', 'error')
       return
     }
     
@@ -532,7 +577,7 @@ const toggleFavorite = async (post: Post) => {
     
   } catch (error) {
     console.error('❌ 收藏操作失败:', error)
-    alert('操作失败，请稍后重试')
+    showToast('操作失败，请稍后重试', 'error')
     
     // 恢复原始状态
     post.is_favorited = !post.is_favorited
@@ -548,45 +593,28 @@ const toggleFavorite = async (post: Post) => {
 // 获取帖子详情
 const fetchPostDetail = async () => {
   try {
-    // 确保数据库已初始化
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('帖子详情加载：数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
-    
-    if (!client) {
-      console.error('帖子详情加载：数据库客户端初始化失败')
-      return
-    }
-    
     console.log('📖 开始加载帖子详情，ID:', postId)
     
-    // 获取帖子详情
-    const { data: postData, error: postError } = await client
-      .from('community_posts')
-      .select(`
-        *,
-        user:user_id (
-          id,
-          username,
-          nickname
-        ),
-        resource:resource_id (
-          id,
-          title,
-          description,
-          category,
-          url
-        )
-      `)
-      .eq('id', postId)
-      .single()
+    // 使用 supabase service 获取帖子数据
+    const { supabaseService } = await import('@/services/supabase')
+    const postData = await supabaseService.getPostById(postId)
     
-    if (postError) {
-      console.error('❌ 加载帖子详情失败:', postError)
+    if (!postData) {
+      console.error('❌ 帖子未找到:', postId)
       return
+    }
+    
+    console.log('✅ 帖子数据加载成功:', postData)
+    
+    // 获取用户信息
+    let userInfo = null
+    if (postData.user_id) {
+      try {
+        const { supabaseService } = await import('@/services/supabase')
+        userInfo = await supabaseService.getUserById(postData.user_id)
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+      }
     }
     
     // 获取当前用户ID以检查收藏状态
@@ -606,21 +634,27 @@ const fetchPostDetail = async () => {
     // 检查用户是否已收藏该帖子
     let isFavorited = false
     if (currentUserId) {
-      const { data: favoriteData, error: favoriteError } = await client
-        .from('post_favorites')
-        .select('id')
-        .eq('user_id', currentUserId)
-        .eq('post_id', postId)
-        
-      if (!favoriteError && favoriteData && favoriteData.length > 0) {
-        isFavorited = true
+      try {
+        const { supabaseService } = await import('@/services/supabase')
+        const { data: favoriteData } = await supabaseService.getClient()
+          .from('post_favorites')
+          .select('id')
+          .eq('user_id', currentUserId)
+          .eq('post_id', postId)
+          
+        if (favoriteData && favoriteData.length > 0) {
+          isFavorited = true
+        }
+      } catch (error) {
+        console.error('检查收藏状态失败:', error)
       }
     }
     
     // 处理帖子数据
     post.value = {
       ...postData,
-      author_name: postData.user?.nickname || postData.user?.username || '匿名用户',
+      author_name: userInfo?.nickname || userInfo?.username || '匿名用户',
+      user: userInfo,
       is_favorited: isFavorited,
       favorite_count: postData.favorite_count || 0,
       resource: postData.resource || null
@@ -701,7 +735,7 @@ const loadComments = async () => {
   }
 }
 
-// 获取用户头像（与个人中心保持一致）
+// 获取用户头像
 const getUserAvatar = (userId: string, authorName: string) => {
   // 与个人中心保持一致，使用浅蓝色背景和深蓝色字母
   const bgColor = '#DBEAFE' // 浅蓝色，对应 bg-blue-100
@@ -781,29 +815,6 @@ const addComment = async () => {
     
     if (error) {
       console.error('❌ 发表评论失败:', error)
-      
-      // 如果RLS策略导致问题，使用本地模式
-      if (error.message.includes('RLS') || error.message.includes('policy')) {
-        console.log('RLS策略限制，使用本地模式...')
-        
-        const comment = {
-          id: 'temp-' + Date.now(),
-          post_id: postId,
-          user_id: currentUserId,
-          content: newComment.value.trim(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          author_name: authorName
-        }
-        
-        allComments.value.unshift(comment)
-        totalComments.value = allComments.value.length
-        
-        newComment.value = ''
-        console.log('✅ 评论发表成功（本地模式）')
-        return
-      }
-      
       return
     }
     
@@ -873,5 +884,65 @@ onMounted(() => {
 .whitespace-pre-wrap {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+/* 深色模式支持 */
+.dark .post-card {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark .comments-section {
+  background: #2d3748;
+  color: #e2e8f0;
+}
+
+.dark .add-comment {
+  background: #4a5568;
+  border-color: #718096;
+}
+
+.dark .comment-input {
+  background: #4a5568;
+  border-color: #718096;
+  color: #e2e8f0;
+}
+
+.dark .comment-input:focus {
+  border-color: #63b3ed;
+  box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.1);
+}
+
+.dark .comment-item {
+  border-bottom-color: #4a5568;
+}
+
+.dark .post-title {
+  color: #e2e8f0;
+}
+
+.dark .comments-section h2 {
+  color: #e2e8f0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+  
+  .post-card, .comments-section {
+    padding: 16px;
+  }
+  
+  .post-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .add-comment {
+    padding: 16px;
+  }
 }
 </style>

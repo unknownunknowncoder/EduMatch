@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员详情功能完整测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .main-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .test-section {
+            border: 2px solid #f0f0f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            background: #fafafa;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .test-button {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px 10px 5px 0;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.4);
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        
+        .status-indicator {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 5px;
+            display: inline-block;
+        }
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .checklist {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .checklist li {
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+        .checklist li::before {
+            content: "✓ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        #test-results {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1>🔍 管理员查看详情功能测试</h1>
+            <p>全面测试后台管理系统中的查看详情按钮功能</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 核心功能测试</h3>
+            <p><strong>测试目标：</strong>验证所有查看详情按钮都能正确工作，包括：</p>
+            <ul class="checklist">
+                <li>帖子详情查看功能</li>
+                <li>学习计划详情查看功能</li>
+                <li>资源详情查看功能</li>
+                <li>用户详情查看功能</li>
+            </ul>
+            
+            <div style="margin-top: 20px;">
+                <a href="http://localhost:3010/admin" target="_blank" class="test-button">
+                    🚀 打开后台管理系统
+                </a>
+                <button onclick="startDetailedTest()" class="test-button">
+                    🔧 运行自动化测试
+                </button>
+                <button onclick="clearResults()" class="test-button">
+                    🗑️ 清除测试结果
+                </button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 测试步骤说明</h3>
+            <div style="background: #e9ecef; padding: 15px; border-radius: 6px; margin: 10px 0;">
+                <h4>手动测试步骤：</h4>
+                <ol style="line-height: 1.8;">
+                    <li>点击上方"打开后台管理系统"按钮</li>
+                    <li>确保已登录（如果未登录，会自动跳转到登录页）</li>
+                    <li>在后台管理页面中，依次测试以下功能：</li>
+                    <ul>
+                        <li><strong>内容管理</strong>标签页 → 点击任一帖子的眼睛图标</li>
+                        <li><strong>学习计划</strong>标签页 → 点击任一计划的眼睛图标</li>
+                        <li><strong>资源管理</strong>标签页 → 点击任一资源的眼睛图标</li>
+                        <li><strong>用户管理</strong>标签页 → 点击任一用户行</li>
+                    </ul>
+                    <li>验证每个详情页面都能在新窗口中正确打开</li>
+                    <li>确认详情页面能正确显示数据或适当的加载/错误状态</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>⚙️ 技术实现验证</h3>
+            <p>检查以下技术实现是否正确：</p>
+            <div id="tech-checks">
+                <div class="status-indicator status-warning">
+                    等待测试...
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <button onclick="checkTechnicalImplementation()" class="test-button">
+                    🔍 检查技术实现
+                </button>
+            </div>
+        </div>
+
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // 测试结果存储
+        let testResults = [];
+        
+        // 添加测试结果
+        function addTestResult(testName, status, message, details = null) {
+            testResults.push({
+                test: testName,
+                status: status,
+                message: message,
+                details: details,
+                timestamp: new Date().toLocaleTimeString()
+            });
+            updateResultsDisplay();
+        }
+        
+        // 更新结果显示
+        function updateResultsDisplay() {
+            const resultsDiv = document.getElementById('test-results');
+            if (testResults.length === 0) {
+                resultsDiv.innerHTML = '<p class="info">暂无测试结果</p>';
+                return;
+            }
+            
+            let html = '<h4>📊 测试结果汇总</h4>';
+            
+            // 统计
+            const passed = testResults.filter(r => r.status === 'success').length;
+            const failed = testResults.filter(r => r.status === 'error').length;
+            const warnings = testResults.filter(r => r.status === 'warning').length;
+            
+            html += `<div style="margin-bottom: 20px;">
+                <span class="status-indicator status-success">✅ 通过: ${passed}</span>
+                <span class="status-indicator status-error">❌ 失败: ${failed}</span>
+                <span class="status-indicator status-warning">⚠️ 警告: ${warnings}</span>
+            </div>`;
+            
+            // 详细结果
+            testResults.forEach(result => {
+                const statusClass = result.status === 'success' ? 'success' : 
+                                   result.status === 'error' ? 'error' : 'warning';
+                const icon = result.status === 'success' ? '✅' : 
+                            result.status === 'error' ? '❌' : '⚠️';
+                
+                html += `<div style="margin: 10px 0; padding: 10px; border-left: 4px solid ${
+                    result.status === 'success' ? '#28a745' : 
+                    result.status === 'error' ? '#dc3545' : '#ffc107'
+                }; background: #f8f9fa;">
+                    <strong>${icon} ${result.test}</strong> 
+                    <span class="${statusClass}">${result.message}</span>
+                    <small style="color: #666;">(${result.timestamp})</small>
+                    ${result.details ? `<div style="margin-top: 5px; font-size: 0.9em; color: #666;">${result.details}</div>` : ''}
+                </div>`;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // 清除结果
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+        }
+        
+        // 检查技术实现
+        async function checkTechnicalImplementation() {
+            const checksDiv = document.getElementById('tech-checks');
+            checksDiv.innerHTML = '<div class="loading"></div> 正在检查技术实现...';
+            
+            let checks = [];
+            
+            // 检查路由配置
+            try {
+                const response = await fetch('http://localhost:3010/post/test-id', { method: 'HEAD' });
+                checks.push({
+                    name: '帖子详情路由',
+                    status: response.status !== 404 ? 'success' : 'error',
+                    message: response.status !== 404 ? '正常' : '路由未配置'
+                });
+            } catch (error) {
+                checks.push({
+                    name: '帖子详情路由',
+                    status: 'error',
+                    message: '网络错误'
+                });
+            }
+            
+            try {
+                const response = await fetch('http://localhost:3010/study-plan/test-id', { method: 'HEAD' });
+                checks.push({
+                    name: '学习计划详情路由',
+                    status: response.status !== 404 ? 'success' : 'error',
+                    message: response.status !== 404 ? '正常' : '路由未配置'
+                });
+            } catch (error) {
+                checks.push({
+                    name: '学习计划详情路由',
+                    status: 'error',
+                    message: '网络错误'
+                });
+            }
+            
+            try {
+                const response = await fetch('http://localhost:3010/resource/test-id', { method: 'HEAD' });
+                checks.push({
+                    name: '资源详情路由',
+                    status: response.status !== 404 ? 'success' : 'error',
+                    message: response.status !== 404 ? '正常' : '路由未配置'
+                });
+            } catch (error) {
+                checks.push({
+                    name: '资源详情路由',
+                    status: 'error',
+                    message: '网络错误'
+                });
+            }
+            
+            try {
+                const response = await fetch('http://localhost:3010/admin', { method: 'HEAD' });
+                checks.push({
+                    name: '后台管理页面',
+                    status: response.ok ? 'success' : 'error',
+                    message: response.ok ? '正常' : `错误: ${response.status}`
+                });
+            } catch (error) {
+                checks.push({
+                    name: '后台管理页面',
+                    status: 'error',
+                    message: '网络错误'
+                });
+            }
+            
+            // 显示检查结果
+            let html = '';
+            checks.forEach(check => {
+                const statusClass = check.status === 'success' ? 'status-success' : 
+                                   check.status === 'error' ? 'status-error' : 'status-warning';
+                html += `<div class="status-indicator ${statusClass}">
+                    ${check.name}: ${check.message}
+                </div>`;
+            });
+            
+            checksDiv.innerHTML = html;
+            
+            // 添加到测试结果
+            checks.forEach(check => {
+                addTestResult(check.name, check.status, check.message);
+            });
+        }
+        
+        // 开始详细测试
+        function startDetailedTest() {
+            addTestResult('自动化测试启动', 'success', '开始运行详细测试套件');
+            checkTechnicalImplementation();
+            
+            // 模拟检查按钮点击事件
+            setTimeout(() => {
+                addTestResult('按钮点击事件', 'warning', '需要手动验证', '请在后台管理页面实际测试按钮功能');
+            }, 1000);
+            
+            setTimeout(() => {
+                addTestResult('页面跳转功能', 'warning', '需要手动验证', '请确认详情页面能在新窗口中正确打开');
+            }, 1500);
+            
+            setTimeout(() => {
+                addTestResult('数据加载', 'warning', '需要手动验证', '请确认详情页面能正确显示数据');
+            }, 2000);
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 管理员查看详情功能测试页面已加载');
+            addTestResult('页面加载', 'success', '测试页面已正确加载');
+            
+            // 自动运行基础检查
+            setTimeout(() => {
+                checkTechnicalImplementation();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

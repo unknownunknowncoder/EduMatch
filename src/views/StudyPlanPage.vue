@@ -1,14 +1,13 @@
 <template>
   <div class="p-6 md:p-8">
-    <!-- 成功提示 -->
+    <!-- 通用提示框 -->
     <div 
-      v-if="showSuccessMessage" 
-      class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 transition-all duration-300"
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+      class="flex items-center space-x-2"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-      </svg>
-      <span>{{ successMessage }}</span>
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
     </div>
 
     <!-- 学习计划概览 -->
@@ -89,13 +88,34 @@
                 <h3 class="font-semibold text-lg text-gray-900 dark:text-white">{{ plan.title }}</h3>
                 <p class="text-gray-600 dark:text-gray-400 text-sm">{{ plan.description }}</p>
               </div>
-              <span :class="`px-3 py-1 rounded-full text-xs font-medium ${
-                plan.status === 'in_progress' 
-                  ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                  : 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-              }`">
-                {{ plan.status === 'in_progress' ? '进行中' : '已完成' }}
-              </span>
+              <div class="flex items-center space-x-2">
+                <span :class="`px-3 py-1 rounded-full text-xs font-medium ${
+                  plan.status === 'in_progress' 
+                    ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                    : 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+                }`">
+                  {{ plan.status === 'in_progress' ? '进行中' : '已完成' }}
+                </span>
+                <button
+                  @click="viewPlanDetail(plan.id)"
+                  class="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                  title="查看详情"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                </button>
+                <button
+                  @click="showDeleteConfirm(plan)"
+                  class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  title="删除学习计划"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
             </div>
 
 
@@ -162,6 +182,7 @@
                   </div>
                 </div>
                 <div class="ml-4">
+                  <!-- 进行中的计划打卡按钮 -->
                   <button
                     v-if="plan.status === 'in_progress' && !plan.isTodayChecked"
                     @click="handleCheckin(plan)"
@@ -183,6 +204,16 @@
                     </svg>
                     今日已打卡
                   </button>
+                  <!-- 已完成的计划显示完成标志 -->
+                  <div
+                    v-else-if="plan.status === 'completed'"
+                    class="px-4 py-2 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-lg flex items-center text-sm font-medium"
+                  >
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    已完成
+                  </div>
                 </div>
               </div>
             </div>
@@ -192,46 +223,46 @@
     </div>
 
     <!-- 创建学习计划弹窗 -->
-    <div v-if="showCreatePlanModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div v-if="showCreatePlanModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
         <!-- 弹窗头部 -->
-        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white">创建学习计划</h2>
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <h2 class="text-lg font-bold text-slate-800">创建学习计划</h2>
           <button 
             @click="showCreatePlanModal = false"
-            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+            class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
           >
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </button>
         </div>
 
         <!-- 表单内容 -->
-        <form @submit.prevent="handleCreatePlan" class="p-6 space-y-4">
+        <form @submit.prevent="handleCreatePlan" class="p-6 overflow-y-auto space-y-5">
           <!-- 计划标题 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               计划标题 *
             </label>
             <input
               v-model="newPlan.title"
               type="text"
               required
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
               placeholder="例如：前端开发进阶"
             />
           </div>
 
           <!-- 计划描述 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               计划描述
             </label>
             <textarea
               v-model="newPlan.description"
               rows="3"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
               placeholder="描述你的学习目标和内容（选填）"
             ></textarea>
           </div>
@@ -240,7 +271,7 @@
 
           <!-- 关联学习资源 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               关联学习资源
             </label>
             <div class="space-y-3">
@@ -249,7 +280,7 @@
                 <input
                   v-model="newPlan.resourceName"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="输入关联的学习资源名称（选填）"
                 />
               </div>
@@ -258,13 +289,13 @@
                 <input
                   v-model="newPlan.resourceUrl"
                   type="url"
-                  class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   placeholder="输入资源链接（选填）"
                 />
               </div>
               <!-- 学习总时长 -->
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
                   学习总时长（小时）
                 </label>
                 <div class="relative">
@@ -273,19 +304,19 @@
                     type="number"
                     min="0"
                     step="0.5"
-                    class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white no-spinner"
+                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none no-spinner"
                     placeholder="例如：10.5（选填）"
                   />
-                  <span class="absolute right-4 top-2 text-gray-500 dark:text-gray-400">小时</span>
+                  <span class="absolute right-4 top-2.5 text-slate-500">小时</span>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">填写该资源的总学习时长（可选）</p>
+                <p class="text-xs text-slate-500 mt-1">填写该资源的总学习时长（可选）</p>
               </div>
               <!-- 从我的资源中选择 -->
               <div>
                   <button
                     type="button"
                     @click="handleOpenResourceModal"
-                    class="w-full px-4 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-300 dark:border-purple-600 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/30 transition-colors flex items-center justify-center"
+                    class="w-full px-4 py-2.5 bg-indigo-100 text-indigo-600 border border-indigo-200 rounded-xl hover:bg-indigo-200 transition-colors flex items-center justify-center font-medium"
                   >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
@@ -296,35 +327,22 @@
             </div>
           </div>
 
-          <!-- 开始和目标日期 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                开始日期 *
-              </label>
-              <input
-                v-model="newPlan.startDate"
-                type="date"
-                required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                目标日期 *
-              </label>
-              <input
-                v-model="newPlan.targetDate"
-                type="date"
-                required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
-              />
-            </div>
+          <!-- 开始日期 -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              开始日期 *
+            </label>
+            <input
+              v-model="newPlan.startDate"
+              type="date"
+              required
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
           </div>
 
           <!-- 每日学习时间 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
               每日学习时间（小时） *
             </label>
             <div class="relative">
@@ -335,27 +353,61 @@
                 max="24"
                 step="0.5"
                 required
-                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white appearance-none"
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none"
                 placeholder="例如：2.5"
                 style="-moz-appearance: textfield; -webkit-appearance: none; appearance: none;"
               />
-              <span class="absolute right-4 top-2 text-gray-500 dark:text-gray-400">小时</span>
+              <span class="absolute right-4 top-2.5 text-slate-500">小时</span>
             </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">建议每日学习0.5到24小时</p>
+            <p class="text-xs text-slate-500 mt-1">建议每日学习0.5到24小时</p>
+          </div>
+
+          <!-- 学习天数和预计完成日期 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                学习天数
+              </label>
+              <div class="relative">
+                <input
+                  :value="calculatedStudyDays"
+                  type="number"
+                  readonly
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700"
+                />
+                <span class="absolute right-4 top-2.5 text-slate-500">天</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                预计完成日期
+              </label>
+              <div class="relative">
+                <input
+                  :value="estimatedCompletionDate"
+                  type="text"
+                  readonly
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700"
+                />
+                <svg class="absolute right-3 top-3 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            </div>
           </div>
 
           <!-- 按钮组 -->
-          <div class="flex justify-end space-x-3 pt-4">
+          <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
             <button
               type="button"
               @click="closeCreatePlanModal"
-              class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+              class="px-5 py-2 text-slate-600 font-medium hover:bg-white border border-transparent hover:border-slate-200 rounded-lg transition-all"
             >
               取消
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
             >
               创建计划
             </button>
@@ -450,13 +502,26 @@
         </div>
       </div>
     </div>
+
+    <!-- 删除确认弹窗 -->
+    <ConfirmDialog
+      ref="deleteConfirmDialog"
+      title="删除学习计划"
+      message="确定要删除这个学习计划吗？删除后将无法恢复，相关的打卡记录也会被删除。"
+      confirm-text="确认删除"
+      cancel-text="手滑了"
+      type="danger"
+      @confirm="handleDeletePlan"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { supabaseService } from '@/services/supabase'
 import { useDatabaseStore } from '@/stores/database'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const dbStore = useDatabaseStore()
 
@@ -520,13 +585,16 @@ interface MyResource {
   created_at: string
 }
 
-const showSuccessMessage = ref(false)
-const successMessage = ref('')
+
 const showCreatePlanModal = ref(false)
 const showMyResourcesModal = ref(false)
 const myResources = ref<MyResource[]>([])
 const isLoadingMyResources = ref(false)
 const isCheckingIn = ref(false)
+
+// 删除相关状态
+const deleteConfirmDialog = ref<InstanceType<typeof ConfirmDialog>>()
+const planToDelete = ref<StudyPlan | null>(null)
 
 const plans = ref({
   inProgress: 0,
@@ -538,7 +606,6 @@ const newPlan = ref({
   title: '',
   description: '',
   startDate: '',
-  targetDate: '',
   dailyHours: 2, // 默认每日学习2小时
   totalHours: '', // 学习总时长（可选）
   resourceName: '',
@@ -547,6 +614,43 @@ const newPlan = ref({
 
 // 学习计划数据（从数据库动态加载）
 const currentPlans = ref<StudyPlan[]>([])
+
+// 计算学习天数
+const calculatedStudyDays = computed(() => {
+  const totalHours = parseFloat(newPlan.value.totalHours)
+  const dailyHours = parseFloat(newPlan.value.dailyHours)
+  
+  if (!totalHours || !dailyHours || dailyHours <= 0) {
+    return 0
+  }
+  
+  // 向上取整，确保有足够的天数完成学习
+  return Math.ceil(totalHours / dailyHours)
+})
+
+// 计算预计完成日期
+const estimatedCompletionDate = computed(() => {
+  if (!newPlan.value.startDate || calculatedStudyDays.value === 0) {
+    return ''
+  }
+  
+  const startDate = new Date(newPlan.value.startDate)
+  const studyDays = calculatedStudyDays.value
+  
+  if (isNaN(startDate.getTime())) {
+    return ''
+  }
+  
+  // 计算完成日期（开始日期 + 学习天数 - 1，因为当天也算第一天）
+  const completionDate = new Date(startDate)
+  completionDate.setDate(startDate.getDate() + studyDays - 1)
+  
+  return completionDate.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+})
 
 // 从数据库加载学习计划 - 修复版本
 const loadDatabasePlans = async () => {
@@ -558,9 +662,7 @@ const loadDatabasePlans = async () => {
     
     if (!client) {
       console.error('❌ 获取数据库客户端失败')
-      successMessage.value = '数据库连接失败'
-      showSuccessMessage.value = true
-      setTimeout(() => { showSuccessMessage.value = false }, 3000)
+      showToast('数据库连接失败', 'error')
       return
     }
     
@@ -584,9 +686,7 @@ const loadDatabasePlans = async () => {
     
     if (accessError) {
       console.error('❌ 表访问权限错误:', accessError)
-      successMessage.value = '数据库权限不足，请联系管理员'
-      showSuccessMessage.value = true
-      setTimeout(() => { showSuccessMessage.value = false }, 5000)
+      showToast('数据库权限不足，请联系管理员', 'error')
       return
     }
     
@@ -599,11 +699,7 @@ const loadDatabasePlans = async () => {
     
     if (plansError) {
       console.error('❌ 数据库加载失败:', plansError)
-      successMessage.value = '数据库加载失败，显示默认数据'
-      showSuccessMessage.value = true
-      setTimeout(() => {
-        showSuccessMessage.value = false
-      }, 3000)
+      showToast('数据库加载失败，显示默认数据', 'warning')
       return
     }
     
@@ -651,8 +747,8 @@ const loadDatabasePlans = async () => {
               ? Math.max(1, Math.ceil((target.getTime() - start.getTime()) / msPerDay))
               : 1
             const remainingDays = (target && !isNaN(target.getTime()))
-              ? Math.max(0, Math.ceil((target.getTime() - todayDate.getTime()) / msPerDay))
-              : 0
+              ? Math.max(1, Math.ceil((target.getTime() - todayDate.getTime()) / msPerDay))
+              : 1
             const progress = totalDays > 0
               ? Math.min(100, Math.round((checkinCount / totalDays) * 100))
               : (plan.progress || 0)
@@ -670,7 +766,10 @@ const loadDatabasePlans = async () => {
               // 确保字段映射正确
               startDate: plan.startDate || plan.start_date,
               targetDate: plan.targetDate || plan.target_date,
-              dailyHours: plan.dailyHours || plan.daily_hours
+              dailyHours: plan.dailyHours || plan.daily_hours,
+              // 修复资源字段映射
+              resourceName: plan.resourceName || plan.resource_name,
+              resourceUrl: plan.resourceUrl || plan.resource_url
             }
           } catch (error) {
             console.error('Error processing study plan ' + plan.id + ':', error)
@@ -680,7 +779,13 @@ const loadDatabasePlans = async () => {
               checkins: [],
               isTodayChecked: false,
               remainingDays: 0,
-              progress: plan.progress || 0
+              progress: plan.progress || 0,
+              // 确保资源字段映射正确
+              resourceName: plan.resourceName || plan.resource_name,
+              resourceUrl: plan.resourceUrl || plan.resource_url,
+              startDate: plan.startDate || plan.start_date,
+              targetDate: plan.targetDate || plan.target_date,
+              dailyHours: plan.dailyHours || plan.daily_hours
             }
           }
         })
@@ -694,9 +799,7 @@ const loadDatabasePlans = async () => {
     
   } catch (error) {
     console.error('❌ 加载学习计划时出错:', error)
-    successMessage.value = '加载学习计划失败，请刷新页面重试'
-    showSuccessMessage.value = true
-    setTimeout(() => { showSuccessMessage.value = false }, 5000)
+    showToast('加载学习计划失败，请刷新页面重试', 'error')
     currentPlans.value = []
   } finally {
     updateStats()
@@ -718,43 +821,40 @@ const updateStats = () => {
 const handleCreatePlan = async () => {
   // 验证表单数据
   if (!newPlan.value.title || newPlan.value.title.trim() === '') {
-    alert('请填写计划标题')
+    showToast('请填写计划标题', 'warning')
     return
   }
 
   if (!newPlan.value.startDate || newPlan.value.startDate.trim() === '') {
-    alert('请选择开始日期')
+    showToast('请选择开始日期', 'warning')
     return
   }
 
-  if (!newPlan.value.targetDate || newPlan.value.targetDate.trim() === '') {
-    alert('请选择目标日期')
-    return
-  }
-
-  // 验证日期逻辑
+  // 验证开始日期逻辑
   const start = new Date(newPlan.value.startDate)
-  const target = new Date(newPlan.value.targetDate)
   
   if (isNaN(start.getTime())) {
-    alert('开始日期格式不正确')
+    showToast('开始日期格式不正确', 'error')
     return
   }
 
-  if (isNaN(target.getTime())) {
-    alert('目标日期格式不正确')
+  // 验证学习总时长和每日学习时间是否都能计算天数
+  const totalHours = parseFloat(newPlan.value.totalHours)
+  const dailyHours = parseFloat(newPlan.value.dailyHours)
+  
+  if (!totalHours || totalHours <= 0) {
+    showToast('请填写学习总时长', 'warning')
     return
   }
 
-  if (target <= start) {
-    alert('目标日期必须晚于开始日期')
+  if (totalHours < dailyHours) {
+    showToast('学习总时长不能小于每日学习时间', 'warning')
     return
   }
 
   // 验证每日学习时间
-  const dailyHours = parseFloat(newPlan.value.dailyHours)
   if (isNaN(dailyHours) || dailyHours < 0.5 || dailyHours > 24) {
-    alert('每日学习时间必须在0.5到24小时之间')
+    showToast('每日学习时间必须在0.5到24小时之间', 'warning')
     return
   }
 
@@ -772,7 +872,7 @@ const handleCreatePlan = async () => {
     
     // 如果没有登录用户，显示错误信息
     if (!currentUser || !currentUser.id) {
-      alert('请先登录后再创建学习计划')
+      showToast('请先登录后再创建学习计划', 'warning')
       return
     }
     
@@ -786,10 +886,19 @@ const handleCreatePlan = async () => {
     }
     
     if (!client) {
-      alert('数据库连接失败，请重试')
+      showToast('数据库连接失败，请重试', 'error')
       return
     }
     
+    // 计算目标日期
+    let targetDateISO = null
+    if (newPlan.value.startDate && calculatedStudyDays.value > 0) {
+      const startDate = new Date(newPlan.value.startDate)
+      const completionDate = new Date(startDate)
+      completionDate.setDate(startDate.getDate() + calculatedStudyDays.value - 1)
+      targetDateISO = completionDate.toISOString().split('T')[0]
+    }
+
     // 准备数据库插入数据
     const dbPlanData = {
       user_id: currentUser.id,
@@ -798,7 +907,7 @@ const handleCreatePlan = async () => {
       progress: 0,
       status: 'in_progress',
       start_date: newPlan.value.startDate,
-      target_date: newPlan.value.targetDate,
+      target_date: targetDateISO,
       daily_hours: newPlan.value.dailyHours,
       total_hours: newPlan.value.totalHours ? parseFloat(newPlan.value.totalHours) : null,
       resource_name: newPlan.value.resourceName,
@@ -837,14 +946,14 @@ const handleCreatePlan = async () => {
       progress: createdPlan.progress || 0,
       status: createdPlan.status || 'in_progress',
       startDate: createdPlan.start_date || newPlan.value.startDate,
-      targetDate: createdPlan.target_date || newPlan.value.targetDate,
+      targetDate: createdPlan.target_date || targetDateISO,
       dailyHours: createdPlan.daily_hours || newPlan.value.dailyHours,
       resourceName: createdPlan.resource_name || newPlan.value.resourceName,
       resourceUrl: createdPlan.resource_url || newPlan.value.resourceUrl,
       // 初始化打卡相关数据
       checkinCount: 0,
-      totalDays: 0,
-      remainingDays: 0,
+      totalDays: calculatedStudyDays.value,
+      remainingDays: calculatedStudyDays.value,
       isTodayChecked: false,
       checkins: []
     }
@@ -859,19 +968,13 @@ const handleCreatePlan = async () => {
     showCreatePlanModal.value = false
     
     // 显示成功提示
-    successMessage.value = '学习计划创建成功！'
-    showSuccessMessage.value = true
-    
-    setTimeout(() => {
-      showSuccessMessage.value = false
-    }, 3000)
+    showToast('学习计划创建成功！', 'success')
 
     // 重置表单
     newPlan.value = {
       title: '',
       description: '',
       startDate: '',
-      targetDate: '',
       dailyHours: 2, // 重置为默认值
       totalHours: '',
       resourceName: '',
@@ -880,7 +983,7 @@ const handleCreatePlan = async () => {
     
   } catch (error) {
     console.error('❌ 创建学习计划失败:', error)
-    alert('创建学习计划失败：' + (error instanceof Error ? error.message : '未知错误'))
+    showToast('创建学习计划失败：' + (error instanceof Error ? error.message : '未知错误'), 'error')
   }
 }
 
@@ -893,7 +996,6 @@ const closeCreatePlanModal = () => {
       title: '',
       description: '',
       startDate: '',
-      targetDate: '',
       dailyHours: 2, // 重置为默认值
       totalHours: '',
       resourceName: '',
@@ -943,11 +1045,7 @@ const fetchMyResources = async () => {
     if (error) {
       console.error('❌ 获取用户资源失败:', error)
       // 显示错误信息给用户
-      successMessage.value = '获取资源失败，请检查数据库连接'
-      showSuccessMessage.value = true
-      setTimeout(() => {
-        showSuccessMessage.value = false
-      }, 3000)
+      showToast('获取资源失败，请检查数据库连接', 'error')
       return
     }
 
@@ -984,11 +1082,7 @@ const selectResource = (resource: MyResource) => {
   showMyResourcesModal.value = false
   
   // 显示选择成功提示
-  showSuccessMessage.value = true
-  successMessage.value = `已选择资源: ${resource.title}${resource.duration ? `，学习时长: ${resource.duration}` : ''}`
-  setTimeout(() => {
-    showSuccessMessage.value = false
-  }, 3000)
+  showToast(`已选择资源: ${resource.title}${resource.duration ? `，学习时长: ${resource.duration}` : ''}`, 'success')
 }
 
 // 获取资源类型颜色
@@ -1044,6 +1138,22 @@ const handleCheckin = async (plan: StudyPlan) => {
     const currentUser = JSON.parse(storedUser)
     console.log('✅ 获取到当前用户:', { id: currentUser.id, username: currentUser.username })
     
+    // 验证打卡日期不能早于计划开始日期
+    const planStartDate = plan.startDate || plan.start_date
+    if (planStartDate) {
+      const now = new Date()
+      const today = now.toISOString().split('T')[0]
+      const startDate = new Date(planStartDate).toISOString().split('T')[0]
+      
+      console.log(`📅 验证日期: 今天=${today}, 开始日期=${startDate}`)
+      
+      if (today < startDate) {
+        showToast(`打卡日期不能早于计划开始日期 ${formatDate(planStartDate)}`, 'warning')
+        isCheckingIn.value = false
+        return
+      }
+    }
+    
     // 计算今日日期，供查询与写入复用
     const now = new Date()
     const today = now.toISOString().split('T')[0]
@@ -1063,7 +1173,7 @@ const handleCheckin = async (plan: StudyPlan) => {
     }
     
     if (existingCheckins && existingCheckins.length > 0) {
-      alert('今天已经打过卡了！')
+      showToast('今天已经打过卡了！', 'info')
       return
     }
     
@@ -1096,19 +1206,53 @@ const handleCheckin = async (plan: StudyPlan) => {
     
     console.log('✅ 打卡成功:', checkinData)
     
+    // 计算打卡后的进度并检查是否完成
+    const { data: allCheckins, error: allCheckinsError } = await client
+      .from('study_plan_checkins')
+      .select('*')
+      .eq('study_plan_id', plan.id)
+      .eq('user_id', currentUser.id)
+    
+    if (allCheckinsError) {
+      console.error('❌ 获取打卡记录失败:', allCheckinsError)
+    } else {
+      const totalCheckins = allCheckins?.length || 0
+      const totalDays = plan.totalDays || 1
+      const progressPercentage = Math.round((totalCheckins / totalDays) * 100)
+      
+      console.log(`📈 打卡后进度: ${totalCheckins}/${totalDays} = ${progressPercentage}%`)
+      
+      // 检查进度是否达到100%
+      if (progressPercentage >= 100) {
+        // 将计划状态更新为已完成
+        const { error: updateError } = await client
+          .from('study_plans')
+          .update({ 
+            status: 'completed',
+            progress: 100,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', plan.id)
+          .eq('user_id', currentUser.id)
+        
+        if (updateError) {
+          console.error('❌ 更新计划状态失败:', updateError)
+          showToast('打卡成功，但更新计划状态失败', 'warning')
+        } else {
+          console.log('🎉 学习计划已完成！')
+          showToast('🎉 恭喜！学习计划已完成！', 'success')
+        }
+      } else {
+        showToast('打卡成功！继续保持学习节奏！', 'success')
+      }
+    }
+    
     // 更新界面的打卡状态
     await loadDatabasePlans()
     
-    // 显示成功提示
-    showSuccessMessage.value = true
-    successMessage.value = '打卡成功！继续保持学习节奏！'
-    setTimeout(() => {
-      showSuccessMessage.value = false
-    }, 3000)
-    
   } catch (error: any) {
     console.error('❌ 打卡功能错误:', error)
-    alert(`打卡失败: ${error.message}`)
+    showToast(`打卡失败: ${error.message}`, 'error')
   } finally {
     isCheckingIn.value = false
   }
@@ -1118,6 +1262,87 @@ const handleCheckin = async (plan: StudyPlan) => {
 const handleOpenResourceModal = () => {
   showMyResourcesModal.value = true
   fetchMyResources()
+}
+
+// 查看计划详情
+const viewPlanDetail = (planId: string) => {
+  router.push(`/study-plan/${planId}`)
+}
+
+// 显示删除确认对话框
+const showDeleteConfirm = (plan: StudyPlan) => {
+  planToDelete.value = plan
+  deleteConfirmDialog.value?.show()
+}
+
+// 处理删除学习计划
+const handleDeletePlan = async () => {
+  if (!planToDelete.value) {
+    showToast('请选择要删除的学习计划', 'warning')
+    return
+  }
+
+  try {
+    // 使用数据库store的客户端，确保认证状态一致
+    const client = await dbStore.getClient()
+    
+    if (!client) {
+      throw new Error('数据库连接失败')
+    }
+
+    // 从localStorage获取当前登录用户信息
+    const storedUser = localStorage.getItem('currentUser')
+    if (!storedUser) {
+      throw new Error('用户未登录，请先登录')
+    }
+    
+    const currentUser = JSON.parse(storedUser)
+
+    // 先删除相关的打卡记录
+    const { error: deleteCheckinsError } = await client
+      .from('study_plan_checkins')
+      .delete()
+      .eq('study_plan_id', planToDelete.value.id)
+      .eq('user_id', currentUser.id)
+
+    if (deleteCheckinsError) {
+      console.error('❌ 删除打卡记录失败:', deleteCheckinsError)
+      // 如果删除打卡记录失败，不阻止删除计划，只记录错误
+    }
+
+    // 删除学习计划
+    const { error: deletePlanError } = await client
+      .from('study_plans')
+      .delete()
+      .eq('id', planToDelete.value.id)
+      .eq('user_id', currentUser.id)
+
+    if (deletePlanError) {
+      console.error('❌ 删除学习计划失败:', deletePlanError)
+      throw new Error(`删除失败: ${deletePlanError.message}`)
+    }
+
+    console.log('✅ 学习计划删除成功:', planToDelete.value.title)
+    
+    // 从本地数组中移除该计划
+    const index = currentPlans.value.findIndex(p => p.id === planToDelete.value!.id)
+    if (index > -1) {
+      currentPlans.value.splice(index, 1)
+    }
+
+    // 更新统计信息
+    updateStats()
+
+    // 显示成功提示
+    showToast(`学习计划"${planToDelete.value.title}"已删除`, 'success')
+
+    // 重置待删除计划
+    planToDelete.value = null
+
+  } catch (error: any) {
+    console.error('❌ 删除学习计划时出错:', error)
+    showToast(`删除失败: ${error.message}`, 'error')
+  }
 }
 
 onMounted(() => {
