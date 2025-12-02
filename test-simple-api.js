@@ -2,7 +2,7 @@
 import fetch from 'node-fetch';
 
 async function testSimpleAPI() {
-    const token = 'pat_v7ZUGQxfsN0oiwf3B2mn4WDZxM9r3wDlSR5oJ8NCI2VAUcb1IkaqpTwODmFtlpaz';
+    const token = 'sat_uvUYKEkkKh2rL1IfHmO8IkVGwmdyZBP5D7PoxYuw1PvpMFhjMGy5GQyRiz2lBrlH';
     const botId = '7573579561607331840';
     
     console.log('🧪 测试扣子API');

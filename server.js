@@ -17,8 +17,8 @@ app.post('/api/coze/chat', async (req, res) => {
     
     console.log('🔍 收到扣子API请求:', { query, bot_id, user_id })
     
-    // 从环境变量获取token - 硬编码正确的PAT token
-    const apiToken = 'pat_v7ZUGQxfsN0oiwf3B2mn4WDZxM9r3wDlSR5oJ8NCI2VAUcb1IkaqpTwODmFtlpaz'
+    // 从环境变量获取token - 使用正确的API token
+    const apiToken = 'sat_uvUYKEkkKh2rL1IfHmO8IkVGwmdyZBP5D7PoxYuw1PvpMFhjMGy5GQyRiz2lBrlH'
     console.log('🔑 使用硬编码的PAT token:', apiToken.substring(0, 20) + '...')
     const defaultBotId = process.env.COZE_BOT_ID || '7573579561607331840'
     

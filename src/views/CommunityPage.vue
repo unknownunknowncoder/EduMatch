@@ -646,7 +646,7 @@ const toggleLike = async (post: any) => {
         if (user.id) {
           currentUserId = user.id.toString();
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('解析用户信息失败:', error);
       }
     }
@@ -668,7 +668,7 @@ const toggleLike = async (post: any) => {
       } else {
         throw new Error('Supabase环境变量未配置');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ 数据库连接失败:', error.message);
       alert('数据库连接失败，请稍后重试');
       return;
@@ -744,7 +744,7 @@ const toggleFavorite = async (post: any) => {
         if (user.id) {
           currentUserId = user.id.toString();
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('解析用户信息失败:', error);
       }
     }
@@ -766,7 +766,7 @@ const toggleFavorite = async (post: any) => {
       } else {
         throw new Error('Supabase环境变量未配置');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ 数据库连接失败:', error.message);
       alert('数据库连接失败，请稍后重试');
       return;
@@ -930,7 +930,7 @@ const loadPosts = async () => {
           currentUserId = user.id;
           currentUserName = user.nickname || user.username || '';
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('解析用户信息失败:', error);
       }
     }
@@ -1139,7 +1139,7 @@ const submitPost = async () => {
           currentUserId = user.id;
           currentUserName = user.nickname || user.username || '';
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('解析用户信息失败:', error);
       }
     }

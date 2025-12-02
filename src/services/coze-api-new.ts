@@ -60,7 +60,7 @@ class CozeAPIService {
   async searchRecommendations(request: CozeSearchRequest): Promise<CozeSearchResponse> {
     console.log('🔍 开始搜索扣子API:', request)
     
-    const response = await fetch('http://localhost:3002/api/coze/chat', {
+    const response = await fetch('http://localhost:3014/api/coze/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

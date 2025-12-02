@@ -26,7 +26,7 @@ app.post('/api/coze/chat', async (req, res) => {
     console.log('🔍 收到扣子API请求:', { query, bot_id, user_id })
     
     // 从环境变量获取token
-    const apiToken = process.env.COZE_API_TOKEN || 'cztei_hSy4b4uf36RCKawy2b8fTIhnXtW76plRFJbdwbgfNVzuRlZYGBAzs74gg32dhvsUq'
+    const apiToken = process.env.COZE_API_TOKEN || 'sat_uvUYKEkkKh2rL1IfHmO8IkVGwmdyZBP5D7PoxYuw1PvpMFhjMGy5GQyRiz2lBrlH'
     const defaultBotId = process.env.COZE_BOT_ID || '7573579561607331840'
     
     // 尝试OAuth获取access_token

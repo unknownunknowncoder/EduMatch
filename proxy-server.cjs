@@ -35,30 +35,45 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// API路由前缀
+app.all('/api/coze/chat', async (req, res) => {
+  console.log('🔧 收到 /api/coze/chat 请求:', req.method, req.body);
+  
+  // 转发到 /chat 处理器
+  req.method = 'POST';
+  return handleChatRequest(req, res);
+});
+
 // 聊天端点 - 直接转发到扣子API
 app.post('/chat', async (req, res) => {
+  return handleChatRequest(req, res);
+});
+
+// 聊天请求处理器
+async function handleChatRequest(req, res) {
   try {
     console.log('🔧 收到前端请求:', req.body);
     
-    const { conversation_id, messages, user } = req.body;
+    // 处理前端发送的 {query: string} 格式
+    const { query, conversation_id, messages, user } = req.body;
+    
+    // 确定要发送的消息内容
+    let messageText = '';
+    if (query) {
+      messageText = query; // 前端直接发送的查询
+    } else if (messages && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      messageText = lastMessage.content || lastMessage.text || '';
+    }
 
     // 构建扣子API请求
-    const lastMessage = messages && messages.length > 0 ? messages[messages.length - 1] : {};
     const cozeRequest = {
       conversation_id: conversation_id || '',
       bot_id: COZE_BOT_ID,
       user: user || 'default_user',
-      stream: false,
-      messages: [
-        {
-          content_type: 'text',
-          content: {
-            text: lastMessage.content || '',
-            image_url: null,
-            file_url: null
-          }
-        }
-      ]
+      query: messageText, // 使用 query 字段而不是 messages
+      chat_history: [],
+      stream: false
     };
 
     console.log('🔗 发送到扣子API:', JSON.stringify(cozeRequest, null, 2));
@@ -111,7 +126,7 @@ app.post('/chat', async (req, res) => {
       error: error.message
     });
   }
-});
+}
 
 // 搜索资源端点
 app.post('/search-resources', async (req, res) => {
