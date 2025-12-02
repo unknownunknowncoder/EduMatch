@@ -521,6 +521,143 @@ export class SupabaseService {
     return data[0]
   }
 
+  // 关注功能相关操作
+  async followUser(followerId: string, followingId: string) {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('user_follows')
+      .insert([{
+        follower_id: followerId,
+        following_id: followingId
+      }])
+      .select()
+    
+    if (error) throw error
+    return data[0]
+  }
+
+  async unfollowUser(followerId: string, followingId: string) {
+    const client = this.getClient()
+    const { error } = await client
+      .from('user_follows')
+      .delete()
+      .eq('follower_id', followerId)
+      .eq('following_id', followingId)
+    
+    if (error) throw error
+    return true
+  }
+
+  async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('user_follows')
+      .select('id')
+      .eq('follower_id', followerId)
+      .eq('following_id', followingId)
+      .limit(1)
+    
+    if (error) throw error
+    return !!(data && data.length > 0)
+  }
+
+  async getFollowStats(userId: string) {
+    const client = this.getClient()
+    
+    // 使用统计视图获取关注和粉丝数
+    const { data, error } = await client
+      .from('user_follow_stats')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+    
+    if (error) {
+      // 如果视图不存在，使用原始查询
+      console.warn('统计视图不存在，使用原始查询')
+      
+      const [followersResult, followingResult] = await Promise.all([
+        client
+          .from('user_follows')
+          .select('follower_id')
+          .eq('following_id', userId),
+        client
+          .from('user_follows')
+          .select('following_id')
+          .eq('follower_id', userId)
+      ])
+      
+      return {
+        user_id: userId,
+        followers_count: followersResult.data?.length || 0,
+        followings_count: followingResult.data?.length || 0
+      }
+    }
+    
+    return data
+  }
+
+  async getFollowingList(userId: string, options: { limit?: number; offset?: number } = {}) {
+    const client = this.getClient()
+    let query = client
+      .from('user_follows')
+      .select(`
+        *,
+        user:following_id (
+          id,
+          username,
+          nickname,
+          avatar_url,
+          created_at
+        )
+      `)
+      .eq('follower_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (options.limit) {
+      query = query.limit(options.limit)
+    }
+
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit || 10) - 1)
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    
+    return data
+  }
+
+  async getFollowersList(userId: string, options: { limit?: number; offset?: number } = {}) {
+    const client = this.getClient()
+    let query = client
+      .from('user_follows')
+      .select(`
+        *,
+        user:follower_id (
+          id,
+          username,
+          nickname,
+          avatar_url,
+          created_at
+        )
+      `)
+      .eq('following_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (options.limit) {
+      query = query.limit(options.limit)
+    }
+
+    if (options.offset) {
+      query = query.range(options.offset, options.offset + (options.limit || 10) - 1)
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    
+    return data
+  }
+
   // 通用查询方法
   async customQuery<T = any>(table: string, options: any = {}) {
     return dbService.query(table, options) as Promise<T[]>

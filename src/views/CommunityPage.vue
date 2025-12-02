@@ -195,22 +195,45 @@
             </div>
 
             <!-- 分页 -->
-            <div class="flex items-center justify-center gap-4 py-4">
-               <button 
-                 @click="prevPage"
-                 :disabled="currentPage === 1" 
-                 class="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
-               >
-                 <ChevronLeft class="w-5 h-5" />
-               </button>
-               <span class="text-sm text-slate-600 font-medium">第 {{ currentPage }} / {{ totalPages }} 页</span>
-               <button 
-                 @click="nextPage"
-                 :disabled="currentPage === totalPages" 
-                 class="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
-               >
-                 <ChevronRight class="w-5 h-5" />
-               </button>
+            <div class="flex flex-wrap items-center justify-center gap-4 py-4">
+              <div class="flex items-center gap-4">
+                <button 
+                  @click="prevPage"
+                  :disabled="currentPage === 1" 
+                  class="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+                >
+                  <ChevronLeft class="w-5 h-5" />
+                </button>
+                <span class="text-sm text-slate-600 font-medium">第 {{ currentPage }} / {{ totalPages }} 页</span>
+                <button 
+                  @click="nextPage"
+                  :disabled="currentPage === totalPages" 
+                  class="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
+                >
+                  <ChevronRight class="w-5 h-5" />
+                </button>
+              </div>
+              <div class="flex items-center gap-2 text-sm text-slate-600">
+                <span>跳转到</span>
+                <input
+                  v-model="jumpPageInput"
+                  type="number"
+                  min="1"
+                  :max="totalPages"
+                  @keyup.enter="jumpToPage"
+                  class="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-center focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="页码"
+                />
+                <span>页</span>
+                <button
+                  type="button"
+                  @click="jumpToPage"
+                  class="px-3 py-1.5 rounded-lg border border-indigo-200 text-indigo-600 font-medium hover:bg-indigo-50 disabled:opacity-50"
+                  :disabled="!totalPages"
+                >
+                  跳转
+                </button>
+              </div>
             </div>
           </template>
         </div>
@@ -465,6 +488,7 @@ const resourcesError = ref('')
 const currentPage = ref(1);
 const pageSize = ref(10);
 const totalPages = ref(0);
+const jumpPageInput = ref('');
 
 // 数据
 const posts = ref<Post[]>([]);
@@ -571,6 +595,34 @@ const nextPage = () => {
     currentPage.value++;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+};
+
+const jumpToPage = () => {
+  const total = totalPages.value;
+  if (!total) {
+    showToast('暂无可跳转的页码', 'warning');
+    return;
+  }
+
+  if (!jumpPageInput.value) {
+    showToast('请输入要跳转的页码', 'warning');
+    return;
+  }
+
+  const target = Number(jumpPageInput.value);
+  if (!Number.isInteger(target)) {
+    showToast('请输入有效的整数页码', 'warning');
+    return;
+  }
+
+  if (target < 1 || target > total) {
+    showToast(`页码需在 1 到 ${total} 之间`, 'warning');
+    return;
+  }
+
+  currentPage.value = target;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  jumpPageInput.value = '';
 };
 
 // 查看帖子详情

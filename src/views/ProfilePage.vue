@@ -69,9 +69,25 @@
 
 
       </div>
+
+        <!-- 关注统计 -->
+        <div class="flex justify-around mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+          <div class="text-center">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ followStats.followings_count }}</div>
+            <button @click="goToFollowing" class="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors mt-1">关注</button>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ followStats.followers_count }}</div>
+            <button @click="goToFollowers" class="text-sm text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors mt-1">粉丝</button>
+          </div>
+          <div class="text-center">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ myPosts.length }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">帖子</div>
+          </div>
+        </div>
+
+
     </div>
-
-
 
     <!-- 我的资源 -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-8">
@@ -345,6 +361,12 @@ const myPosts = ref<MyPost[]>([])
 const isLoadingResources = ref(false)
 const isLoadingPosts = ref(false)
 
+// 关注统计
+const followStats = ref({
+  followers_count: 0,
+  followings_count: 0
+})
+
 // 从localStorage获取当前用户信息
 const getUserInfo = (): UserInfo => {
   const currentUser = localStorage.getItem('currentUser')
@@ -431,6 +453,15 @@ const navigateToAllPosts = () => {
 
 const navigateToAllResources = () => {
   router.push('/my-all-resources')
+}
+
+// 关注相关导航
+const goToFollowing = () => {
+  router.push('/profile/following')
+}
+
+const goToFollowers = () => {
+  router.push('/profile/followers')
 }
 
 // 计算属性：只显示最新3个帖子
@@ -558,6 +589,25 @@ const loadMyPosts = async () => {
     myPosts.value = []
   } finally {
     isLoadingPosts.value = false
+  }
+}
+
+// 加载关注统计
+const loadFollowStats = async () => {
+  try {
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (!currentUserStr) {
+      return
+    }
+    const currentUser = JSON.parse(currentUserStr)
+    if (!currentUser?.id) {
+      return
+    }
+
+    const stats = await supabaseService.getFollowStats(currentUser.id)
+    followStats.value = stats
+  } catch (error) {
+    console.error('❌ 加载关注统计失败:', error)
   }
 }
 
@@ -900,5 +950,6 @@ onMounted(() => {
   loadUserProfile()
   loadMyResources()
   loadMyPosts()
+  loadFollowStats()
 })
 </script>

@@ -134,6 +134,28 @@ const routes = [
     component: () => import('@/views/HelpPage.vue')
   },
   {
+    path: '/profile/following',
+    name: 'MyFollowing',
+    component: () => import('@/views/MyFollowingPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/profile/followers',
+    name: 'MyFollowers',
+    component: () => import('@/views/MyFollowersPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/user/:userId/following',
+    name: 'UserFollowing',
+    component: () => import('@/views/UserFollowingPage.vue')
+  },
+  {
+    path: '/user/:userId/followers',
+    name: 'UserFollowers',
+    component: () => import('@/views/UserFollowersPage.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/login'
   }

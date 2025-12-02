@@ -93,6 +93,14 @@
                   <div class="text-sm text-gray-500 dark:text-gray-400">发布帖子</div>
                 </div>
                 <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ followStats.followings_count }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">关注</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ followStats.followers_count }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">粉丝</div>
+                </div>
+                <div class="text-center">
                   <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatDate(userInfo.created_at) }}</div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">加入时间</div>
                 </div>
@@ -168,9 +176,10 @@
               </div>
               <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <ResourceCard
-                  v-for="resource in userResources"
+                  v-for="(resource, index) in userResources"
                   :key="resource.id"
                   :resource="resource"
+                  :rank="index + 1"
                   @click="navigateToResource(resource.id)"
                 />
               </div>
@@ -231,6 +240,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
+import { supabaseService } from '@/services/supabase'
 import ResourceCard from '@/components/ResourceCard.vue'
 import { showToast } from '@/utils/message'
 import { 
@@ -270,6 +280,12 @@ const error = ref('')
 const activeTab = ref('resources')
 const isFollowing = ref(false)
 const followLoading = ref(false)
+
+// 关注统计
+const followStats = ref({
+  followers_count: 0,
+  followings_count: 0
+})
 
 // 计算属性
 const isCurrentUser = computed(() => {
@@ -326,6 +342,12 @@ const fetchUserStats = async () => {
       resourceCount: resourceCount || 0,
       postCount: postCount || 0
     }
+    
+    // 获取关注统计
+    const { supabaseService } = await import('@/services/supabase')
+    const followStatsData = await supabaseService.getFollowStats(userInfo.value.id)
+    followStats.value = followStatsData
+    
   } catch (error) {
     console.error('获取用户统计失败:', error)
   }
@@ -343,7 +365,11 @@ const checkFollowStatus = async () => {
       }
       const currentUser = JSON.parse(currentUserStr)
       if (currentUser && currentUser.id) {
-        isFollowing.value = await dbStore.isFollowing(currentUser.id, userInfo.value.id)
+        const { supabaseService } = await import('@/services/supabase')
+        // 确保 ID 为字符串类型
+        const followerId = currentUser.id.toString()
+        const followingId = userInfo.value.id.toString()
+        isFollowing.value = await supabaseService.isFollowing(followerId, followingId)
       }
     } catch (error) {
       console.error('检查关注状态失败:', error)
@@ -378,15 +404,30 @@ const toggleFollow = async () => {
       return
     }
     
+    const currentUser = JSON.parse(currentUserStr)
+    if (!currentUser.id) return
+    
     followLoading.value = true
     try {
+      const { supabaseService } = await import('@/services/supabase')
+      
+      // 确保 ID 为字符串类型
+      const followerId = currentUser.id.toString()
+      const followingId = userInfo.value.id.toString()
+      
       if (isFollowing.value) {
-        await dbStore.unfollowUser(userInfo.value.id)
+        await supabaseService.unfollowUser(followerId, followingId)
         isFollowing.value = false
+        // 更新粉丝数
+        followStats.value.followers_count = Math.max(0, followStats.value.followers_count - 1)
       } else {
-        await dbStore.followUser(userInfo.value.id)
+        await supabaseService.followUser(followerId, followingId)
         isFollowing.value = true
+        // 更新粉丝数
+        followStats.value.followers_count = followStats.value.followers_count + 1
       }
+      
+      showToast(isFollowing.value ? '关注成功' : '已取消关注', 'success')
     } catch (error) {
       console.error('关注操作失败:', error)
       const message = error instanceof Error ? error.message : '关注操作失败，请稍后再试'
@@ -405,6 +446,8 @@ const navigateToResource = (resourceId: string) => {
 const navigateToPost = (postId: string) => {
   router.push(`/post/${postId}`)
 }
+
+
 
 // 工具方法
 const handleImageError = (event: Event) => {
