@@ -4,15 +4,9 @@ import { ref, watch, computed } from 'vue'
 export const useThemeStore = defineStore('theme', () => {
   const theme = ref<'light' | 'dark'>('light')
   
-  // 初始化主题
+  // 初始化主题：固定为浅色模式
   const initTheme = () => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark'
-    if (savedTheme) {
-      theme.value = savedTheme
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      theme.value = prefersDark ? 'dark' : 'light'
-    }
+    theme.value = 'light'
     applyTheme()
   }
   

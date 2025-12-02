@@ -687,6 +687,12 @@ onMounted(() => {
 
         <!-- 用户状态 -->
         <div class="flex items-center gap-4">
+          <router-link
+            to="/help"
+            class="hidden sm:inline-flex items-center text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors"
+          >
+            帮助文档
+          </router-link>
           <template v-if="currentUser">
             <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm">
               <div class="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">

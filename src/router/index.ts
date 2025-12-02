@@ -129,6 +129,11 @@ const routes = [
     component: () => import('@/views/AdminLogin.vue')
   },
   {
+    path: '/help',
+    name: 'Help',
+    component: () => import('@/views/HelpPage.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/login'
   }

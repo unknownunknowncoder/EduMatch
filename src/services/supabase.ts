@@ -480,17 +480,6 @@ export class SupabaseService {
     return data[0]
   }
 
-  async deleteStudyPlan(id: string) {
-    const client = this.getClient()
-    const { error } = await client
-      .from('study_plans')
-      .delete()
-      .eq('id', id)
-    
-    if (error) throw error
-    return true
-  }
-
   async getStudyPlanCheckins(planId: string) {
     const client = this.getClient()
     const { data, error } = await client
