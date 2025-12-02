@@ -593,45 +593,28 @@ const toggleFavorite = async (post: Post) => {
 // 获取帖子详情
 const fetchPostDetail = async () => {
   try {
-    // 确保数据库已初始化
-    let client = await dbStore.getClient()
-    if (!client) {
-      console.log('帖子详情加载：数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
-    
-    if (!client) {
-      console.error('帖子详情加载：数据库客户端初始化失败')
-      return
-    }
-    
     console.log('📖 开始加载帖子详情，ID:', postId)
     
-    // 获取帖子详情
-    const { data: postData, error: postError } = await client
-      .from('community_posts')
-      .select(`
-        *,
-        user:user_id (
-          id,
-          username,
-          nickname
-        ),
-        resource:resource_id (
-          id,
-          title,
-          description,
-          category,
-          url
-        )
-      `)
-      .eq('id', postId)
-      .single()
+    // 使用 supabase service 获取帖子数据
+    const { supabaseService } = await import('@/services/supabase')
+    const postData = await supabaseService.getPostById(postId)
     
-    if (postError) {
-      console.error('❌ 加载帖子详情失败:', postError)
+    if (!postData) {
+      console.error('❌ 帖子未找到:', postId)
       return
+    }
+    
+    console.log('✅ 帖子数据加载成功:', postData)
+    
+    // 获取用户信息
+    let userInfo = null
+    if (postData.user_id) {
+      try {
+        const { supabaseService } = await import('@/services/supabase')
+        userInfo = await supabaseService.getUserById(postData.user_id)
+      } catch (error) {
+        console.error('获取用户信息失败:', error)
+      }
     }
     
     // 获取当前用户ID以检查收藏状态
@@ -651,21 +634,27 @@ const fetchPostDetail = async () => {
     // 检查用户是否已收藏该帖子
     let isFavorited = false
     if (currentUserId) {
-      const { data: favoriteData, error: favoriteError } = await client
-        .from('post_favorites')
-        .select('id')
-        .eq('user_id', currentUserId)
-        .eq('post_id', postId)
-        
-      if (!favoriteError && favoriteData && favoriteData.length > 0) {
-        isFavorited = true
+      try {
+        const { supabaseService } = await import('@/services/supabase')
+        const { data: favoriteData } = await supabaseService.getClient()
+          .from('post_favorites')
+          .select('id')
+          .eq('user_id', currentUserId)
+          .eq('post_id', postId)
+          
+        if (favoriteData && favoriteData.length > 0) {
+          isFavorited = true
+        }
+      } catch (error) {
+        console.error('检查收藏状态失败:', error)
       }
     }
     
     // 处理帖子数据
     post.value = {
       ...postData,
-      author_name: postData.user?.nickname || postData.user?.username || '匿名用户',
+      author_name: userInfo?.nickname || userInfo?.username || '匿名用户',
+      user: userInfo,
       is_favorited: isFavorited,
       favorite_count: postData.favorite_count || 0,
       resource: postData.resource || null

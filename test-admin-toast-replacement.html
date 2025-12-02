@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理系统Alert替换为Toast测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-description {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .success-list {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .success-list li {
+            margin: 8px 0;
+        }
+        .test-link {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .test-link:hover {
+            background: #0056b3;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .toast-preview {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 后台管理系统Alert替换为Toast测试</h1>
+    
+    <div class="test-description">
+        <h2>🎯 改进内容</h2>
+        <p>已将后台管理系统中的所有alert弹窗替换为右上角的toast提示框，提供更好的用户体验。</p>
+    </div>
+
+    <div class="toast-preview">
+        <span>✅</span>
+        <span>成功提示示例：操作已成功完成</span>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>📁 AdminStandalone.vue</h3>
+            <ul>
+                <li>✅ 替换8个alert为toast提示</li>
+                <li>✅ 搜索用户功能使用success类型</li>
+                <li>✅ 其他功能使用info类型提示</li>
+                <li>✅ 保留confirm用于退出登录确认</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>🗑️ AdminResourceDetail.vue</h3>
+            <ul>
+                <li>✅ 添加toast组件支持</li>
+                <li>✅ 删除成功后显示success提示</li>
+                <li>✅ 保留confirm用于删除确认</li>
+                <li>✅ 右上角显示成功消息</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>📝 AdminPostDetail.vue</h3>
+            <ul>
+                <li>✅ 添加toast组件支持</li>
+                <li>✅ 删除成功后显示success提示</li>
+                <li>✅ 保留confirm用于删除确认</li>
+                <li>✅ 与其他页面一致的提示样式</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>📚 AdminPlanDetail.vue</h3>
+            <ul>
+                <li>✅ 添加toast组件支持</li>
+                <li>✅ 删除成功后显示success提示</li>
+                <li>✅ 保留confirm用于删除确认</li>
+                <li>✅ 统一的提示组件集成</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>⚙️ AdminOnly.vue</h3>
+            <ul>
+                <li>✅ 添加toast组件支持</li>
+                <li>✅ 为未来功能预留提示接口</li>
+                <li>✅ 统一的UI组件集成</li>
+                <li>✅ 保持与其他页面一致</li>
+            </ul>
+        </div>
+
+        <div class="feature-card">
+            <h3>🎨 Toast特性</h3>
+            <ul>
+                <li>✅ 右上角固定位置显示</li>
+                <li>✅ 3秒自动消失</li>
+                <li>✅ 4种类型：success/error/warning/info</li>
+                <li>✅ 带图标的美观设计</li>
+                <li>✅ 平滑动画效果</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="success-list">
+        <h3>🔄 保留功能</h3>
+        <ul>
+            <li><strong>confirm弹窗：</strong>重要的删除确认操作仍然使用confirm弹窗，确保用户不会误操作</li>
+            <li><strong>prompt弹窗：</strong>AdminStandalone.vue中的搜索功能保留prompt输入框</li>
+            <li><strong>现有通知系统：</strong>UserDetailAdmin.vue、StudyPlanDetail.vue等页面的自定义通知系统保持不变</li>
+        </ul>
+    </div>
+
+    <h2>🚀 测试链接</h2>
+    <a href="http://localhost:3014/admin" class="test-link">进入后台管理系统测试</a>
+
+    <div class="test-description">
+        <h3>📋 测试检查清单</h3>
+        <ul>
+            <li>☐ 点击各个管理功能按钮，检查是否显示toast提示</li>
+            <li>☐ 执行删除操作，检查是否在成功后显示toast提示</li>
+            <li>☐ 验证toast提示是否在右上角显示</li>
+            <li>☐ 检查toast提示是否3秒后自动消失</li>
+            <li>☐ 确认confirm弹窗仍然正常工作</li>
+            <li>☐ 检查不同类型的提示是否显示正确颜色和图标</li>
+            <li>☐ 验证页面滚动不受toast影响</li>
+            <li>☐ 确认删除操作的confirm弹窗仍然有效</li>
+        </ul>
+    </div>
+
+    <div class="test-description">
+        <h3>💡 技术实现</h3>
+        <ul>
+            <li><strong>统一组件：</strong>使用已有的@/utils/message.ts中的toast组件</li>
+            <li><strong>导入方式：</strong>import { showToast, ... } from '@/utils/message'</li>
+            <li><strong>模板集成：</strong>添加标准的toast模板结构到每个页面</li>
+            <li><strong>调用方式：</strong>showToast('提示信息', 'success')</li>
+            <li><strong>样式统一：</strong>所有页面使用相同的toast样式和动画</li>
+        </ul>
+    </div>
+
+    <script>
+        // 添加一些交互提示
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🧪 后台管理系统Toast替换测试页面已加载');
+            console.log('📝 已替换的alert弹窗：');
+            console.log('  - AdminStandalone.vue: 8个alert替换为toast');
+            console.log('  - AdminResourceDetail.vue: 删除成功提示');
+            console.log('  - AdminPostDetail.vue: 删除成功提示'); 
+            console.log('  - AdminPlanDetail.vue: 删除成功提示');
+            console.log('  - AdminOnly.vue: 预留toast接口');
+        });
+    </script>
+</body>
+</html>

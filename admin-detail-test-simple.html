@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员功能直接测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .test-button:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        .success {
+            background: #28a745;
+        }
+        .success:hover {
+            background: #1e7e34;
+        }
+        .warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .warning:hover {
+            background: #e0a800;
+        }
+        .error {
+            background: #dc3545;
+        }
+        .error:hover {
+            background: #c82333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .detail-button {
+            background: none;
+            border: none;
+            color: #007bff;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .detail-button:hover {
+            background: #e9ecef;
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 管理员查看详情功能直接测试</h1>
+        <p>此页面模拟后台管理系统的查看详情按钮，用于测试基本功能是否正常</p>
+        
+        <div class="container">
+            <h2>📝 帖子管理测试</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>作者</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Vue3 学习笔记</td>
+                        <td>user123</td>
+                        <td>已发布</td>
+                        <td>
+                            <button class="detail-button" onclick="viewPostDetail('post-123')" title="查看详情">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>JavaScript 高级技巧</td>
+                        <td>user456</td>
+                        <td>已发布</td>
+                        <td>
+                            <button class="detail-button" onclick="viewPostDetail('post-456')" title="查看详情">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container">
+            <h2>📚 学习计划管理测试</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>进度</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>前端开发学习计划</td>
+                        <td>65%</td>
+                        <td>进行中</td>
+                        <td>
+                            <button class="detail-button" onclick="viewPlanDetail('plan-123')" title="查看详情">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>全栈工程师成长路径</td>
+                        <td>30%</td>
+                        <td>进行中</td>
+                        <td>
+                            <button class="detail-button" onclick="viewPlanDetail('plan-456')" title="查看详情">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container">
+            <h2>🔗 资源管理测试</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>类型</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Vue.js 官方文档</td>
+                        <td>文档</td>
+                        <td>推荐</td>
+                        <td>
+                            <button class="detail-button" onclick="viewResourceDetail('resource-123')" title="查看详情">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>React 学习教程</td>
+                        <td>视频</td>
+                        <td>推荐</td>
+                        <td>
+                            <button class="detail-button" onclick="viewResourceDetail('resource-456')" title="查看详情">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container">
+            <h2>🚀 快速测试按钮</h2>
+            <button class="test-button success" onclick="testDirectNavigation()">
+                测试直接导航
+            </button>
+            <button class="test-button warning" onclick="testWindowOpen()">
+                测试 Window Open
+            </button>
+            <button class="test-button" onclick="openAdminPage()">
+                打开后台管理
+            </button>
+            <button class="test-button error" onclick="testConsoleOutput()">
+                测试控制台输出
+            </button>
+        </div>
+
+        <div class="container">
+            <h2>📊 测试结果</h2>
+            <div id="test-output" style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-family: monospace; min-height: 100px;">
+                等待测试...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 日志输出函数
+        function log(message, type = 'info') {
+            const output = document.getElementById('test-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#007bff';
+            output.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // 查看帖子详情
+        function viewPostDetail(postId) {
+            log(`🔍 查看帖子详情: ${postId}`, 'info');
+            
+            if (!postId) {
+                log('❌ 帖子ID为空', 'error');
+                return;
+            }
+            
+            const url = `http://localhost:3010/post/${postId}`;
+            log(`🚀 即将打开: ${url}`, 'success');
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ window.open 调用成功', 'success');
+            } catch (error) {
+                log(`❌ window.open 失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 查看计划详情
+        function viewPlanDetail(planId) {
+            log(`🔍 查看计划详情: ${planId}`, 'info');
+            
+            if (!planId) {
+                log('❌ 计划ID为空', 'error');
+                return;
+            }
+            
+            const url = `http://localhost:3010/study-plan/${planId}`;
+            log(`🚀 即将打开: ${url}`, 'success');
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ window.open 调用成功', 'success');
+            } catch (error) {
+                log(`❌ window.open 失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 查看资源详情
+        function viewResourceDetail(resourceId) {
+            log(`🔍 查看资源详情: ${resourceId}`, 'info');
+            
+            if (!resourceId) {
+                log('❌ 资源ID为空', 'error');
+                return;
+            }
+            
+            const url = `http://localhost:3010/resource/${resourceId}`;
+            log(`🚀 即将打开: ${url}`, 'success');
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ window.open 调用成功', 'success');
+            } catch (error) {
+                log(`❌ window.open 失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试直接导航
+        function testDirectNavigation() {
+            log('🧪 测试直接导航功能...', 'info');
+            viewPostDetail('test-direct');
+        }
+
+        // 测试 window.open
+        function testWindowOpen() {
+            log('🧪 测试 window.open 功能...', 'info');
+            try {
+                const newWindow = window.open('http://localhost:3010/post/test', '_blank');
+                if (newWindow) {
+                    log('✅ window.open 成功创建新窗口', 'success');
+                    newWindow.close(); // 立即关闭测试窗口
+                } else {
+                    log('❌ window.open 被浏览器阻止', 'error');
+                }
+            } catch (error) {
+                log(`❌ window.open 异常: ${error.message}`, 'error');
+            }
+        }
+
+        // 打开后台管理
+        function openAdminPage() {
+            log('🚀 打开后台管理页面...', 'info');
+            try {
+                window.open('http://localhost:3010/admin', '_blank');
+                log('✅ 后台管理页面打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开后台管理失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试控制台输出
+        function testConsoleOutput() {
+            log('🧪 测试控制台输出功能...', 'info');
+            console.log('🎯 这是一个控制台测试消息');
+            log('✅ 控制台输出测试完成', 'success');
+        }
+
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 测试页面加载完成', 'success');
+            log('💡 点击表格中的查看详情按钮进行测试', 'info');
+        });
+    </script>
+</body>
+</html>

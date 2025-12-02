@@ -30,13 +30,20 @@ export const getMessageClasses = (type: MessageType) => {
   const baseClasses = 'fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 transition-all duration-300'
   
   const typeClasses = {
-    success: 'bg-green-500 text-white',
-    error: 'bg-red-500 text-white',
-    warning: 'bg-yellow-500 text-white',
-    info: 'bg-blue-500 text-white'
+    success: 'bg-green-600 text-white',
+    error: 'bg-red-600 text-white',
+    warning: 'bg-yellow-600 text-white',
+    info: 'bg-blue-600 text-white'
   }
   
   return `${baseClasses} ${typeClasses[type]}`
+}
+
+// 获取内联样式
+export const getMessageStyles = () => {
+  return {
+    opacity: 1
+  }
 }
 
 // 获取图标SVG

@@ -97,6 +97,16 @@
                   {{ plan.status === 'in_progress' ? '进行中' : '已完成' }}
                 </span>
                 <button
+                  @click="viewPlanDetail(plan.id)"
+                  class="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                  title="查看详情"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                </button>
+                <button
                   @click="showDeleteConfirm(plan)"
                   class="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                   title="删除学习计划"
@@ -1252,6 +1262,11 @@ const handleCheckin = async (plan: StudyPlan) => {
 const handleOpenResourceModal = () => {
   showMyResourcesModal.value = true
   fetchMyResources()
+}
+
+// 查看计划详情
+const viewPlanDetail = (planId: string) => {
+  router.push(`/study-plan/${planId}`)
 }
 
 // 显示删除确认对话框

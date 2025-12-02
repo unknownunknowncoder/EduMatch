@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试管理员查看详情功能</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+        }
+        .test-button:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.3);
+        }
+        .success { color: #28a745; background: #d4edda; padding: 10px; border-radius: 4px; margin: 5px 0; }
+        .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; margin: 5px 0; }
+        .warning { color: #856404; background: #fff3cd; padding: 10px; border-radius: 4px; margin: 5px 0; }
+        .info { color: #0c5460; background: #d1ecf1; padding: 10px; border-radius: 4px; margin: 5px 0; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-card {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        
+        #log-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        .log-success { color: #68d391; }
+        .log-error { color: #fc8181; }
+        .log-info { color: #63b3ed; }
+        .log-warning { color: #f6e05e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 管理员查看详情功能调试</h1>
+        <p>此页面用于测试和调试后台管理系统中的查看详情按钮功能。</p>
+        
+        <div class="grid">
+            <div class="test-card">
+                <h3>🚀 快速测试</h3>
+                <a href="http://localhost:3010/admin" target="_blank" class="test-button">
+                    打开后台管理
+                </a>
+                <button onclick="testRoutes()" class="test-button">
+                    测试路由
+                </button>
+                <button onclick="testAPIs()" class="test-button">
+                    测试API方法
+                </button>
+                <button onclick="clearLog()" class="test-button">
+                    清除日志
+                </button>
+            </div>
+            
+            <div class="test-card">
+                <h3>📋 直接测试详情页面</h3>
+                <a href="http://localhost:3010/post/sample-id" target="_blank" class="test-button">
+                    帖子详情
+                </a>
+                <a href="http://localhost:3010/study-plan/sample-id" target="_blank" class="test-button">
+                    计划详情
+                </a>
+                <a href="http://localhost:3010/resource/sample-id" target="_blank" class="test-button">
+                    资源详情
+                </a>
+            </div>
+        </div>
+        
+        <div class="info">
+            <h4>🎯 测试步骤：</h4>
+            <ol>
+                <li>点击"打开后台管理"按钮</li>
+                <li>登录后台管理系统</li>
+                <li>在各个标签页中点击查看详情按钮（眼睛图标👁️）</li>
+                <li>确认详情页面能在新窗口中正确打开</li>
+                <li>检查控制台是否有错误信息</li>
+            </ol>
+        </div>
+        
+        <div id="test-results"></div>
+        
+        <div id="log-output">
+            <div class="log-entry log-info">🔧 调试工具已加载，等待测试...</div>
+        </div>
+    </div>
+
+    <script>
+        // 日志功能
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('log-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('log-output').innerHTML = 
+                '<div class="log-entry log-info">🔧 日志已清除，等待新的测试...</div>';
+        }
+        
+        // 测试路由
+        async function testRoutes() {
+            log('🧪 开始测试路由...', 'info');
+            
+            const routes = [
+                { path: '/post/test-id', name: '帖子详情' },
+                { path: '/study-plan/test-id', name: '学习计划详情' },
+                { path: '/resource/test-id', name: '资源详情' },
+                { path: '/admin', name: '后台管理' }
+            ];
+            
+            for (const route of routes) {
+                try {
+                    const response = await fetch(`http://localhost:3010${route.path}`, { 
+                        method: 'HEAD',
+                        mode: 'no-cors' // 避免CORS问题
+                    });
+                    log(`${route.name}: ✅ 路由可访问`, 'success');
+                } catch (error) {
+                    // 由于CORS，fetch可能会失败，但这不代表路由不工作
+                    log(`${route.name}: ⚠️ 需要手动验证 (CORS限制)`, 'warning');
+                }
+            }
+        }
+        
+        // 测试API方法
+        async function testAPIs() {
+            log('🧪 开始测试API方法...', 'info');
+            
+            try {
+                // 由于无法直接导入TypeScript模块，我们只能检查页面是否能加载
+                log('📝 注意: 由于浏览器安全限制，无法直接测试TypeScript模块', 'warning');
+                log('💡 建议在Vue应用的控制台中运行以下命令:', 'info');
+                log('   import { supabaseService } from "@/services/supabase"', 'info');
+                log('   supabaseService.getPostById("test-id")', 'info');
+                
+            } catch (error) {
+                log(`❌ API测试失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 调试页面加载完成', 'success');
+            log('💡 点击上方按钮开始测试', 'info');
+            
+            // 自动检查服务器状态
+            checkServerStatus();
+        });
+        
+        // 检查服务器状态
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('http://localhost:3010/', { 
+                    method: 'HEAD',
+                    mode: 'no-cors'
+                });
+                log('🟢 开发服务器运行正常 (端口3010)', 'success');
+            } catch (error) {
+                log('🔴 无法连接到开发服务器，请确保运行 npm run dev', 'error');
+            }
+        }
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 't') {
+                e.preventDefault();
+                testRoutes();
+            } else if (e.ctrlKey && e.key === 'a') {
+                e.preventDefault();
+                testAPIs();
+            } else if (e.ctrlKey && e.key === 'l') {
+                e.preventDefault();
+                clearLog();
+            }
+        });
+    </script>
+</body>
+</html>

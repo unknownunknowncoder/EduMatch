@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理详情页面测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .post-button {
+            background: #10b981;
+            color: white;
+        }
+        .post-button:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+        .plan-button {
+            background: #8b5cf6;
+            color: white;
+        }
+        .plan-button:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+        .resource-button {
+            background: #f97316;
+            color: white;
+        }
+        .resource-button:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+        }
+        .admin-button {
+            background: #3b82f6;
+            color: white;
+        }
+        .admin-button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .feature-list {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .feature-list h3 {
+            margin-top: 0;
+            color: #1a202c;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        
+        .feature-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-list li::before {
+            content: "✅";
+            margin-right: 8px;
+            color: #10b981;
+        }
+        
+        #test-output {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        .log-success { color: #10b981; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #3b82f6; }
+        .log-warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 后台管理详情页面测试</h1>
+        <p>此页面用于测试新创建的后台管理详情页面功能</p>
+    </div>
+
+    <div class="container">
+        <h2>📋 已创建的后台管理详情页面</h2>
+        <div class="feature-list">
+            <h3>新增页面</h3>
+            <ul>
+                <li>AdminPostDetail.vue - 帖子详情管理页面</li>
+                <li>AdminPlanDetail.vue - 学习计划详情管理页面</li>
+                <li>AdminResourceDetail.vue - 资源详情管理页面</li>
+            </ul>
+        </div>
+
+        <div class="feature-list">
+            <h3>路由配置</h3>
+            <ul>
+                <li>/admin/post/:id → AdminPostDetail.vue</li>
+                <li>/admin/plan/:id → AdminPlanDetail.vue</li>
+                <li>/admin/resource/:id → AdminResourceDetail.vue</li>
+            </ul>
+        </div>
+
+        <div class="feature-list">
+            <h3>功能特性</h3>
+            <ul>
+                <li>完整的详情信息展示</li>
+                <li>统计数据查看</li>
+                <li>编辑和删除功能</li>
+                <li>独立的后台管理界面风格</li>
+                <li>移除前端导航和侧边栏</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🧪 测试按钮</h2>
+        <p>点击下方按钮测试各个后台管理详情页面</p>
+        
+        <button class="test-button post-button" onclick="testPostDetail()">
+            测试帖子详情页面
+        </button>
+        <button class="test-button plan-button" onclick="testPlanDetail()">
+            测试学习计划详情页面
+        </button>
+        <button class="test-button resource-button" onclick="testResourceDetail()">
+            测试资源详情页面
+        </button>
+        
+        <div style="margin-top: 20px;">
+            <button class="test-button admin-button" onclick="openAdminDatabase()">
+                打开后台管理系统
+            </button>
+            <button class="test-button admin-button" onclick="openUserDetail()">
+                打开用户详情页面
+            </button>
+            <button class="test-button admin-button" onclick="clearLog()">
+                清除日志
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🎯 使用说明</h2>
+        <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px; padding: 15px; margin: 15px 0;">
+            <p><strong>现在的功能流程：</strong></p>
+            <ol style="line-height: 1.8; margin: 10px 0;">
+                <li>在 <strong>后台管理系统</strong> 或 <strong>用户详情页面</strong> 中点击"查看详情"按钮</li>
+                <li>会在 <strong>新窗口</strong> 中打开对应的后台管理详情页面</li>
+                <li>详情页面展示完整的管理信息和操作功能</li>
+                <li>可以编辑、删除或返回上一页</li>
+            </ol>
+            
+            <p><strong>与前端页面的区别：</strong></p>
+            <ul style="line-height: 1.8; margin: 10px 0;">
+                <li><span style="color: #10b981;">✅ 后台详情页面：</span> 专为管理员设计，包含编辑和删除功能</li>
+                <li><span style="color: #3b82f6;">🔷 前端详情页面：</span> 面向普通用户，主要用于查看内容</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="test-output">
+        <div class="log-entry log-info">🔧 测试页面加载完成，等待操作...</div>
+    </div>
+
+    <script>
+        // 日志功能
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('test-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('test-output').innerHTML = 
+                '<div class="log-entry log-info">🔧 日志已清除，等待新的测试...</div>';
+        }
+        
+        // 测试帖子详情页面
+        function testPostDetail() {
+            log('🧪 测试后台管理帖子详情页面...', 'info');
+            const url = 'http://localhost:3010/admin/post/test-post-id';
+            log(`🚀 即将打开: ${url}`, 'success');
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ 帖子详情页面打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试学习计划详情页面
+        function testPlanDetail() {
+            log('🧪 测试后台管理学习计划详情页面...', 'info');
+            const url = 'http://localhost:3010/admin/plan/test-plan-id';
+            log(`🚀 即将打开: ${url}`, 'success');
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ 学习计划详情页面打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试资源详情页面
+        function testResourceDetail() {
+            log('🧪 测试后台管理资源详情页面...', 'info');
+            const url = 'http://localhost:3010/admin/resource/test-resource-id';
+            log(`🚀 即将打开: ${url}`, 'success');
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ 资源详情页面打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开后台管理系统
+        function openAdminDatabase() {
+            log('🚀 打开后台管理系统...', 'info');
+            
+            try {
+                window.open('http://localhost:3010/admin', '_blank');
+                log('✅ 后台管理系统打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开用户详情页面
+        function openUserDetail() {
+            log('🚀 打开用户详情页面...', 'info');
+            const url = 'http://localhost:3010/admin/user/test-user-id';
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ 用户详情页面打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 后台管理详情页面测试页面加载完成', 'success');
+            log('💡 点击上方按钮测试各个详情页面', 'info');
+        });
+    </script>
+</body>
+</html>

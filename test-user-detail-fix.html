@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户详情页查看详情功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .post-button {
+            background: #10b981;
+            color: white;
+        }
+        .post-button:hover {
+            background: #059669;
+        }
+        .plan-button {
+            background: #8b5cf6;
+            color: white;
+        }
+        .plan-button:hover {
+            background: #7c3aed;
+        }
+        .resource-button {
+            background: #f97316;
+            color: white;
+        }
+        .resource-button:hover {
+            background: #ea580c;
+        }
+        .admin-button {
+            background: #3b82f6;
+            color: white;
+        }
+        .admin-button:hover {
+            background: #2563eb;
+        }
+        
+        .card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            background: #fafafa;
+        }
+        
+        .card h3 {
+            margin-top: 0;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+        
+        #log-output {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        .log-success { color: #10b981; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #3b82f6; }
+        .log-warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 用户详情页查看详情功能测试</h1>
+        <p>此页面用于测试用户详情管理员页面中的查看详情按钮功能</p>
+        
+        <div class="card">
+            <h3>📝 帖子详情测试</h3>
+            <p>模拟用户详情页面中的帖子查看详情按钮</p>
+            <button class="test-button post-button" onclick="testViewPost('test-post-123')">
+                查看帖子详情
+            </button>
+            <button class="test-button post-button" onclick="testViewPost('148f3f63-700d-4f53-8bc1-4f37d49fc5f3')">
+                查看真实帖子详情
+            </button>
+        </div>
+        
+        <div class="card">
+            <h3>📚 学习计划详情测试</h3>
+            <p>模拟用户详情页面中的学习计划查看详情按钮</p>
+            <button class="test-button plan-button" onclick="testViewPlan('test-plan-123')">
+                查看学习计划详情
+            </button>
+            <button class="test-button plan-button" onclick="testViewPlan('test-plan-456')">
+                查看真实计划详情
+            </button>
+        </div>
+        
+        <div class="card">
+            <h3>🔗 资源详情测试</h3>
+            <p>模拟用户详情页面中的资源查看详情按钮</p>
+            <button class="test-button resource-button" onclick="testViewResource('test-resource-123')">
+                查看资源详情
+            </button>
+            <button class="test-button resource-button" onclick="testViewResource('test-resource-456')">
+                查看真实资源详情
+            </button>
+        </div>
+        
+        <div class="card">
+            <h3>🚀 快速导航</h3>
+            <p>打开相关页面进行测试</p>
+            <button class="test-button admin-button" onclick="openUserDetailPage()">
+                打开用户详情页
+            </button>
+            <button class="test-button admin-button" onclick="openAdminDatabase()">
+                打开后台管理
+            </button>
+            <button class="test-button admin-button" onclick="clearLog()">
+                清除日志
+            </button>
+        </div>
+        
+        <div id="log-output">
+            <div class="log-entry log-info">🔧 测试页面加载完成，等待操作...</div>
+        </div>
+    </div>
+
+    <script>
+        // 日志功能
+        function log(message, type = 'info') {
+            const logOutput = document.getElementById('log-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${timestamp}] ${message}`;
+            logOutput.appendChild(entry);
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function clearLog() {
+            document.getElementById('log-output').innerHTML = 
+                '<div class="log-entry log-info">🔧 日志已清除，等待新的测试...</div>';
+        }
+        
+        // 测试查看帖子详情
+        function testViewPost(postId) {
+            log(`🔍 测试查看帖子详情，ID: ${postId}`, 'info');
+            
+            if (!postId) {
+                log('❌ 帖子ID为空', 'error');
+                return;
+            }
+            
+            const url = `/post/${postId}`;
+            log(`🚀 即将在新窗口中打开: ${url}`, 'success');
+            
+            try {
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) {
+                    log('✅ 新窗口打开成功', 'success');
+                } else {
+                    log('❌ 新窗口打开失败，可能被浏览器阻止', 'error');
+                }
+            } catch (error) {
+                log(`❌ 打开窗口失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试查看计划详情
+        function testViewPlan(planId) {
+            log(`🔍 测试查看学习计划详情，ID: ${planId}`, 'info');
+            
+            if (!planId) {
+                log('❌ 学习计划ID为空', 'error');
+                return;
+            }
+            
+            const url = `/study-plan/${planId}`;
+            log(`🚀 即将在新窗口中打开: ${url}`, 'success');
+            
+            try {
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) {
+                    log('✅ 新窗口打开成功', 'success');
+                } else {
+                    log('❌ 新窗口打开失败，可能被浏览器阻止', 'error');
+                }
+            } catch (error) {
+                log(`❌ 打开窗口失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试查看资源详情
+        function testViewResource(resourceId) {
+            log(`🔍 测试查看资源详情，ID: ${resourceId}`, 'info');
+            
+            if (!resourceId) {
+                log('❌ 资源ID为空', 'error');
+                return;
+            }
+            
+            const url = `/resource/${resourceId}`;
+            log(`🚀 即将在新窗口中打开: ${url}`, 'success');
+            
+            try {
+                const newWindow = window.open(url, '_blank');
+                if (newWindow) {
+                    log('✅ 新窗口打开成功', 'success');
+                } else {
+                    log('❌ 新窗口打开失败，可能被浏览器阻止', 'error');
+                }
+            } catch (error) {
+                log(`❌ 打开窗口失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开用户详情页面
+        function openUserDetailPage() {
+            log('🚀 打开用户详情页面...', 'info');
+            const url = 'http://localhost:3010/admin/user/test-user-id';
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ 用户详情页面打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开用户详情页面失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开后台管理
+        function openAdminDatabase() {
+            log('🚀 打开后台管理页面...', 'info');
+            const url = 'http://localhost:3010/admin';
+            
+            try {
+                window.open(url, '_blank');
+                log('✅ 后台管理页面打开成功', 'success');
+            } catch (error) {
+                log(`❌ 打开后台管理页面失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 测试页面加载完成', 'success');
+            log('💡 点击上方按钮测试查看详情功能', 'info');
+        });
+    </script>
+</body>
+</html>

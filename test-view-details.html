@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试查看详情功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .info {
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>查看详情功能测试</h1>
+    
+    <div class="container">
+        <h2>测试说明</h2>
+        <p>这个页面用于测试后台管理系统中"查看详情"按钮的功能。</p>
+        <div class="info">
+            <strong>预期行为：</strong>
+            <ul>
+                <li>点击查看详情按钮应该在新窗口中打开对应的详情页面</li>
+                <li>详情页面应该能够正确加载并显示数据</li>
+                <li>所有三种类型的详情（帖子、学习计划、资源）都应该能正常工作</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>1. 后台管理页面测试</h3>
+        <p>点击以下按钮进入后台管理系统，然后测试各个标签页的查看详情功能：</p>
+        <a href="http://localhost:3010/admin" target="_blank" class="test-button">
+            打开后台管理页面
+        </a>
+        <div class="info">
+            <strong>测试步骤：</strong>
+            <ol>
+                <li>进入后台管理页面</li>
+                <li>切换到"内容管理"标签，点击任一帖子的查看详情按钮</li>
+                <li>切换到"学习计划"标签，点击任一计划的查看详情按钮</li>
+                <li>切换到"资源管理"标签，点击任一资源的查看详情按钮</li>
+                <li>确认所有详情页面都能在新窗口中正确打开</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>2. 直接访问详情页面测试</h3>
+        <p>测试直接访问详情页面的URL是否正常工作：</p>
+        <div>
+            <a href="http://localhost:3010/post/test-post-id" target="_blank" class="test-button">
+                测试帖子详情页面
+            </a>
+            <a href="http://localhost:3010/study-plan/test-plan-id" target="_blank" class="test-button">
+                测试学习计划详情页面
+            </a>
+            <a href="http://localhost:3010/resource/test-resource-id" target="_blank" class="test-button">
+                测试资源详情页面
+            </a>
+        </div>
+        <div class="info">
+            <strong>预期结果：</strong> 即使ID不存在，页面也应该能够正常加载并显示"未找到"或加载状态，而不是出现500错误。
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>3. 路由配置检查</h3>
+        <p>确认路由配置中包含以下路由：</p>
+        <ul>
+            <li><code>/post/:id</code> → PostDetail.vue</li>
+            <li><code>/study-plan/:id</code> → StudyPlanDetail.vue</li>
+            <li><code>/resource/:id</code> → ResourceDetails.vue</li>
+            <li><code>/admin</code> → AdminDatabase.vue</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>4. 服务方法检查</h3>
+        <p>确认 SupabaseService 中包含以下方法：</p>
+        <ul>
+            <li><code>getPostById(id: string)</code></li>
+            <li><code>getStudyPlanById(id: string)</code></li>
+            <li><code>getResourceById(id: string)</code></li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h3>5. 问题诊断</h3>
+        <div id="diagnostic-results">
+            <p>点击下方按钮运行诊断检查：</p>
+            <button onclick="runDiagnostics()" class="test-button">
+                运行诊断
+            </button>
+            <div id="results" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <script>
+        async function runDiagnostics() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<div class="info">正在运行诊断...</div>';
+            
+            let diagnostics = [];
+            
+            // 检查后台管理页面是否可访问
+            try {
+                const response = await fetch('http://localhost:3010/admin', { method: 'HEAD' });
+                diagnostics.push({
+                    test: '后台管理页面访问',
+                    status: response.ok ? 'success' : 'error',
+                    message: response.ok ? '正常' : `错误: ${response.status}`
+                });
+            } catch (error) {
+                diagnostics.push({
+                    test: '后台管理页面访问',
+                    status: 'error',
+                    message: `网络错误: ${error.message}`
+                });
+            }
+            
+            // 显示结果
+            let html = '<h4>诊断结果：</h4>';
+            diagnostics.forEach(d => {
+                const statusClass = d.status === 'success' ? 'success' : 'error';
+                html += `<p class="${statusClass}"><strong>${d.test}:</strong> ${d.message}</p>`;
+            });
+            
+            results.innerHTML = html;
+        }
+        
+        // 页面加载时的说明
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('查看详情功能测试页面已加载');
+            console.log('请按照测试步骤进行测试');
+        });
+    </script>
+</body>
+</html>

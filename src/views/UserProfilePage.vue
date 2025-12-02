@@ -232,6 +232,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import ResourceCard from '@/components/ResourceCard.vue'
+import { showToast } from '@/utils/message'
 import { 
   ArrowLeft, 
   User, 
