@@ -1,0 +1,25 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# 环境变量（在 Netlify 控制台设置）
+# COZE_API_TOKEN = "你的扣子API令牌"
+# COZE_BOT_ID = "你的机器人ID"
+
+# Functions 配置
+[functions]
+  directory = "netlify/functions"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# SPA 路由支持
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
