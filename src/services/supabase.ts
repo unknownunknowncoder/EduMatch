@@ -485,7 +485,7 @@ export class SupabaseService {
     const { data, error } = await client
       .from('study_plan_checkins')
       .select('*')
-      .eq('plan_id', planId)
+      .eq('study_plan_id', planId)
       .order('created_at', { ascending: false })
     
     if (error) throw error

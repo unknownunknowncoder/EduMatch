@@ -517,7 +517,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onActivated } from 'vue'
 import { supabaseService } from '@/services/supabase'
 import { useDatabaseStore } from '@/stores/database'
 import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
@@ -1349,6 +1349,11 @@ onMounted(() => {
   updateStats()
   // 自动从数据库加载
   loadDatabasePlans()
+})
+onActivated(() => { 
+  updateStats()
+  loadDatabasePlans() 
+})
 })
 </script>
 
