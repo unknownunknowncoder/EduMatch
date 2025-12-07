@@ -1,66 +1,95 @@
 <template>
-  <div class="comment-wrapper" :class="getCommentClass()">
-    <div class="comment-item">
-      <div class="comment-header">
-        <div class="comment-avatar">
-          <img 
-            :src="getUserAvatar(comment.user_id, comment.author_name)" 
-            :alt="comment.author_name || '匿名用户'"
-            class="avatar"
-          />
-        </div>
-        <div class="comment-user-info">
-          <span class="comment-author">{{ comment.author_name || '匿名用户' }}</span>
-          <span class="comment-date">{{ formatDate(comment.created_at) }}</span>
-        </div>
-      </div>
-      <div class="comment-content">
-        <span v-if="comment.parent_id" class="reply-prefix">回复：{{ getParentAuthorName() }}</span>
-        <span :class="{ 'has-reply-prefix': comment.parent_id }">{{ comment.content }}</span>
-      </div>
-      <div class="comment-actions">
-        <button 
-          @click="handleReply" 
-          class="reply-btn"
-        >
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-          </svg>
-          回复
-        </button>
-        <span v-if="replies.length > 0" class="reply-count">
-          {{ replies.length }} 条回复
-        </span>
-      </div>
+  <!-- 
+    评论容器 
+    根据层级添加左侧边距和连接线
+  -->
+  <div class="comment-wrapper font-sans text-[#1a3c34]" :class="getCommentClass()">
+    
+    <!-- 单条评论主体 (The Note) -->
+    <div class="comment-item group relative">
       
-      <!-- 回复输入框 -->
-      <div v-if="showReplyInput" class="reply-input-section">
-        <textarea 
-          v-model="replyContent" 
-          :placeholder="`回复 @${comment.author_name || '匿名用户'}...`"
-          rows="2"
-          class="reply-input"
-        ></textarea>
-        <div class="reply-input-actions">
-          <button 
-            @click="showReplyInput = false" 
-            class="btn btn-secondary"
-          >
-            取消
-          </button>
-          <button 
-            @click="addReply" 
-            :disabled="!replyContent.trim()"
-            class="btn btn-primary"
-          >
-            发表回复
-          </button>
+      <!-- 装饰：层级连接线 (仅二级及以上显示) -->
+      <div v-if="level > 0" class="absolute -left-6 top-6 w-4 h-px bg-[#d4c5a3]"></div>
+      <div v-if="level > 0" class="absolute -left-6 top-0 h-6 w-px bg-[#d4c5a3]"></div>
+
+      <div class="flex gap-4">
+        <!-- 头像 (Square Style) -->
+        <div class="flex-shrink-0 relative z-10">
+          <div class="w-10 h-10 bg-[#f2f0e9] border border-[#1a3c34]/20 rounded-sm shadow-sm overflow-hidden">
+            <img 
+              :src="getUserAvatar(comment.user_id, comment.author_name)" 
+              :alt="comment.author_name || 'Anonymous'"
+              class="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="flex-1 min-w-0">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center gap-2">
+              <span class="font-serif font-bold text-[#1a3c34] text-sm tracking-wide">
+                {{ comment.author_name || 'Anonymous Scholar' }}
+              </span>
+              <span class="text-[10px] font-mono text-[#1a3c34]/40 bg-[#1a3c34]/5 px-1 rounded-sm">
+                {{ formatDate(comment.created_at) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="text-[#1a3c34]/80 text-sm leading-relaxed mb-2 font-serif">
+            <span v-if="comment.parent_id" class="text-[#d4c5a3] font-bold text-xs uppercase tracking-wider mr-1">
+              @{{ getParentAuthorName() }}
+            </span>
+            {{ comment.content }}
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-4">
+            <button 
+              @click="handleReply" 
+              class="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-[#1a3c34]/40 hover:text-[#1a3c34] transition-colors group/btn"
+            >
+              <Reply class="w-3 h-3 group-hover/btn:-scale-x-100 transition-transform" />
+              Reply
+            </button>
+            <span v-if="replies.length > 0" class="text-[10px] font-mono text-[#d4c5a3]">
+              {{ replies.length }} responses
+            </span>
+          </div>
+
+          <!-- 回复输入框 (Drawer Style) -->
+          <div v-if="showReplyInput" class="mt-4 bg-[#f9f9f7] border-l-2 border-[#1a3c34] p-4 animate-fade-in">
+            <textarea 
+              v-model="replyContent" 
+              :placeholder="`Annotating on @${comment.author_name || 'scholar'}...`"
+              rows="3"
+              class="w-full bg-white border border-[#1a3c34]/10 p-3 text-sm text-[#1a3c34] font-serif placeholder-slate-400 focus:outline-none focus:border-[#1a3c34] transition-colors resize-none mb-3"
+            ></textarea>
+            <div class="flex justify-end gap-3">
+              <button 
+                @click="showReplyInput = false" 
+                class="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#1a3c34]/60 hover:text-[#1a3c34] transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                @click="addReply" 
+                :disabled="!replyContent.trim()"
+                class="px-5 py-1.5 bg-[#1a3c34] text-[#d4c5a3] text-[10px] font-bold uppercase tracking-widest hover:bg-[#235246] transition-colors disabled:opacity-50"
+              >
+                Submit Note
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
     
-    <!-- 递归显示回复 -->
-    <div v-if="replies.length > 0" class="replies-section">
+    <!-- 递归显示回复 (Tree Structure) -->
+    <div v-if="replies.length > 0" class="replies-section border-l border-[#d4c5a3]/30 ml-5 pl-5 mt-4 space-y-4">
       <CommentComponent 
         v-for="reply in replies" 
         :key="reply.id"
@@ -77,6 +106,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { Comment } from '@/types/community'
+import { Reply } from 'lucide-vue-next'
 
 // Props
 const props = defineProps({
@@ -108,13 +138,8 @@ const replies = computed(() => {
 
 // Methods
 const getCommentClass = () => {
-  if (!props.comment.parent_id) {
-    return 'level-1' // 一级评论
-  } else if (props.level <= 1) {
-    return 'level-2' // 二级评论
-  } else {
-    return 'level-3-plus' // 三级及以上评论
-  }
+  // 仅用于顶层边距控制，内部递归通过 CSS border-l 处理
+  return props.level === 0 ? 'mb-6 border-b border-[#1a3c34]/5 pb-6 last:border-0' : ''
 }
 
 const handleReply = () => {
@@ -137,31 +162,32 @@ const addReply = () => {
 // 格式化日期
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', { 
+  return date.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric',
     hour: '2-digit', 
-    minute: '2-digit' 
+    minute: '2-digit'
   })
 }
 
 // 获取父评论作者名称
 const getParentAuthorName = () => {
   if (!props.comment.parent_id) return ''
-  
   const parentComment = props.allComments.find(c => c.id === props.comment.parent_id)
-  return parentComment?.author_name || '匿名用户'
+  return parentComment?.author_name || 'Scholar'
 }
 
-// 获取用户头像
+// 获取用户头像 (Deep Forest Theme)
 const getUserAvatar = (userId: string, authorName: string) => {
-  const bgColor = '#DBEAFE' // 浅蓝色，对应 bg-blue-100
-  const textColor = '#2563EB' // 深蓝色，对应 text-blue-600
-  
+  // 背景：深墨绿，文字：淡金
+  const bgColor = '#1a3c34' 
+  const textColor = '#d4c5a3' 
   const initial = authorName ? authorName.charAt(0).toUpperCase() : 'U'
   
   const svgContent = `
     <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="20" cy="20" r="20" fill="${bgColor}"/>
-      <text x="20" y="26" text-anchor="middle" fill="${textColor}" font-family="Arial, sans-serif" font-size="16" font-weight="bold">
+      <rect width="100%" height="100%" fill="${bgColor}"/>
+      <text x="50%" y="65%" text-anchor="middle" fill="${textColor}" font-family="serif" font-size="20" font-weight="bold">
         ${initial}
       </text>
     </svg>
@@ -172,314 +198,19 @@ const getUserAvatar = (userId: string, authorName: string) => {
 </script>
 
 <style scoped>
-.comment-wrapper {
-  margin-bottom: 16px;
+/* 淡入动画 */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
 }
 
-/* 一级评论：无缩进 */
-.comment-wrapper.level-1 {
-  margin-left: 0;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* 二级评论：有缩进 */
-.comment-wrapper.level-2 {
-  position: relative;
-  margin-left: 40px;
-  padding-left: 16px;
-}
-
-/* 三级及以上评论：与二级评论完全对齐 */
-.comment-wrapper.level-3-plus {
-  position: relative;
-  margin-left: 40px !important; /* 与二级评论相同的缩进 */
-  padding-left: 16px !important;
-}
-
-/* 关键：强制所有嵌套在level-3-plus中的评论都不额外缩进 */
-.comment-wrapper.level-3-plus .comment-wrapper,
-.comment-wrapper.level-3-plus .comment-wrapper.level-2,
-.comment-wrapper.level-3-plus .comment-wrapper.level-3-plus {
-  margin-left: 0 !important; /* 强制所有子级评论相对父级不缩进 */
-  padding-left: 16px !important; /* 保持与父级的对齐 */
-}
-
-/* 特别确保replies-section不产生额外缩进 */
-.comment-wrapper.level-3-plus .replies-section,
-.level-3-plus .replies-section {
-  margin-left: 0 !important;
-  padding-left: 0 !important;
-}
-
-/* 强制所有深层嵌套的评论都与二级评论对齐 */
-.comment-wrapper .comment-wrapper .comment-wrapper {
-  margin-left: 0 !important;
-  padding-left: 16px !important;
-}
-
-.comment-wrapper .comment-wrapper .comment-wrapper .comment-wrapper {
-  margin-left: 0 !important;
-  padding-left: 16px !important;
-}
-
-/* 为二级及以上添加分隔线 */
-.comment-wrapper.level-2::before,
-.comment-wrapper.level-3-plus::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background-color: #e9ecef;
-  border-radius: 1px;
-}
-
-.comment-item {
-  padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.comment-item:last-child {
-  border-bottom: none;
-}
-
-.comment-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.comment-avatar {
-  flex-shrink: 0;
-}
-
-.comment-avatar .avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #f0f0f0;
-}
-
-.comment-user-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.comment-author {
-  font-weight: 600;
-  color: #333;
-  font-size: 0.95rem;
-}
-
-.comment-date {
-  color: #666;
-  font-size: 0.8rem;
-}
-
-.comment-content {
-  color: #444;
-  line-height: 1.5;
-  margin-bottom: 8px;
-}
-
-.reply-prefix {
-  color: #007bff;
-  font-weight: 500;
-  margin-right: 8px;
-}
-
-.has-reply-prefix {
-  margin-left: 4px;
-}
-
+/* 递归层级视觉优化 */
 .replies-section {
-  margin-top: 16px;
-  padding-left: 0 !important; /* 强制移除所有额外的缩进 */
-  border-left: none; /* 移除左边框线 */
-  margin-left: 0 !important; /* 强制移除所有margin */
-}
-
-/* 确保所有嵌套的replies-section都没有缩进 */
-.level-3-plus .replies-section,
-.level-2 .replies-section,
-.level-3-plus .level-3-plus .replies-section,
-.level-2 .level-3-plus .replies-section {
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-}
-
-/* 强制所有深层嵌套的replies-section都不缩进 */
-.replies-section .replies-section,
-.replies-section .replies-section .replies-section {
-  padding-left: 0 !important;
-  margin-left: 0 !important;
-}
-
-.comment-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 8px;
-}
-
-.reply-btn {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 0.85rem;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.reply-btn:hover {
-  background-color: #f8f9fa;
-  color: #007bff;
-}
-
-.reply-count {
-  font-size: 0.8rem;
-  color: #666;
-  background-color: #f8f9fa;
-  padding: 2px 8px;
-  border-radius: 12px;
-}
-
-.reply-input-section {
-  margin-top: 12px;
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  border: 1px solid #e9ecef;
-}
-
-.reply-input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  resize: vertical;
-  min-height: 60px;
-  font-family: inherit;
-}
-
-.reply-input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
-}
-
-.reply-input-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-  justify-content: flex-end;
-}
-
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-}
-
-.btn-primary {
-  background-color: #007bff;
-  color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: #0056b3;
-}
-
-.btn-primary:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #545b62;
-}
-
-/* 深色模式支持 */
-.dark .comment-wrapper {
-  background-color: #2d3748;
-}
-
-.dark .comment-wrapper.reply-item::before {
-  background-color: #4a5568; /* 深色模式分隔线 */
-}
-
-.dark .reply-btn:hover {
-  background-color: #4a5568;
-  color: #63b3ed;
-}
-
-.dark .reply-count {
-  background-color: #4a5568;
-  color: #a0aec0;
-}
-
-.dark .reply-input-section {
-  background-color: #2d3748;
-  border-color: #4a5568;
-}
-
-.dark .reply-input {
-  background-color: #4a5568;
-  border-color: #718096;
-  color: #e2e8f0;
-}
-
-.dark .reply-input:focus {
-  border-color: #63b3ed;
-  box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.1);
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .comment-wrapper {
-    margin-left: 0 !important;
-  }
-  
-  .replies-section {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-  }
-  
-  /* 移动端所有评论都不缩进 */
-  .comment-wrapper.level-2,
-  .comment-wrapper.level-3-plus {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-  }
-  
-  .comment-actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .reply-input-actions {
-    justify-content: stretch;
-  }
-  
-  .reply-input-actions .btn {
-    flex: 1;
-  }
+  /* 确保每一级递归都有左侧线条，形成“树状”结构 */
+  position: relative;
 }
 </style>

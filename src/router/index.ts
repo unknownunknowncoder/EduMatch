@@ -13,6 +13,11 @@ const routes = [
     component: () => import('@/views/LoginPage.vue')
   },
   {
+    path: '/test-supabase',
+    name: 'TestSupabase',
+    component: () => import('@/views/TestSupabasePage.vue')
+  },
+  {
     path: '/search',
     name: 'Search',
     component: () => import('@/views/SearchPage.vue'),
@@ -26,7 +31,7 @@ const routes = [
   {
     path: '/profile',
     name: 'Profile',
-    component: () => import('@/views/ProfilePage.vue'),
+    component: () => import(/* webpackPrefetch: true */ '@/views/ProfilePage.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -37,13 +42,14 @@ const routes = [
   {
     path: '/create-resource',
     name: 'CreateResource',
-    component: () => import('@/views/CreateResource.vue'),
+    component: () => import(/* webpackPrefetch: true */ '@/views/CreateResource.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/community',
     name: 'Community',
-    component: () => import('@/views/CommunityPage.vue')
+    component: () => import(/* webpackPrefetch: true */ '@/views/CommunityPage.vue'),
+    meta: { requiresAuth: false } // 社区页面改为不需要认证，方便展示
   },
   {
     path: '/post/:id',
@@ -66,13 +72,25 @@ const routes = [
   {
     path: '/study-plan',
     name: 'StudyPlan',
-    component: () => import('@/views/StudyPlanPage.vue'),
+    component: () => import(/* webpackPrefetch: true */ '@/views/StudyPlanPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/study-plan/:id',
     name: 'StudyPlanDetail',
     component: () => import('@/views/StudyPlanDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/study-plan/:id/edit',
+    name: 'StudyPlanEdit',
+    component: () => import('@/views/StudyPlanEdit.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/study-plan/:id/checkin',
+    name: 'StudyPlanCheckin',
+    component: () => import('@/views/StudyPlanCheckinPage.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -228,6 +246,15 @@ router.beforeEach((to, _from, next) => {
   } else {
     // 不需要认证的路由，直接允许访问
     next()
+  }
+})
+
+// 全局错误处理
+router.onError((error) => {
+  console.error('Router error:', error)
+  // 如果是组件加载错误，尝试重新加载页面
+  if (error.message.includes('Failed to fetch dynamically imported module')) {
+    window.location.reload()
   }
 })
 

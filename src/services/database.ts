@@ -137,6 +137,8 @@ export class DatabaseService {
   // Supabase 连接初始化
   private async initSupabase() {
     console.log('🔄 初始化 Supabase 连接...')
+    console.log('🔗 URL:', dbConfig.connectionString)
+    console.log('🔑 Key length:', dbConfig.apiKey?.length || 0)
     
     if (!dbConfig.connectionString || !dbConfig.apiKey) {
       console.warn('⚠️ Supabase URL 或 API Key 未配置，跳过数据库连接')
@@ -161,8 +163,12 @@ export class DatabaseService {
       
       // 测试连接 - 使用实际存在的表
       const { data, error } = await this.client.from('users').select('id').limit(1)
-      // 预期会成功或失败，但测试连接是否正常
-      console.log('🔗 Supabase 连接测试完成')
+      if (error) {
+        console.warn('⚠️ Supabase 连接测试警告:', error.message)
+        // 不抛出错误，让应用继续运行
+      } else {
+        console.log('🔗 Supabase 连接测试成功')
+      }
     } catch (error) {
       console.error('❌ Supabase 连接失败:', error)
       throw error

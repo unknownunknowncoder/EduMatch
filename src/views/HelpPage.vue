@@ -1,286 +1,471 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+  <div class="min-h-screen bg-[#f2f0e9] font-sans text-[#1a3c34] selection:bg-[#1a3c34] selection:text-[#e8e4d9]">
+    <div class="max-w-4xl mx-auto px-6 py-8 lg:py-12">
       <!-- 顶部标题 -->
-      <header class="mb-8">
-        <div class="flex items-center gap-3 mb-3">
-          <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 00-2 2v1a2 2 0 01-2 2m4-5a2 2 0 012 2v1a2 2 0 002 2m-6 4h6m-6 4h3" />
+      <header class="mb-12">
+        <div class="flex items-center gap-4 mb-6">
+          <div class="w-12 h-12 bg-[#1a3c34] rounded-sm flex items-center justify-center border-2 border-[#d4c5a3]">
+            <svg class="w-7 h-7 text-[#d4c5a3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
           <div>
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">帮助文档 · 如何高效使用 EduMatch</h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">面向首次使用和回访用户的完整使用说明</p>
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-[#1a3c34]">EduMatch 使用指南</h1>
+            <p class="mt-2 text-sm text-[#1a3c34]/60 font-mono uppercase tracking-widest">Knowledge Architect Platform</p>
           </div>
         </div>
-        <p class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-          EduMatch 是一个集「AI 智能推荐」「学习资源管理」「学习计划」「学习社区」于一体的学习平台。下面的说明会带你从零开始，了解每个核心功能应该怎么用、在什么场景用，帮助你尽快把它变成自己的学习中枢。
-        </p>
+        <div class="bg-white p-6 border-l-4 border-[#d4c5a3] shadow-sm">
+          <p class="text-[#1a3c34]/80 leading-relaxed font-serif">
+            欢迎来到 EduMatch！这是一个集<strong class="text-[#1a3c34] font-bold">AI 智能推荐</strong>、<strong class="text-[#1a3c34] font-bold">学习资源管理</strong>、<strong class="text-[#1a3c34] font-bold">学习计划</strong>、<strong class="text-[#1a3c34] font-bold">学习社区</strong>于一体的沉浸式学习平台。本指南将帮助你快速掌握每个核心功能的使用方法。
+          </p>
+        </div>
       </header>
 
-      <!-- 目录提示 -->
-      <section class="mb-8">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">建议阅读顺序</h2>
-          <ol class="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-decimal list-inside">
-            <li>先看「快速开始」，用 1 分钟完成第一次体验。</li>
-            <li>再看「页面导航」+「首页与 AI 学习助手」，搞清楚入口在哪里。</li>
-            <li>根据自己的需求重点看：搜索资源 / 学习计划 / 学习社区 / 个人中心与资源管理。</li>
-          </ol>
-        </div>
-      </section>
-
-      <!-- 1. 快速开始 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">一、快速开始（1 分钟上手）</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <p class="text-gray-700 dark:text-gray-200">推荐你按下面 4 步来完成第一次体验：</p>
-          <ol class="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-200">
-            <li>
-              打开首页：左侧侧边栏点击「首页」，或在移动端底部导航点击「首页」。
-            </li>
-            <li>
-              登录 / 注册：
-              <span class="font-medium">右上角</span>
-              点击「登录」或「注册」，创建自己的账号，方便保存学习计划、发帖、收藏等数据。
-            </li>
-            <li>
-              试试 AI 学习助手：在首页右下角找到会呼吸的紫色圆形悬浮球，点击打开对话框，输入你的学习目标，例如「我想零基础学前端」，等待 AI 返回推荐资源和学习建议。
-            </li>
-            <li>
-              创建一个学习计划：登录后，在侧边栏点击「学习计划」，用推荐的资源创建一个属于你的学习计划，并完成第一次打卡。
-            </li>
-          </ol>
-        </div>
-      </section>
-
-      <!-- 2. 页面与导航 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">二、整体结构与导航说明</h2>
-        <div class="grid gap-4 md:grid-cols-2 text-sm leading-relaxed">
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-2">1. 桌面端（电脑）</h3>
-            <p class="text-gray-600 dark:text-gray-300 mb-2">左侧固定的导航栏包含主要入口：</p>
-            <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-              <li><span class="font-medium">首页</span>：AI 助手、功能总览。</li>
-              <li><span class="font-medium">创建资源</span>：手动录入你发现的好课程 / 视频 / 工具。</li>
-              <li><span class="font-medium">学习社区</span>：浏览和发布学习经验帖，互动点赞收藏。</li>
-              <li><span class="font-medium">点赞收藏</span>：统一查看你在社区中点赞、收藏过的帖子。</li>
-              <li><span class="font-medium">学习计划</span>：查看、创建和打卡学习计划。</li>
-              <li><span class="font-medium">个人中心</span>：我的资料、我的资源、我的帖子等聚合入口。</li>
-            </ul>
+      <!-- 快速导航 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#d4c5a3] rounded-sm flex items-center justify-center">
+            <span class="text-[#1a3c34] font-bold text-sm">1</span>
           </div>
-          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
-            <h3 class="font-semibold text-gray-900 dark:text-white mb-2">2. 移动端（手机）</h3>
-            <p class="text-gray-600 dark:text-gray-300 mb-2">页面底部的导航栏提供常用入口：</p>
-            <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-              <li><span class="font-medium">首页</span>：AI 助手 + 功能介绍。</li>
-              <li><span class="font-medium">搜索</span>：按关键字搜索学习资源。</li>
-              <li><span class="font-medium">创建</span>：新增自己的学习资源。</li>
-              <li><span class="font-medium">社区</span>：浏览与发布帖子。</li>
-              <li><span class="font-medium">我的</span>：个人中心相关内容。</li>
-            </ul>
-            <p class="mt-3 text-gray-600 dark:text-gray-300">
-              本页「帮助文档」可以在首页右上角点击进入，随时回来看使用说明。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3. 首页与 AI 学习助手 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">三、首页与 AI 学习助手</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <p class="text-gray-700 dark:text-gray-200">
-            首页分为两部分：上方是平台的整体介绍和 6 大功能卡片，下方是 AI 学习助手带来的个性化推荐结果。
-          </p>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-2">1. 打开 AI 学习助手</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>右下角的紫色圆形悬浮球就是「AI 学习助手」。</li>
-            <li>点击悬浮球会弹出对话窗口；长按 / 拖动可以改变它在屏幕上的位置。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">2. 如何提问更容易得到好推荐</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>直接用自然语言描述需求，例如：「我想考英语六级」「零基础学 Python 数据分析」。</li>
-            <li>可以说明自己的基础和时间，例如：「每天 1 小时，想三个月入门前端」。</li>
-            <li>也可以从快捷问题标签里直接点击（如「考研数学复习计划」）。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">3. 如何理解推荐结果</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>
-              对话区中：AI 会先给出一段「学习建议」，告诉你学习路径、阶段重点等。
-            </li>
-            <li>
-              下方「最推荐」卡片：展示 1 个优先推荐资源，包含平台（B 站 / 中国大学 MOOC）、难度、时长、UP 主 / 机构等信息，点击「立即学习」会在新窗口打开对应链接。
-            </li>
-            <li>
-              「其他推荐」区域：罗列更多可选资源，每条都有平台、难度、时长等标签，你可以自行对比选择。
-            </li>
-            <li>
-              部分资源会附带「访问指引」，告诉你该如何在平台中找到对应课程或视频。
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- 4. 搜索学习资源 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">四、搜索学习资源（搜索页）</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <p class="text-gray-700 dark:text-gray-200">
-            当你已经大致知道要学什么时，可以进入「搜索」页面做更精确的资源检索。
-          </p>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-2">1. 进入方式</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>移动端：点击底部导航栏中的「搜索」。</li>
-            <li>桌面端：在地址栏输入对应链接，或通过站内其它入口跳转。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">2. 使用步骤</h3>
-          <ol class="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>在顶部输入框输入关键词（如「Vue.js 入门」），按 Enter 或点击「搜索」。</li>
-            <li>可以通过「难度」和「分类」下拉框进行筛选，例如只看「前端开发」「初学者」。</li>
-            <li>等待 AI 返回结果后，会看到：一个智能推荐的资源卡片 + 多个其他推荐资源列表。</li>
-            <li>点击资源卡片即可打开对应的 B 站视频或 MOOC 课程；如有 BV 号也会显示出来。</li>
-          </ol>
-          <p class="text-gray-600 dark:text-gray-300">
-            搜索页适合：你已有明确目标，例如「我要找一门适合自己的 Vue 课程」，想对比不同资源的情况。
-          </p>
-        </div>
-      </section>
-
-      <!-- 5. 学习计划与打卡 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">五、学习计划与打卡</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <h3 class="font-semibold text-gray-900 dark:text-white">1. 创建学习计划</h3>
-          <ol class="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>在侧边栏点击「学习计划」，进入学习计划列表页面。</li>
-            <li>点击「创建新的学习计划」，填写：标题、描述（可选）、开始日期、每日学习时间。</li>
-            <li>
-              如果你已经有对应的学习资源，可以：
-              <ul class="list-disc list-inside ml-5 mt-1 space-y-1">
-                <li>在「关联学习资源」中输入资源名称和链接；或</li>
-                <li>点击「从我的资源中选择」，直接从你自己创建的资源列表中选一条，系统会自动带入名称和时长。</li>
+          快速开始指南
+        </h2>
+        <div class="bg-white p-8 shadow-sm border border-[#1a3c34]/10">
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h3 class="font-serif font-bold text-[#1a3c34] text-lg">🚀 新手 5 分钟上手</h3>
+              <ol class="space-y-3 text-[#1a3c34]/70">
+                <li class="flex gap-3">
+                  <span class="font-mono text-[#d4c5a3] font-bold">01</span>
+                  <div>
+                    <strong class="text-[#1a3c34]">注册登录</strong> - 点击右上角「Join Registry」创建账号
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span class="font-mono text-[#d4c5a3] font-bold">02</span>
+                  <div>
+                    <strong class="text-[#1a3c34]">AI 助手提问</strong> - 在首页右下角找到紫色悬浮球，输入学习目标
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span class="font-mono text-[#d4c5a3] font-bold">03</span>
+                  <div>
+                    <strong class="text-[#1a3c34]">创建学习计划</strong> - 根据推荐资源创建个人学习计划
+                  </div>
+                </li>
+                <li class="flex gap-3">
+                  <span class="font-mono text-[#d4c5a3] font-bold">04</span>
+                  <div>
+                    <strong class="text-[#1a3c34]">开始学习打卡</strong> - 每天记录学习进度
+                  </div>
+                </li>
+              </ol>
+            </div>
+            <div class="bg-[#f9f9f7] p-6 border border-[#1a3c34]/10">
+              <h4 class="font-serif font-bold text-[#1a3c34] mb-3">💡 使用场景建议</h4>
+              <ul class="space-y-2 text-sm text-[#1a3c34]/70">
+                <li>• <strong>考证备考</strong>：输入「英语六级备考」获取资源推荐</li>
+                <li>• <strong>技能提升</strong>：输入「前端开发入门」制定学习路径</li>
+                <li>• <strong>学术研究</strong>：输入「机器学习基础」查找相关课程</li>
+                <li>• <strong>职业发展</strong>：输入「Python 数据分析」获取职场技能</li>
               </ul>
-            </li>
-            <li>填写「学习总时长」后，系统会自动计算需要学习多少天，以及预计完成日期。</li>
-          </ol>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">2. 查看与管理计划</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>页面上方会展示「进行中」「已完成」计划的数量统计。</li>
-            <li>每个计划卡片上会显示：开始时间、目标时间、每日学习时长、打卡天数、剩余天数以及进度条。</li>
-            <li>点击「查看详情」可进入该计划的详情页，查看更完整的进度和目标信息。</li>
-            <li>如果不再需要某个计划，可以点击卡片右上角的删除按钮，系统会同时清理相关打卡记录。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">3. 打卡与完成计划</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>在「学习计划」列表页，进行中的计划会展示「今日打卡」按钮：</li>
-            <li>每天完成学习后点击一次，系统会记录当天的学习情况，并更新进度条与已打卡天数。</li>
-            <li>当天已打卡的计划会显示「今日已打卡」，避免重复操作。</li>
-            <li>当进度达到 100% 时，计划会自动或通过按钮标记为「已完成」。</li>
-          </ul>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- 6. 学习社区与发帖 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">六、学习社区与发帖互动</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <h3 class="font-semibold text-gray-900 dark:text-white">1. 浏览与搜索帖子</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>在侧边栏点击「学习社区」，进入社区首页。</li>
-            <li>顶部有搜索框，可以按标题、内容、作者、分类或标签进行关键词搜索。</li>
-            <li>右侧有「热门话题」模块，点击某个标签可快速筛选相关帖子。</li>
-            <li>帖子卡片上会显示作者、发布时间、分类、标签以及评论数等信息。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">2. 发布自己的学习经验</h3>
-          <ol class="list-decimal list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>在社区右侧点击「发表我的经验」按钮，打开发帖弹窗。</li>
-            <li>填写帖子标题、分类（如前端开发 / 语言学习 / 考证等）。</li>
-            <li>在内容区域详细描述你的学习方法、踩坑经验或资源推荐。</li>
-            <li>可以通过标签（如「考研英语」「Vue3」）对帖子做简单归类，方便别人搜索。</li>
-            <li>如果你在「我的资源」中已经创建了相关学习资源，可以在「关联我的资源」处选择一条，这样帖子会展示该资源卡片，方便读者直接前往学习。</li>
-          </ol>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">3. 点赞、收藏与个人「点赞收藏」页</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>在帖子右上角可以对帖子进行点赞和收藏，数据会实时更新到数据库。</li>
-            <li>在侧边栏点击「点赞收藏」，可以分别查看：你点赞过的帖子、你收藏过的帖子，并一键跳转到帖子详情。</li>
-            <li>这些操作需要登录后进行，以便正确关联到你的账号。</li>
-          </ul>
-          <p class="text-gray-600 dark:text-gray-300">
-            社区适合用来：记录阶段性总结、分享备考经验、提问与交流，也可以把 AI 推荐的资源使用体验写出来帮助后来的同学。
-          </p>
+      <!-- 2. 界面导航 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#d4c5a3] rounded-sm flex items-center justify-center">
+            <span class="text-[#1a3c34] font-bold text-sm">2</span>
+          </div>
+          界面导航指南
+        </h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- 桌面端导航 -->
+          <div class="bg-white p-6 shadow-sm border border-[#1a3c34]/10">
+            <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-[#d4c5a3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              桌面端顶部导航
+            </h3>
+            <ul class="space-y-3 text-sm text-[#1a3c34]/70">
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">🏠 首页</span>
+                <span class="text-[#d4c5a3] font-mono">首页 + AI 助手</span>
+              </li>
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">📝 新建条目</span>
+                <span class="text-[#d4c5a3] font-mono">创建学习资源</span>
+              </li>
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">👥 Symposium</span>
+                <span class="text-[#d4c5a3] font-mono">学习社区</span>
+              </li>
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">📅 Agenda</span>
+                <span class="text-[#d4c5a3] font-mono">学习计划管理</span>
+              </li>
+              <li class="flex justify-between items-center">
+                <span class="font-medium text-[#1a3c34]">📁 Dossier</span>
+                <span class="text-[#d4c5a3] font-mono">个人中心</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 移动端导航 -->
+          <div class="bg-white p-6 shadow-sm border border-[#1a3c34]/10">
+            <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+              <svg class="w-5 h-5 text-[#d4c5a3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              移动端底部导航
+            </h3>
+            <ul class="space-y-3 text-sm text-[#1a3c34]/70">
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">🏠 Home</span>
+                <span class="text-[#d4c5a3] font-mono">首页</span>
+              </li>
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">🔍 Find</span>
+                <span class="text-[#d4c5a3] font-mono">搜索资源</span>
+              </li>
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">📝 Entry</span>
+                <span class="text-[#d4c5a3] font-mono">创建资源</span>
+              </li>
+              <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
+                <span class="font-medium text-[#1a3c34]">👥 Hall</span>
+                <span class="text-[#d4c5a3] font-mono">社区</span>
+              </li>
+              <li class="flex justify-between items-center">
+                <span class="font-medium text-[#1a3c34]">👤 Me</span>
+                <span class="text-[#d4c5a3] font-mono">个人中心</span>
+              </li>
+            </ul>
+          </div>
         </div>
       </section>
 
-      <!-- 7. 个人中心与我的资源 / 帖子 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">七、个人中心、我的资源与我的帖子</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <h3 class="font-semibold text-gray-900 dark:text-white">1. 个人中心概览</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>在侧边栏点击「个人中心」，可以看到你的头像首字、昵称 / 用户名和个人签名。</li>
-            <li>在这里可以编辑昵称和个人签名，完善你的学习形象。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">2. 我的资源</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>「我的资源」模块会展示你创建的学习资源预览（最近几条）。</li>
-            <li>点击「查看全部资源」可以进入「我的全部资源」页面，集中管理所有资源（查看详情、删除资源、处理与社区帖子的关联等）。</li>
-            <li>创建资源的场景：你在 B 站 / MOOC 或其他平台发现了好课，希望在 EduMatch 中统一管理和复用。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white mt-3">3. 我的帖子</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li>「我的帖子」模块展示你在社区发布的帖子预览。</li>
-            <li>点击「查看全部帖子」进入「我的全部帖子」页面，可以查看全部帖子、跳转到详情，或删除不再需要的帖子。</li>
-          </ul>
+      <!-- 3. AI 智能助手 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#d4c5a3] rounded-sm flex items-center justify-center">
+            <span class="text-[#1a3c34] font-bold text-sm">3</span>
+          </div>
+          AI 智能助手使用
+        </h2>
+        <div class="bg-white p-8 shadow-sm border border-[#1a3c34]/10">
+          <div class="mb-6">
+            <h3 class="font-serif font-bold text-[#1a3c34] mb-3 flex items-center gap-2">
+              <div class="w-6 h-6 bg-[#d4c5a3] rounded-full flex items-center justify-center">
+                <span class="text-[#1a3c34] text-xs font-bold">✦</span>
+              </div>
+              如何找到并使用 AI 助手
+            </h3>
+            <div class="bg-[#f9f9f7] p-4 border-l-4 border-[#d4c5a3]">
+              <ol class="space-y-2 text-sm text-[#1a3c34]/80">
+                <li>1. 在首页右下角找到<strong class="text-[#1a3c34] font-bold">紫色圆形悬浮球</strong></li>
+                <li>2. 点击悬浮球打开对话窗口</li>
+                <li>3. 输入你的学习目标或问题</li>
+                <li>4. 等待 AI 分析并返回推荐结果</li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-serif font-bold text-[#1a3c34] mb-3">💬 有效提问示例</h4>
+              <div class="space-y-2">
+                <div class="p-3 bg-[#f9f9f7] rounded border border-[#1a3c34]/10">
+                  <code class="text-xs text-[#d4c5a3]">简单目标：</code>
+                  <p class="text-sm text-[#1a3c34]/80 mt-1">「英语六级备考计划」</p>
+                </div>
+                <div class="p-3 bg-[#f9f9f7] rounded border border-[#1a3c34]/10">
+                  <code class="text-xs text-[#d4c5a3]">详细描述：</code>
+                  <p class="text-sm text-[#1a3c34]/80 mt-1">「每天1小时，3个月学完Python数据分析」</p>
+                </div>
+                <div class="p-3 bg-[#f9f9f7] rounded border border-[#1a3c34]/10">
+                  <code class="text-xs text-[#d4c5a3]">快速选择：</code>
+                  <p class="text-sm text-[#1a3c34]/80 mt-1">点击快捷标签（React基础、考研数学等）</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-serif font-bold text-[#1a3c34] mb-3">📊 推荐结果解读</h4>
+              <div class="space-y-2 text-sm text-[#1a3c34]/70">
+                <p><strong class="text-[#1a3c34]">• Curator's Note</strong> - AI 给出的学习建议和路径规划</p>
+                <p><strong class="text-[#1a3c34]">• Primary Source</strong> - 最推荐的资源，包含详细信息</p>
+                <p><strong class="text-[#1a3c34]">• 其他推荐</strong> - 备选资源列表</p>
+                <p><strong class="text-[#1a3c34]">• 访问指引</strong> - 如何在对应平台找到课程</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- 8. 设置与隐私 -->
-      <section class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">八、设置与隐私（设置中心）</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <p class="text-gray-700 dark:text-gray-200">
-            设置中心用于调整账户信息和个人偏好，目前主要包含：
-          </p>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200">
-            <li><span class="font-medium">账户信息</span>：查看用户名、邮箱、注册时间等基本信息。</li>
-            <li><span class="font-medium">通知设置</span>：开关学习提醒、系统通知、营销邮件等。</li>
-            <li><span class="font-medium">隐私设置</span>：是否公开个人资料、是否参与匿名数据分析等。</li>
-          </ul>
-          <p class="text-gray-600 dark:text-gray-300">
-            后续版本中，这里的设置会逐步与实际通知/隐私策略打通，目前可以理解为偏好记录功能。
-          </p>
+      <!-- 4. 学习计划功能 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#d4c5a3] rounded-sm flex items-center justify-center">
+            <span class="text-[#1a3c34] font-bold text-sm">4</span>
+          </div>
+          学习计划管理
+        </h2>
+        <div class="bg-white p-8 shadow-sm border border-[#1a3c34]/10">
+          <div class="grid md:grid-cols-2 gap-8">
+            <!-- 创建计划 -->
+            <div>
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+                <span class="text-[#d4c5a3]">📅</span> 创建学习计划
+              </h3>
+              <ol class="space-y-3 text-sm text-[#1a3c34]/70">
+                <li><strong class="text-[#1a3c34]">1. 进入计划页面</strong> - 点击导航栏「Agenda」</li>
+                <li><strong class="text-[#1a3c34]">2. 填写基本信息</strong> - 标题、目标描述</li>
+                <li><strong class="text-[#1a3c34]">3. 设置时间安排</strong> - 开始日期、每日学习时长</li>
+                <li><strong class="text-[#1a3c34]">4. 关联学习资源</strong> - 选择或添加相关学习材料</li>
+                <li><strong class="text-[#1a3c34]">5. 设定总目标</strong> - 总学习时长，系统自动计算完成时间</li>
+              </ol>
+            </div>
+
+            <!-- 管理和打卡 -->
+            <div>
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+                <span class="text-[#d4c5a3]">✅</span> 打卡与进度追踪
+              </h3>
+              <div class="space-y-3 text-sm text-[#1a3c34]/70">
+                <p><strong class="text-[#1a3c34]">每日打卡</strong> - 计划列表页点击「今日打卡」，记录学习时长和心得</p>
+                <p><strong class="text-[#1a3c34]">进度可视化</strong> - 实时查看学习进度条和完成百分比</p>
+                <p><strong class="text-[#1a3c34]">统计分析</strong> - 查看已完成天数、剩余时间、累计学习时长</p>
+                <p><strong class="text-[#1a3c34]">编辑计划</strong> - 随时修改计划详情，系统自动重新计算进度</p>
+                <p><strong class="text-[#1a3c34]">完成标记</strong> - 达到100%自动标记为已完成</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 bg-[#f9f9f7] p-4 border-l-4 border-[#d4c5a3]">
+            <h4 class="font-serif font-bold text-[#1a3c34] mb-2">💡 计划管理技巧</h4>
+            <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+              <li>• 建议将大目标拆分为多个小计划，更容易坚持</li>
+              <li>• 每日学习时长建议设置在1-3小时，避免过度疲劳</li>
+              <li>• 定期查看进度统计，保持学习动力</li>
+            </ul>
+          </div>
         </div>
       </section>
 
-      <!-- 9. 常见问题与小贴士 -->
-      <section class="mb-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">九、常见问题与小贴士</h2>
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3 text-sm leading-relaxed">
-          <h3 class="font-semibold text-gray-900 dark:text-white">1. 看不到推荐结果 / 搜索失败怎么办？</h3>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200 mb-2">
-            <li>先检查网络是否正常，刷新页面后重试。</li>
-            <li>如果一直失败，可以简化问题描述，或稍后再次尝试。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white">2. 登录后数据保存在哪里？</h3>
-          <p class="text-gray-700 dark:text-gray-200 mb-2">
-            你的登录信息、学习计划、资源和帖子等数据会统一保存在后端数据库中，同一账号在不同设备登录都可以看到同样的数据。
+      <!-- 5. 学习社区 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#d4c5a3] rounded-sm flex items-center justify-center">
+            <span class="text-[#1a3c34] font-bold text-sm">5</span>
+          </div>
+          学习社区交流
+        </h2>
+        <div class="bg-white p-8 shadow-sm border border-[#1a3c34]/10">
+          <div class="grid md:grid-cols-2 gap-8">
+            <!-- 浏览和搜索 -->
+            <div>
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+                <span class="text-[#d4c5a3]">🔍</span> 浏览与发现
+              </h3>
+              <ul class="space-y-3 text-sm text-[#1a3c34]/70">
+                <li><strong class="text-[#1a3c34]">社区首页</strong> - 浏览最新发布的学习经验分享</li>
+                <li><strong class="text-[#1a3c34]">关键词搜索</strong> - 按标题、内容、作者、标签查找</li>
+                <li><strong class="text-[#1a3c34]">热门话题</strong> - 点击标签快速筛选相关内容</li>
+                <li><strong class="text-[#1a3c34]">分类浏览</strong> - 按前端开发、语言学习、考证等分类查看</li>
+              </ul>
+            </div>
+
+            <!-- 发布内容 -->
+            <div>
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+                <span class="text-[#d4c5a3]">✍️</span> 发布与互动
+              </h3>
+              <ul class="space-y-3 text-sm text-[#1a3c34]/70">
+                <li><strong class="text-[#1a3c34]">发表经验</strong> - 点击「发表我的经验」按钮</li>
+                <li><strong class="text-[#1a3c34]">添加标签</strong> - 使用标签方便他人搜索和分类</li>
+                <li><strong class="text-[#1a3c34]">关联资源</strong> - 关联你创建的学习资源</li>
+                <li><strong class="text-[#1a3c34]">互动交流</strong> - 点赞、收藏、评论其他用户的帖子</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-6 bg-[#f9f9f7] p-4 border-l-4 border-[#d4c5a3]">
+            <h4 class="font-serif font-bold text-[#1a3c34] mb-2">🎯 社区使用建议</h4>
+            <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+              <li>• 分享真实的学习体验和踩坑经历，帮助其他学习者</li>
+              <li>• 发布具体的资源使用心得，而不仅仅是课程推荐</li>
+              <li>• 积极参与讨论，在学习社区中建立个人影响力</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. 个人中心管理 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#d4c5a3] rounded-sm flex items-center justify-center">
+            <span class="text-[#1a3c34] font-bold text-sm">6</span>
+          </div>
+          个人中心管理
+        </h2>
+        <div class="bg-white p-8 shadow-sm border border-[#1a3c34]/10">
+          <div class="grid md:grid-cols-3 gap-6">
+            <!-- 个人资料 -->
+            <div class="bg-[#f9f9f7] p-6 border border-[#1a3c34]/10">
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+                <span class="text-[#d4c5a3]">👤</span> 个人资料
+              </h3>
+              <ul class="space-y-2 text-sm text-[#1a3c34]/70">
+                <li>• 编辑昵称和个人签名</li>
+                <li>• 查看头像和用户信息</li>
+                <li>• 管理个人学习形象</li>
+              </ul>
+            </div>
+
+            <!-- 我的资源 -->
+            <div class="bg-[#f9f9f7] p-6 border border-[#1a3c34]/10">
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+                <span class="text-[#d4c5a3]">📚</span> 我的资源
+              </h3>
+              <ul class="space-y-2 text-sm text-[#1a3c34]/70">
+                <li>• 查看已创建的学习资源</li>
+                <li>• 编辑或删除资源信息</li>
+                <li>• 管理资源与社区的关联</li>
+              </ul>
+            </div>
+
+            <!-- 我的帖子 -->
+            <div class="bg-[#f9f9f7] p-6 border border-[#1a3c34]/10">
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-4 flex items-center gap-2">
+                <span class="text-[#d4c5a3]">📝</span> 我的帖子
+              </h3>
+              <ul class="space-y-2 text-sm text-[#1a3c34]/70">
+                <li>• 查看社区发布的帖子</li>
+                <li>• 编辑或删除自己的内容</li>
+                <li>• 查看点赞收藏数据</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-6 grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-serif font-bold text-[#1a3c34] mb-3">🔗 其他功能</h4>
+              <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+                <li>• <strong class="text-[#1a3c34]">点赞收藏页</strong> - 统一查看收藏的优质内容</li>
+                <li>• <strong class="text-[#1a3c34]">设置中心</strong> - 管理账户和隐私设置</li>
+                <li>• <strong class="text-[#1a3c34]">关注系统</strong> - 关注其他学习者，构建学习网络</li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-serif font-bold text-[#1a3c34] mb-3">📱 数据同步</h4>
+              <p class="text-sm text-[#1a3c34]/70">
+                所有数据统一保存在云端数据库，同一账号在不同设备登录可看到同步的内容，支持多端无缝学习体验。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. 常见问题解答 -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 bg-[#d4c5a3] rounded-sm flex items-center justify-center">
+            <span class="text-[#1a3c34] font-bold text-sm">7</span>
+          </div>
+          常见问题解答
+        </h2>
+        <div class="bg-white p-8 shadow-sm border border-[#1a3c34]/10">
+          <div class="space-y-6">
+            <div class="border-b border-[#1a3c34]/10 pb-4">
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-2">❓ AI 助手没有响应怎么办？</h3>
+              <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+                <li>• 检查网络连接是否正常</li>
+                <li>• 刷新页面后重试</li>
+                <li>• 尝试简化问题描述，如用「英语六级」代替详细描述</li>
+                <li>• 如问题持续存在，可能是服务暂时繁忙，请稍后再试</li>
+              </ul>
+            </div>
+
+            <div class="border-b border-[#1a3c34]/10 pb-4">
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-2">❓ 学习计划进度计算不准确？</h3>
+              <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+                <li>• 系统基于实际打卡时长自动计算进度</li>
+                <li>• 编辑计划的总时长会实时重新计算进度百分比</li>
+                <li>• 如有异常，可检查打卡记录是否完整</li>
+                <li>• 每日只允许打卡一次，避免重复计算</li>
+              </ul>
+            </div>
+
+            <div class="border-b border-[#1a3c34]/10 pb-4">
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-2">❓ 如何删除不需要的内容？</h3>
+              <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+                <li>• <strong>学习计划</strong>：在计划卡片右上角点击删除按钮</li>
+                <li>• <strong>社区帖子</strong>：在「我的全部帖子」页面删除</li>
+                <li>• <strong>学习资源</strong>：在「我的全部资源」页面删除</li>
+                <li>• 删除操作不可恢复，请谨慎操作</li>
+              </ul>
+            </div>
+
+            <div class="border-b border-[#1a3c34]/10 pb-4">
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-2">❓ 推荐的资源如何选择？</h3>
+              <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+                <li>• <strong>Primary Source</strong> 是 AI 最推荐的首选资源</li>
+                <li>• <strong>其他推荐</strong> 提供更多备选方案</li>
+                <li>• 结合个人基础、时间安排和学习习惯选择</li>
+                <li>• 参考社区中其他用户的实际使用反馈</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="font-serif font-bold text-[#1a3c34] mb-2">❓ 学习遇到困难时怎么办？</h3>
+              <ul class="text-sm text-[#1a3c34]/70 space-y-1">
+                <li>• 在社区发布求助帖子，获得其他学习者帮助</li>
+                <li>• 回到首页询问 AI 助手获取建议</li>
+                <li>• 调整学习计划，适当降低难度或延长时间</li>
+                <li>• 寻找相关资源进行补充学习</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-8 bg-[#f9f9f7] p-6 border-l-4 border-[#d4c5a3]">
+            <h4 class="font-serif font-bold text-[#1a3c34] mb-3">🎯 高效学习建议</h4>
+            <div class="grid md:grid-cols-2 gap-4 text-sm text-[#1a3c34]/70">
+              <div>
+                <p class="mb-2"><strong class="text-[#1a3c34]">学习路径规划</strong></p>
+                <ul class="space-y-1">
+                  <li>• 先用 AI 助手确定学习方向</li>
+                  <li>• 制定详细的学习计划</li>
+                  <li>• 坚持每日打卡记录</li>
+                </ul>
+              </div>
+              <div>
+                <p class="mb-2"><strong class="text-[#1a3c34]">社区互动学习</strong></p>
+                <ul class="space-y-1">
+                  <li>• 分享学习经验和心得</li>
+                  <li>• 向其他学习者请教问题</li>
+                  <li>• 关注优质内容创作者</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 结束语 -->
+      <section class="text-center py-12 border-t border-[#1a3c34]/10">
+        <div class="max-w-2xl mx-auto">
+          <h3 class="text-2xl font-serif font-bold text-[#1a3c34] mb-4">开启你的知识构建之旅</h3>
+          <p class="text-[#1a3c34]/70 leading-relaxed mb-8">
+            EduMatch 不仅是学习工具，更是你的知识构建伙伴。通过 AI 智能推荐、系统化计划管理和社区互动，
+            让学习变得更高效、更有趣。现在就开始使用，将知识转化为真正的能力。
           </p>
-          <h3 class="font-semibold text-gray-900 dark:text-white">3. 推荐资源是不是唯一正确的？</h3>
-          <p class="text-gray-700 dark:text-gray-200 mb-2">
-            AI 推荐的资源是基于你的需求和公开数据做出的「优先级排序」，不代表唯一正确选择。建议你：
-          </p>
-          <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-200 mb-2">
-            <li>优先尝试「最推荐」资源；</li>
-            <li>不满意时，继续向下浏览「其他推荐」；</li>
-            <li>结合社区里的实际学习反馈做综合判断。</li>
-          </ul>
-          <h3 class="font-semibold text-gray-900 dark:text-white">4. 不知道下一步该做什么时</h3>
-          <p class="text-gray-700 dark:text-gray-200">
-            你可以随时回到首页，打开 AI 学习助手，直接把自己的困惑打出来，例如「我已经学完 JS 基础，下一步该学什么？」让系统给出下一阶段的路径建议。
-          </p>
+          <button @click="router.push('/')" class="px-8 py-3 bg-[#d4c5a3] text-[#1a3c34] font-serif font-bold hover:bg-[#1a3c34] hover:text-[#d4c5a3] transition-all border border-[#1a3c34]/20">
+            返回首页开始学习
+          </button>
         </div>
       </section>
     </div>
@@ -288,5 +473,7 @@
 </template>
 
 <script setup lang="ts">
-// 本页面主要为静态说明文档，如后续需要根据登录状态展示不同内容，可在此处补充逻辑。
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 </script>

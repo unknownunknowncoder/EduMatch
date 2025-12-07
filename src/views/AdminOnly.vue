@@ -4,7 +4,6 @@
     <div 
       v-if="showMessage" 
       :class="getMessageClasses(messageType)"
-      class="flex items-center space-x-2"
     >
       <span v-html="getMessageIcon(messageType)"></span>
       <span>{{ messageText }}</span>

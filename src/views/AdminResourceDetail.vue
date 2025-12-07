@@ -4,8 +4,6 @@
     <div 
       v-if="showMessage" 
       :class="getMessageClasses(messageType)"
-      :style="getMessageStyles()"
-      class="flex items-center space-x-2"
     >
       <span v-html="getMessageIcon(messageType)"></span>
       <span>{{ messageText }}</span>
@@ -181,7 +179,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon, getMessageStyles } from '@/utils/message'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
 
 interface Resource {
   id: string

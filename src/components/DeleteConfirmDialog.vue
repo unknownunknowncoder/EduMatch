@@ -1,44 +1,63 @@
 <template>
-  <div 
-    v-if="show" 
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    @click="handleCancel"
-  >
+  <transition name="fade">
     <div 
-      class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm mx-4 shadow-xl"
-      @click.stop
+      v-if="show" 
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-[#1a3c34]/90 backdrop-blur-sm px-4"
+      @click="handleCancel"
     >
-      <div class="flex items-center mb-4">
-        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mr-3">
-          <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-          </svg>
+      <!-- Modal Container -->
+      <div 
+        class="bg-[#f4f1ea] w-full max-w-md shadow-2xl relative border-t-8 border-[#b03e3e] overflow-hidden rounded-sm"
+        @click.stop
+      >
+        <!-- Background Watermark -->
+        <Trash2 class="absolute -right-8 -bottom-8 w-40 h-40 text-[#b03e3e]/5 -z-0 pointer-events-none rotate-12" />
+
+        <div class="p-8 relative z-10">
+          
+          <!-- Header & Message -->
+          <div class="flex items-start gap-5 mb-6">
+            <!-- Icon Box -->
+            <div class="w-12 h-12 flex-shrink-0 bg-[#b03e3e]/10 border border-[#b03e3e]/20 flex items-center justify-center rounded-sm">
+              <AlertTriangle class="w-6 h-6 text-[#b03e3e]" />
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-2 leading-none">
+                Confirm Deletion
+              </h3>
+              <p class="text-[#1a3c34]/70 font-serif text-sm leading-relaxed">
+                {{ message || 'Are you sure you want to permanently remove this record? This action is irreversible.' }}
+              </p>
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="flex justify-end items-center gap-4 pt-6 border-t border-[#1a3c34]/10">
+            <button
+              @click="handleCancel"
+              class="px-4 py-2 text-[#1a3c34]/50 font-bold uppercase tracking-widest text-xs hover:text-[#1a3c34] transition-colors"
+            >
+              Preserve
+            </button>
+            <button
+              @click="handleConfirm"
+              class="px-6 py-2.5 bg-[#b03e3e] text-white font-bold uppercase tracking-widest text-xs hover:bg-[#8a2c2c] transition-all shadow-md flex items-center gap-2 rounded-sm"
+            >
+              <Trash2 class="w-3 h-3" />
+              <span>Expunge</span>
+            </button>
+          </div>
+
         </div>
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">确认删除</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">{{ message }}</p>
-        </div>
-      </div>
-      
-      <div class="flex justify-end space-x-3">
-        <button
-          @click="handleCancel"
-          class="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-        >
-          手滑了
-        </button>
-        <button
-          @click="handleConfirm"
-          class="px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-        >
-          确认删除
-        </button>
       </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
+import { Trash2, AlertTriangle } from 'lucide-vue-next'
+
 interface Props {
   show: boolean
   message?: string
@@ -60,3 +79,26 @@ const handleCancel = () => {
   emit('cancel')
 }
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 弹窗进入时的缩放微动效 */
+.fade-enter-active > div,
+.fade-leave-active > div {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fade-enter-from > div,
+.fade-leave-to > div {
+  transform: scale(0.95) translateY(10px);
+}
+</style>

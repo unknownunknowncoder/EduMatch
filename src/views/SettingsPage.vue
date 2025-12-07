@@ -9,7 +9,7 @@
         </svg>
         设置中心
       </h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">管理你的账户和应用偏好设置</p>
+      <p class="text-gray-600 dark:text-gray-400 mt-2">管理您的账户和应用偏好设置</p>
     </div>
     
     <!-- 设置卡片 -->

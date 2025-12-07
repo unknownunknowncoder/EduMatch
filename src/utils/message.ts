@@ -27,24 +27,19 @@ export const showToast = (
 
 // 获取样式类名
 export const getMessageClasses = (type: MessageType) => {
-  const baseClasses = 'fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 transition-all duration-300'
+  const baseClasses = 'fixed top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 shadow-xl z-[110] font-serif font-bold border-l-4 transition-all duration-300'
   
   const typeClasses = {
-    success: 'bg-green-600 text-white',
-    error: 'bg-red-600 text-white',
-    warning: 'bg-yellow-600 text-white',
-    info: 'bg-blue-600 text-white'
+    success: 'bg-white text-[#0f281f] border-[#d4c5a3]',
+    error: 'bg-white text-red-700 border-red-500',
+    warning: 'bg-white text-yellow-700 border-yellow-500',
+    info: 'bg-white text-blue-700 border-blue-500'
   }
   
   return `${baseClasses} ${typeClasses[type]}`
 }
 
-// 获取内联样式
-export const getMessageStyles = () => {
-  return {
-    opacity: 1
-  }
-}
+
 
 // 获取图标SVG
 export const getMessageIcon = (type: MessageType) => {

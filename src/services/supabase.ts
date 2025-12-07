@@ -261,6 +261,20 @@ export class SupabaseService {
       .single()
     
     if (error) throw error
+    
+    // 如果有资源ID，获取资源信息
+    if (data.resource_id) {
+      const { data: resourceData, error: resourceError } = await client
+        .from('resources')
+        .select('*')
+        .eq('id', data.resource_id)
+        .single()
+      
+      if (!resourceError && resourceData) {
+        data.resource = resourceData
+      }
+    }
+    
     return data
   }
 
@@ -505,16 +519,19 @@ export class SupabaseService {
       throw new Error('用户未登录')
     }
     
+    // 构建插入对象，确保包含所有必要字段
+    const insertData: any = {
+      study_plan_id: planId,
+      user_id: currentUser.id,
+      hours: checkinData.hours || 1.0, // 确保hours字段始终包含
+      notes: checkinData.notes,
+      checkin_date: checkinData.date || new Date().toISOString().split('T')[0],
+      created_at: new Date().toISOString()
+    }
+    
     const { data, error } = await client
       .from('study_plan_checkins')
-      .insert([{
-        plan_id: planId,
-        user_id: currentUser.id,
-        hours: checkinData.hours,
-        notes: checkinData.notes,
-        checkin_date: checkinData.date || new Date().toISOString().split('T')[0],
-        created_at: new Date().toISOString()
-      }])
+      .insert([insertData])
       .select()
     
     if (error) throw error
@@ -655,6 +672,53 @@ export class SupabaseService {
     const { data, error } = await query
     if (error) throw error
     
+    return data
+  }
+
+  // 隐私设置相关方法
+  async getUserPrivacySettings(userId: string) {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('user_privacy_settings')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+    
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+      throw error
+    }
+    
+    // 如果没有设置记录，返回默认值
+    if (!data) {
+      return {
+        hide_following: false,
+        hide_followers: false,
+        hide_posts: false,
+        hide_resources: false
+      }
+    }
+    
+    return data
+  }
+
+  async updateUserPrivacySettings(userId: string, settings: {
+    hide_following?: boolean
+    hide_followers?: boolean
+    hide_posts?: boolean
+    hide_resources?: boolean
+  }) {
+    const client = this.getClient()
+    const { data, error } = await client
+      .from('user_privacy_settings')
+      .upsert({
+        user_id: userId,
+        ...settings,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+    
+    if (error) throw error
     return data
   }
 

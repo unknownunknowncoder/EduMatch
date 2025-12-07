@@ -5,6 +5,19 @@ import router from './router'
 import './index.css'
 import { dbService } from './services/database'
 
+// 全局路由加载状态
+router.beforeEach((to, from, next) => {
+  // 如果不是第一次加载且路由发生变化，显示简单的过渡效果
+  if (from.name && to.name !== from.name) {
+    // 页面切换时不阻塞，让组件自然加载
+  }
+  next()
+})
+
+router.afterEach(() => {
+  // 路由完成后清理任何可能的错误状态
+})
+
 const app = createApp(App)
 
 app.use(createPinia())

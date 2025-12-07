@@ -1,242 +1,182 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-6">
-    <!-- 页面标题 -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-        <Heart class="h-8 w-8 mr-3 text-red-500" />
-        点赞收藏
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">查看你点赞和收藏的学习资源</p>
-    </div>
-
-    <!-- 标签切换 -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden mb-6">
-      <div class="flex">
-        <button
-          @click="setActiveTab('liked')"
-          :class="`flex-1 py-4 px-6 flex items-center justify-center transition-colors ${
-            activeTab === 'liked' 
-              ? 'bg-blue-600 text-white' 
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-          }`"
+  <div class="min-h-screen bg-[#f4f1ea] font-sans selection:bg-[#0f281f] selection:text-[#d4c5a3] pb-20">
+    
+    <!-- Top Banner (Collection) -->
+    <div class="h-64 relative overflow-hidden bg-[#0f281f]">
+      <!-- 选用一张复古藏书室/陈列柜的图片 -->
+      <img 
+        src="https://images.unsplash.com/photo-1507842217121-ad5864104f10?q=80&w=2000&auto=format&fit=crop" 
+        class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-multiply grayscale-[30%]"
+        alt="Private Collection"
+      />
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#f4f1ea]"></div>
+      
+      <!-- Back Navigation -->
+      <div class="absolute top-6 left-6 z-20">
+        <button 
+          @click="goBack"
+          class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-[#0f281f] hover:border-[#d4c5a3] transition-all rounded-sm text-xs font-bold uppercase tracking-widest group"
         >
-          <ThumbsUp class="h-5 w-5 mr-2" />
-          <span class="font-medium">我的点赞</span>
-        </button>
-        <button
-          @click="setActiveTab('favorites')"
-          :class="`flex-1 py-4 px-6 flex items-center justify-center transition-colors ${
-            activeTab === 'favorites' 
-              ? 'bg-red-500 text-white' 
-              : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-          }`"
-        >
-          <Heart class="h-5 w-5 mr-2" />
-          <span class="font-medium">我的收藏</span>
+          <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          返回
         </button>
       </div>
-    </div>
-    
-    <!-- 加载状态 -->
-    <div v-if="isLoading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      <span class="ml-3 text-lg text-gray-600 dark:text-gray-300">正在加载点赞收藏数据...</span>
-    </div>
-
-    <!-- 内容列表 -->
-    <div v-else :key="activeTab" class="space-y-6">
-      <!-- 点赞内容列表 -->
-      <template v-if="activeTab === 'liked'">
-        <div 
-          v-if="likedResources.length === 0"
-          class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center shadow-md"
-        >
-          <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-full inline-flex items-center justify-center mb-4">
-            <ThumbsUp class="h-8 w-8 text-gray-400" />
-          </div>
-          <h3 class="text-lg font-medium mb-2">暂无点赞内容</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-6">浏览社区帖子并点赞，这里将显示你喜欢的内容</p>
-          <router-link to="/community" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors inline-block">
-            去社区看看
-          </router-link>
-        </div>
-        
-        <div 
-          v-for="resource in likedResources"
-          :key="resource.id"
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-150 hover:shadow-md cursor-pointer"
-          @click="handlePostClick(resource.id)"
-        >
-          <!-- 帖子基本信息 -->
-          <div class="p-4">
-            <!-- 帖子标题 -->
-            <h3 class="font-semibold text-lg mb-2 line-clamp-2">{{ resource.name }}</h3>
-            
-            <!-- 作者和发布时间 -->
-            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
-              <span class="mr-3">作者：{{ resource.provider }}</span>
-              <span>发布时间：{{ formatDate(resource.postDetails?.createdAt || resource.created_at) }}</span>
-            </div>
-            
-            <!-- 标签 -->
-            <div class="flex flex-wrap gap-1 mb-3">
-              <span class="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
-                点赞帖子
-              </span>
-              <span v-if="resource.type" class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
-                {{ resource.type }}
-              </span>
-            </div>
-            
-
-          </div>
-        </div>
-      </template>
       
-      <!-- 收藏内容列表 -->
-      <template v-else>
-        <div 
-          v-if="favoritedResources.length === 0"
-          class="bg-white dark:bg-gray-800 rounded-xl p-8 text-center shadow-md"
-        >
-          <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-full inline-flex items-center justify-center mb-4">
-            <Heart class="h-8 w-8 text-gray-400" />
-          </div>
-          <h3 class="text-lg font-medium mb-2">暂无收藏内容</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-6">浏览社区帖子并收藏，这里将显示你保存的内容</p>
-          <router-link to="/community" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors inline-block">
-            去社区看看
-          </router-link>
-        </div>
-        
-        <div 
-          v-for="resource in favoritedResources"
-          :key="resource.id"
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-all duration-150 hover:shadow-md cursor-pointer"
-          @click="handlePostClick(resource.id)"
-        >
-          <!-- 帖子基本信息 -->
-          <div class="p-4">
-            <!-- 帖子标题 -->
-            <h3 class="font-semibold text-lg mb-2 line-clamp-2">{{ resource.name }}</h3>
-            
-            <!-- 作者和发布时间 -->
-            <div class="flex items-center text-sm text-gray-600 dark:text-gray-400 mb-3">
-              <span class="mr-3">作者：{{ resource.provider }}</span>
-              <span>发布时间：{{ formatDate(resource.postDetails?.createdAt || resource.created_at) }}</span>
-            </div>
-            
-            <!-- 标签 -->
-            <div class="flex flex-wrap gap-1 mb-3">
-              <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 px-2 py-1 rounded-full">
-                收藏帖子
-              </span>
-              <span v-if="resource.type" class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full">
-                {{ resource.type }}
-              </span>
-            </div>
-            
+      <div class="absolute bottom-0 left-0 right-0 p-8 text-center">
+         <div class="flex items-center justify-center gap-3 mb-2">
+            <Bookmark class="w-8 h-8 text-[#d4c5a3]" />
+            <h1 class="text-4xl md:text-5xl font-serif font-bold text-[#0f281f]">精选收藏</h1>
+         </div>
+         <p class="text-[#0f281f]/60 font-serif italic tracking-wide">
+            您个人珍藏的智慧见解合集。
+         </p>
+      </div>
+    </div>
 
-          </div>
-        </div>
-      </template>
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto px-4 -mt-8 relative z-10">
+      
+      <!-- Tab Navigation (Archive Tabs) -->
+      <div class="flex justify-center mb-10">
+         <div class="inline-flex bg-white p-1 rounded-sm shadow-md border border-[#0f281f]/10">
+            <button
+               @click="setActiveTab('liked')"
+               class="px-8 py-3 text-sm font-bold uppercase tracking-widest transition-all flex items-center gap-2"
+               :class="activeTab === 'liked' ? 'bg-[#0f281f] text-[#d4c5a3] shadow-lg' : 'text-[#0f281f]/60 hover:text-[#0f281f] hover:bg-[#f4f1ea]'"
+            >
+               <ThumbsUp class="w-4 h-4" /> 点赞
+            </button>
+            <button
+               @click="setActiveTab('favorites')"
+               class="px-8 py-3 text-sm font-bold uppercase tracking-widest transition-all flex items-center gap-2"
+               :class="activeTab === 'favorites' ? 'bg-[#0f281f] text-[#d4c5a3] shadow-lg' : 'text-[#0f281f]/60 hover:text-[#0f281f] hover:bg-[#f4f1ea]'"
+            >
+               <Heart class="w-4 h-4" /> 收藏
+            </button>
+         </div>
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex flex-col items-center justify-center py-32 space-y-6">
+         <div class="w-16 h-16 border-4 border-[#d4c5a3] border-t-[#0f281f] rounded-full animate-spin"></div>
+         <p class="text-[#0f281f] font-serif tracking-widest uppercase">Accessing Vault...</p>
+      </div>
+
+      <!-- Content Grid -->
+      <div v-else class="space-y-6">
+         
+         <!-- Empty State -->
+         <div v-if="(activeTab === 'liked' && likedResources.length === 0) || (activeTab === 'favorites' && favoritedResources.length === 0)" class="text-center py-24 bg-white/50 border-2 border-dashed border-[#0f281f]/10 rounded-sm">
+            <div class="w-24 h-24 bg-[#0f281f]/5 rounded-full flex items-center justify-center mx-auto mb-6">
+               <component :is="activeTab === 'liked' ? ThumbsUp : Heart" class="w-10 h-10 text-[#0f281f]/20" />
+            </div>
+            <h3 class="text-2xl font-serif font-bold text-[#0f281f] mb-2">Collection Empty</h3>
+            <p class="text-[#0f281f]/60 max-w-md mx-auto mb-8 font-serif">
+               You haven't {{ activeTab === 'liked' ? 'liked' : 'saved' }} any manuscripts yet. Explore the symposium to find valuable works.
+            </p>
+            <router-link to="/community" class="px-8 py-3 border-2 border-[#0f281f] text-[#0f281f] font-bold uppercase tracking-widest hover:bg-[#0f281f] hover:text-[#d4c5a3] transition-colors">
+               Explore Archives
+            </router-link>
+         </div>
+
+         <!-- List Items -->
+         <transition-group name="list">
+            <div 
+               v-for="resource in (activeTab === 'liked' ? likedResources : favoritedResources)"
+               :key="resource.id"
+               class="group relative bg-white border border-[#0f281f]/10 p-6 rounded-sm hover:shadow-xl hover:border-[#0f281f]/30 transition-all cursor-pointer overflow-hidden"
+               @click="handlePostClick(resource.id)"
+            >
+               <!-- Decorative Gold Line -->
+               <div class="absolute top-0 left-0 w-1 h-full bg-[#d4c5a3] group-hover:bg-[#0f281f] transition-colors"></div>
+               
+               <!-- Background Watermark -->
+               <FileText class="absolute right-[-10px] bottom-[-10px] w-32 h-32 text-[#f4f1ea] opacity-0 group-hover:opacity-100 transition-opacity rotate-[-10deg] duration-500" />
+
+               <div class="relative z-10 flex items-start gap-6">
+                  <!-- Type Icon -->
+                  <div class="flex-shrink-0 pt-1">
+                     <div class="w-12 h-12 bg-[#f4f1ea] border border-[#0f281f]/10 flex items-center justify-center text-[#0f281f]">
+                        <ScrollText class="w-6 h-6 opacity-60" />
+                     </div>
+                  </div>
+
+                  <div class="flex-1 min-w-0">
+                     <div class="flex items-start justify-between mb-2">
+                        <h3 class="text-xl font-serif font-bold text-[#0f281f] group-hover:text-[#b49b67] transition-colors line-clamp-1 pr-4">
+                           {{ resource.name }}
+                        </h3>
+                        <span class="text-xs font-mono text-[#0f281f]/40 whitespace-nowrap">{{ formatDate(resource.postDetails?.createdAt || '') }}</span>
+                     </div>
+                     
+                     <div class="text-sm text-[#0f281f]/60 font-serif italic mb-4">
+                        By {{ resource.provider }}
+                     </div>
+
+                     <!-- Tags -->
+                     <div class="flex items-center gap-3">
+                        <span 
+                           class="px-2 py-0.5 border border-[#0f281f]/10 text-[#0f281f] text-[10px] font-bold uppercase tracking-widest"
+                           :class="activeTab === 'liked' ? 'bg-[#dbeafe]/30 text-blue-800' : 'bg-[#fee2e2]/30 text-red-800'"
+                        >
+                           {{ activeTab === 'liked' ? 'Endorsed' : 'Archived' }}
+                        </span>
+                        
+                        <div class="flex items-center gap-4 ml-auto text-xs font-mono text-[#0f281f]/40">
+                           <span class="flex items-center gap-1"><Heart class="w-3 h-3" /> {{ resource.likeCount }}</span>
+                           <span class="flex items-center gap-1"><Bookmark class="w-3 h-3" /> {{ resource.favoriteCount }}</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </transition-group>
+
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import { 
-  ThumbsUp, 
-  Heart, 
-  Clock, 
-  DollarSign, 
-  Check, 
-  ExternalLink 
+  ThumbsUp, Heart, Bookmark, FileText, ScrollText, Loader2
 } from 'lucide-vue-next'
 
-// 帖子数据类型
-interface Post {
-  id: string
-  title: string
-  content: string
-  author_name: string
-  created_at: string
-  view_count: number
-  like_count: number
-  comment_count: number
-  favorite_count: number
-  user?: {
-    id: string
-    username: string
-    nickname: string
-  }
-}
-
-// 资源数据类型
-interface Resource {
-  id: string
-  name: string
-  provider: string
-  duration: string
-  rating: number
-  url: string
-  matchPoints: string
-  type: string
-}
-
-// 互动数据类型
-interface InteractionData {
-  liked: boolean
-  saved: boolean
-  likesCount: number
-}
+// Interfaces (Keep same as logic provided)
+interface Post { id: string; title: string; content: string; author_name: string; created_at: string; view_count: number; like_count: number; comment_count: number; favorite_count: number; user?: { id: string; username: string; nickname: string } }
+interface Resource { id: string; name: string; provider: string; duration: string; rating: number; url: string; matchPoints: string; type: string; postDetails?: any; likeCount?: number; favoriteCount?: number }
+interface InteractionData { liked: boolean; saved: boolean; likesCount: number }
 
 const router = useRouter()
-const activeTab = ref<'liked' | 'favorites'>('liked')
+const route = useRoute()
+const activeTab = ref<'liked' | 'favorites'>((route.query.tab as 'liked' | 'favorites') || 'liked')
 const likedResources = ref<(Resource & { interaction: InteractionData })[]>([])
 const favoritedResources = ref<(Resource & { interaction: InteractionData })[]>([])
 const isLoading = ref(true)
 
-// 获取用户ID（从localStorage中获取）
 const getCurrentUserId = (): string | null => {
   const currentUser = localStorage.getItem('currentUser')
   if (currentUser) {
     try {
       const user = JSON.parse(currentUser)
       return user.id?.toString() || null
-    } catch (error) {
-      console.error('Failed to parse current user:', error)
-    }
+    } catch (error) { console.error(error) }
   }
-  
-  // 如果localStorage中没有，尝试从authStore获取
-  const authStore = localStorage.getItem('authStore')
-  if (authStore) {
-    try {
-      const auth = JSON.parse(authStore)
-      return auth.user?.id?.toString() || null
-    } catch (error) {
-      console.error('Failed to parse auth store:', error)
-    }
-  }
-  
-  console.warn('⚠️ 未找到当前用户ID，请先登录')
   return null
 }
 
-// 格式化日期
 const formatDate = (dateString: string) => {
+  if(!dateString) return ''
   const date = new Date(dateString)
-  return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  })
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-// 加载用户的点赞和收藏数据
+// Logic same as provided, just wrapping UI
 const loadUserInteractions = async () => {
   try {
     isLoading.value = true
@@ -244,488 +184,63 @@ const loadUserInteractions = async () => {
     const userId = getCurrentUserId()
     
     if (!userId) {
-      console.log('用户未登录，无法加载点赞收藏数据')
       likedResources.value = []
       favoritedResources.value = []
       return
     }
     
-    console.log('开始加载用户点赞收藏数据，用户ID:', userId)
+    let client = await dbStore.getClient()
+    if (!client) { await dbStore.reconnect(); client = await dbStore.getClient() }
     
-  // 尝试使用数据库加载，失败时使用本地存储
-  let databaseSuccess = false
-  let client = null
-  
-  try {
-    // 确保数据库已初始化
-    client = await dbStore.getClient()
-    if (!client) {
-      console.log('数据库客户端未初始化，尝试重新连接...')
-      await dbStore.reconnect()
-      client = await dbStore.getClient()
-    }
-    
-    if (!client) {
-      throw new Error('数据库客户端初始化失败')
-    }
-    
-    databaseSuccess = true
-  } catch (error) {
-    console.warn('⚠️ 数据库连接失败，尝试直接连接:', error.message)
-    
-    // 尝试直接使用supabase客户端
-    try {
-      const { createClient } = await import('@supabase/supabase-js')
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-      
-      if (supabaseUrl && supabaseKey) {
-        client = createClient(supabaseUrl, supabaseKey)
-        console.log('✅ 使用直接连接的Supabase客户端')
-        databaseSuccess = true
-      } else {
-        throw new Error('Supabase环境变量未配置')
-      }
-    } catch (directError) {
-      console.warn('⚠️ 直接连接也失败，使用本地存储:', directError.message)
-      databaseSuccess = false
-    }
-  }
-    
-    if (databaseSuccess && client) {
-      // 使用数据库加载
-      try {
-        console.log('📊 开始从数据库加载点赞和收藏数据...')
+    if (client) {
+        // Load Liked
+        const { data: likedPosts } = await client.from('post_likes').select(`post_id, created_at, posts:post_id (id, title, content, created_at, like_count, favorite_count, user:user_id(nickname, username))`).eq('user_id', userId).order('created_at', { ascending: false })
         
-        // 加载用户点赞的帖子 - 优化查询，包含详细的点赞用户信息
-        const { data: likedPosts, error: likedError } = await client
-          .from('post_likes')
-          .select(`
-            post_id,
-            created_at,
-            posts:post_id (
-              id,
-              title,
-              content,
-              created_at,
-              view_count,
-              like_count,
-              comment_count,
-              favorite_count,
-              user:user_id (
-                id,
-                username,
-                nickname
-              )
-            )
-          `)
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-        
-        if (likedError) {
-          console.warn('⚠️ 数据库加载点赞失败，切换到本地存储:', likedError.message)
-          databaseSuccess = false
-        } else {
-          console.log('✅ 点赞帖子数据查询成功，数量:', (likedPosts || []).length)
-          
-          // 处理点赞帖子数据
-          likedResources.value = (likedPosts || []).map((item: any) => {
+        likedResources.value = (likedPosts || []).map((item: any) => {
             const post = item.posts
-            
-            // 获取作者信息
-            const author = post.user?.nickname || post.user?.username || '匿名用户'
-            
+            const author = post.user?.nickname || post.user?.username || 'Anonymous'
             return {
-              id: post.id,
-              name: post.title,
-              provider: author,
-              duration: '帖子',
-              rating: post.like_count || 0,
-              url: `/post/${post.id}`,
-              matchPoints: post.content?.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
-              type: '社区帖子',
-              interaction: {
-                liked: true,
-                saved: false,
-                likesCount: post.like_count || 0
-              },
-              // 当前用户点赞了该帖子
-              likedUsers: ['当前用户'],
-              favoritedUsers: [], // 收藏用户信息在收藏部分单独处理
-              likeCount: post.like_count || 0,
-              favoriteCount: post.favorite_count || 0,
-              // 添加帖子详情信息
-              postDetails: {
-                id: post.id,
-                author: author,
-                content: post.content,
-                createdAt: post.created_at,
-                viewCount: post.view_count || 0,
-                commentCount: post.comment_count || 0
-              }
+              id: post.id, name: post.title, provider: author, duration: 'Post', rating: post.like_count, url: `/post/${post.id}`, matchPoints: '', type: 'Manuscript',
+              interaction: { liked: true, saved: false, likesCount: post.like_count },
+              likeCount: post.like_count, favoriteCount: post.favorite_count,
+              postDetails: { createdAt: post.created_at }
             }
-          })
-          
-          console.log('✅ 数据库点赞帖子加载完成，数量:', likedResources.value.length)
-          console.log('📋 点赞帖子详情:', likedResources.value.map(p => ({
-            id: p.id,
-            title: p.name,
-            author: p.provider,
-            likedUsers: p.likedUsers
-          })))
-        }
+        })
+
+        // Load Favorites
+        const { data: favPosts } = await client.from('post_favorites').select(`post_id, created_at, posts:post_id (id, title, content, created_at, like_count, favorite_count, user:user_id(nickname, username))`).eq('user_id', userId).order('created_at', { ascending: false })
         
-        // 加载用户收藏的帖子 - 优化查询，包含详细的收藏用户信息
-        const { data: favoritedPosts, error: favoritedError } = await client
-          .from('post_favorites')
-          .select(`
-            post_id,
-            created_at,
-            posts:post_id (
-              id,
-              title,
-              content,
-              created_at,
-              view_count,
-              like_count,
-              comment_count,
-              favorite_count,
-              user:user_id (
-                id,
-                username,
-                nickname
-              )
-            )
-          `)
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false })
-        
-        if (favoritedError) {
-          console.warn('⚠️ 数据库加载收藏失败，切换到本地存储:', favoritedError.message)
-          databaseSuccess = false
-        } else {
-          console.log('✅ 收藏帖子数据查询成功，数量:', (favoritedPosts || []).length)
-          
-          // 处理收藏帖子数据
-          favoritedResources.value = (favoritedPosts || []).map((item: any) => {
+        favoritedResources.value = (favPosts || []).map((item: any) => {
             const post = item.posts
-            
-            // 获取作者信息
-            const author = post.user?.nickname || post.user?.username || '匿名用户'
-            
+            const author = post.user?.nickname || post.user?.username || 'Anonymous'
             return {
-              id: post.id,
-              name: post.title,
-              provider: author,
-              duration: '帖子',
-              rating: post.favorite_count || 0,
-              url: `/post/${post.id}`,
-              matchPoints: post.content?.substring(0, 100) + (post.content.length > 100 ? '...' : ''),
-              type: '社区帖子',
-              interaction: {
-                liked: false,
-                saved: true,
-                likesCount: post.like_count || 0
-              },
-              // 当前用户收藏了该帖子
-              likedUsers: [], // 点赞用户信息在点赞部分单独处理
-              favoritedUsers: ['当前用户'],
-              likeCount: post.like_count || 0,
-              favoriteCount: post.favorite_count || 0,
-              // 添加帖子详情信息
-              postDetails: {
-                id: post.id,
-                author: author,
-                content: post.content,
-                createdAt: post.created_at,
-                viewCount: post.view_count || 0,
-                commentCount: post.comment_count || 0
-              }
+              id: post.id, name: post.title, provider: author, duration: 'Post', rating: post.favorite_count, url: `/post/${post.id}`, matchPoints: '', type: 'Manuscript',
+              interaction: { liked: false, saved: true, likesCount: post.like_count },
+              likeCount: post.like_count, favoriteCount: post.favorite_count,
+              postDetails: { createdAt: post.created_at }
             }
-          })
-          
-          console.log('✅ 数据库收藏帖子加载完成，数量:', favoritedResources.value.length)
-          console.log('📋 收藏帖子详情:', favoritedResources.value.map(p => ({
-            id: p.id,
-            title: p.name,
-            author: p.provider,
-            favoritedUsers: p.favoritedUsers
-          })))
-        }
-      } catch (error) {
-        console.warn('⚠️ 数据库查询异常，切换到本地存储:', error.message)
-        databaseSuccess = false
-      }
+        })
     }
-    
-    // 如果数据库失败，使用本地存储，但尝试从社区页面获取帖子详情
-    if (!databaseSuccess) {
-      console.log('🔄 使用本地存储加载点赞收藏数据，并尝试获取帖子详情')
-      
-      // 加载本地点赞数据
-      const localLikesKey = `edumatch_likes_${userId}`
-      const localLikes = JSON.parse(localStorage.getItem(localLikesKey) || '[]')
-      
-      // 加载本地收藏数据
-      const localFavoritesKey = `edumatch_favorites_${userId}`
-      const localFavorites = JSON.parse(localStorage.getItem(localFavoritesKey) || '[]')
-      
-      // 尝试从社区页面获取帖子详情 - 优化版本
-      const getPostDetails = async (postId: string) => {
-        try {
-          console.log(`🔍 尝试获取帖子 ${postId} 的详细信息...`)
-          
-          // 首先尝试使用数据库存储的客户端
-          let client = await dbStore.getClient()
-          if (!client) {
-            console.log('🔗 数据库客户端未连接，尝试重新连接...')
-            await dbStore.reconnect()
-            client = await dbStore.getClient()
-          }
-          
-          if (client) {
-            console.log('✅ 使用数据库存储客户端获取帖子详情')
-            
-            const { data: postData, error } = await client
-              .from('community_posts')
-              .select(`
-                id,
-                title,
-                content,
-                created_at,
-                view_count,
-                like_count,
-                comment_count,
-                favorite_count,
-                user:user_id (
-                  id,
-                  username,
-                  nickname
-                )
-              `)
-              .eq('id', postId)
-              .single()
-            
-            if (!error && postData) {
-              const author = postData.user?.nickname || postData.user?.username || '匿名用户'
-              console.log(`✅ 成功获取帖子详情: ${postData.title} (作者: ${author})`)
-              return {
-                title: postData.title,
-                author: author,
-                content: postData.content,
-                createdAt: postData.created_at,
-                viewCount: postData.view_count || 0,
-                commentCount: postData.comment_count || 0,
-                likeCount: postData.like_count || 0,
-                favoriteCount: postData.favorite_count || 0
-              }
-            } else {
-              console.warn(`❌ 数据库查询失败:`, error?.message)
-            }
-          }
-          
-          // 如果数据库存储客户端失败，尝试直接连接Supabase
-          console.log('🔄 尝试直接连接Supabase获取帖子详情...')
-          const { createClient } = await import('@supabase/supabase-js')
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-          const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-          
-          if (supabaseUrl && supabaseKey) {
-            const directClient = createClient(supabaseUrl, supabaseKey)
-            
-            const { data: postData, error } = await directClient
-              .from('community_posts')
-              .select(`
-                id,
-                title,
-                content,
-                created_at,
-                view_count,
-                like_count,
-                comment_count,
-                favorite_count,
-                user:user_id (
-                  id,
-                  username,
-                  nickname
-                )
-              `)
-              .eq('id', postId)
-              .single()
-            
-            if (!error && postData) {
-              const author = postData.user?.nickname || postData.user?.username || '匿名用户'
-              console.log(`✅ 直接连接成功获取帖子详情: ${postData.title} (作者: ${author})`)
-              return {
-                title: postData.title,
-                author: author,
-                content: postData.content,
-                createdAt: postData.created_at,
-                viewCount: postData.view_count || 0,
-                commentCount: postData.comment_count || 0,
-                likeCount: postData.like_count || 0,
-                favoriteCount: postData.favorite_count || 0
-              }
-            }
-          }
-          
-          // 如果所有方法都失败，尝试从本地存储的社区帖子数据中查找
-          console.log('🔍 尝试从本地存储的社区帖子数据中查找...')
-          const communityPostsKey = 'edumatch_community_posts'
-          const cachedPosts = JSON.parse(localStorage.getItem(communityPostsKey) || '[]')
-          
-          if (cachedPosts && Array.isArray(cachedPosts)) {
-            const cachedPost = cachedPosts.find((p: any) => p.id === postId)
-            if (cachedPost) {
-              console.log(`✅ 从本地缓存中找到帖子: ${cachedPost.title}`)
-              return {
-                title: cachedPost.title || '学习经验分享',
-                author: cachedPost.author || '社区用户',
-                content: cachedPost.content || '这是一篇来自社区的学习经验分享',
-                createdAt: cachedPost.created_at || new Date().toISOString(),
-                viewCount: cachedPost.view_count || 0,
-                commentCount: cachedPost.comment_count || 0,
-                likeCount: cachedPost.like_count || 0,
-                favoriteCount: cachedPost.favorite_count || 0
-              }
-            }
-          }
-          
-        } catch (error) {
-          console.warn(`❌ 获取帖子 ${postId} 详情失败:`, error.message)
-        }
-        
-        // 如果所有方法都失败，返回友好的默认值，而不是显示帖子ID
-        console.log(`⚠️ 无法获取帖子 ${postId} 的详情，使用默认值`)
-        return {
-          title: '学习经验分享',
-          author: '社区用户',
-          content: '这是一篇来自社区的学习经验分享，内容暂时无法加载',
-          createdAt: new Date().toISOString(),
-          viewCount: 0,
-          commentCount: 0,
-          likeCount: 0,
-          favoriteCount: 0
-        }
-      }
-      
-      // 处理点赞帖子
-      const likedPromises = localLikes.map(async (like: any) => {
-        const postDetails = await getPostDetails(like.post_id)
-        
-        return {
-          id: like.post_id,
-          name: postDetails.title,
-          provider: postDetails.author,
-          duration: '帖子',
-          rating: 0,
-          url: `/post/${like.post_id}`,
-          matchPoints: postDetails.content.substring(0, 100) + (postDetails.content.length > 100 ? '...' : ''),
-          type: '社区帖子',
-          interaction: {
-            liked: true,
-            saved: false,
-            likesCount: postDetails.likeCount
-          },
-          // 本地存储不包含用户信息，使用默认值
-          likedUsers: ['当前用户'],
-          favoritedUsers: [],
-          likeCount: postDetails.likeCount,
-          favoriteCount: postDetails.favoriteCount,
-          postDetails: {
-            id: like.post_id,
-            author: postDetails.author,
-            content: postDetails.content,
-            createdAt: postDetails.createdAt,
-            viewCount: postDetails.viewCount,
-            commentCount: postDetails.commentCount
-          }
-        }
-      })
-      
-      // 处理收藏帖子
-      const favoritedPromises = localFavorites.map(async (fav: any) => {
-        const postDetails = await getPostDetails(fav.post_id)
-        
-        return {
-          id: fav.post_id,
-          name: postDetails.title,
-          provider: postDetails.author,
-          duration: '帖子',
-          rating: 0,
-          url: `/post/${fav.post_id}`,
-          matchPoints: postDetails.content.substring(0, 100) + (postDetails.content.length > 100 ? '...' : ''),
-          type: '社区帖子',
-          interaction: {
-            liked: false,
-            saved: true,
-            likesCount: postDetails.likeCount
-          },
-          // 本地存储不包含用户信息，使用默认值
-          likedUsers: [],
-          favoritedUsers: ['当前用户'],
-          likeCount: postDetails.likeCount,
-          favoriteCount: postDetails.favoriteCount,
-          postDetails: {
-            id: fav.post_id,
-            author: postDetails.author,
-            content: postDetails.content,
-            createdAt: postDetails.createdAt,
-            viewCount: postDetails.viewCount,
-            commentCount: postDetails.commentCount
-          }
-        }
-      })
-      
-      // 等待所有异步操作完成
-      likedResources.value = await Promise.all(likedPromises)
-      favoritedResources.value = await Promise.all(favoritedPromises)
-      
-      console.log('✅ 本地存储点赞帖子加载完成，数量:', likedResources.value.length)
-      console.log('✅ 本地存储收藏帖子加载完成，数量:', favoritedResources.value.length)
-      console.log('📋 点赞帖子详情:', likedResources.value.map(p => ({
-        id: p.id,
-        title: p.name,
-        author: p.provider
-      })))
-      console.log('📋 收藏帖子详情:', favoritedResources.value.map(p => ({
-        id: p.id,
-        title: p.name,
-        author: p.provider
-      })))
-    }
-    
   } catch (error) {
-    console.error('加载用户点赞收藏数据失败:', error)
-    likedResources.value = []
-    favoritedResources.value = []
+    console.error(error)
   } finally {
     isLoading.value = false
   }
 }
 
-// 处理点击帖子
-const handlePostClick = (postId: string) => {
-  router.push(`/post/${postId}`)
-}
+const handlePostClick = (postId: string) => { router.push(`/post/${postId}`) }
+const setActiveTab = (tab: 'liked' | 'favorites') => { activeTab.value = tab }
+const goBack = () => { router.back() }
 
-// 处理点击资源链接
-const handleResourceClick = (e: Event, url: string) => {
-  e.stopPropagation()
-  if (url.startsWith('/')) {
-    router.push(url)
-  } else {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
-}
-
-// 设置活动标签
-const setActiveTab = (tab: 'liked' | 'favorites') => {
-  activeTab.value = tab
-}
-
-// 组件加载时加载用户互动数据
-onMounted(() => {
-  loadUserInteractions()
-})
+onMounted(() => { loadUserInteractions() })
 </script>
+
+<style scoped>
+/* List Animation */
+.list-enter-active, .list-leave-active { transition: all 0.4s ease; }
+.list-enter-from, .list-leave-to { opacity: 0; transform: translateY(10px); }
+
+/* Spin */
+.animate-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>

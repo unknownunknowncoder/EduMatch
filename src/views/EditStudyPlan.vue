@@ -164,7 +164,7 @@ const savePlan = async () => {
     
     console.log('学习计划更新成功:', result)
     showToast('计划更新成功，进度已重新计算', 'success')
-    router.replace(`/study-plan/${plan.value.id}`)
+    router.push(`/study-plan/${plan.value.id}`)
   } catch (error) {
     console.error('更新计划失败:', error)
     showToast('更新计划失败: ' + (error as Error).message, 'error')
@@ -201,7 +201,7 @@ onMounted(() => {
       <img 
         src="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2000&auto=format&fit=crop" 
         class="absolute inset-0 w-full h-full object-cover object-center grayscale-[20%]"
-        alt="Edit Plan"
+        alt="编辑计划"
       />
       <div class="absolute inset-0 bg-gradient-to-t from-[#1a3c34]/90 via-[#1a3c34]/20 to-transparent"></div>
       
@@ -212,7 +212,7 @@ onMounted(() => {
           class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-[#1a3c34] hover:border-[#d4c5a3] transition-all rounded-sm text-xs font-bold uppercase tracking-widest group"
         >
           <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
-          Back to Plan
+          返回计划
         </button>
       </div>
 
@@ -220,7 +220,7 @@ onMounted(() => {
       <div class="absolute bottom-8 left-0 w-full px-8 z-10">
         <div class="max-w-4xl mx-auto">
            <h1 class="text-3xl md:text-4xl font-serif font-bold text-white tracking-wide shadow-black drop-shadow-md">
-              Edit Study Plan
+              编辑学习计划
            </h1>
         </div>
       </div>
@@ -232,7 +232,7 @@ onMounted(() => {
       <!-- Loading State -->
       <div v-if="loading" class="bg-white p-12 shadow-xl border-t-8 border-[#1a3c34] text-center">
          <div class="w-12 h-12 border-4 border-[#d4c5a3] border-t-[#1a3c34] rounded-full animate-spin mx-auto"></div>
-         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">Loading plan...</p>
+         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">加载计划中...</p>
       </div>
 
       <!-- Edit Form -->
@@ -241,26 +241,26 @@ onMounted(() => {
          <!-- Basic Information -->
          <div class="space-y-6 mb-8">
             <h3 class="text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-4 border-b border-[#1a3c34]/10 pb-1 flex items-center gap-2">
-               <Target class="w-4 h-4" /> Basic Information
+               <Target class="w-4 h-4" /> 基本信息
             </h3>
             
             <div>
-               <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">Plan Title</label>
+               <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">计划标题</label>
                <input 
                   v-model="editForm.title"
                   type="text" 
                   class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] focus:outline-none focus:border-[#1a3c34] transition-colors font-serif"
-                  placeholder="Enter your plan title"
+                  placeholder="输入您的计划标题"
                />
             </div>
 
             <div>
-               <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">Description</label>
+               <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">描述</label>
                <textarea 
                   v-model="editForm.description"
                   rows="3"
                   class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] focus:outline-none focus:border-[#1a3c34] transition-colors font-serif resize-none"
-                  placeholder="Describe your learning objectives"
+                  placeholder="描述您的学习目标"
                ></textarea>
             </div>
          </div>
@@ -268,12 +268,12 @@ onMounted(() => {
          <!-- Schedule -->
          <div class="space-y-6 mb-8">
             <h3 class="text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-4 border-b border-[#1a3c34]/10 pb-1 flex items-center gap-2">
-               <Calendar class="w-4 h-4" /> Schedule
+               <Calendar class="w-4 h-4" /> 日程安排
             </h3>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                <div>
-                  <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">Total Hours</label>
+                  <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">总学时</label>
                   <input 
                      v-model.number="editForm.total_hours"
                      type="number" 
@@ -284,7 +284,7 @@ onMounted(() => {
                </div>
 
                <div>
-                  <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">Daily Hours</label>
+                  <label class="block text-sm font-serif font-bold text-[#1a3c34] mb-2">每日学时</label>
                   <input 
                      v-model.number="editForm.daily_hours"
                      type="number" 
@@ -328,7 +328,7 @@ onMounted(() => {
                @click="cancel"
                class="flex-1 py-4 border border-[#1a3c34]/20 text-[#1a3c34] font-bold uppercase tracking-widest hover:bg-[#f9f9f7] transition-all flex items-center justify-center gap-2"
             >
-               <X class="w-4 h-4" /> Cancel
+               <X class="w-4 h-4" /> 取消
             </button>
             
             <button
@@ -337,7 +337,7 @@ onMounted(() => {
                class="flex-1 py-4 bg-[#1a3c34] text-[#d4c5a3] font-bold uppercase tracking-widest hover:bg-[#235246] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
                <Save class="w-4 h-4" /> 
-               {{ saving ? 'Saving...' : 'Save Changes' }}
+               {{ saving ? '保存中...' : '保存更改' }}
             </button>
          </div>
       </div>

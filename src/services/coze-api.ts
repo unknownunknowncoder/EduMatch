@@ -11,7 +11,7 @@ export interface CozeSearchRequest {
 
 export interface CozeResource {
   name: string
-  platform: '中国大学MOOC官网' | 'B站' | string
+  platform: '中国大学MOOC官网' | 'B站' | 'Coursera' | 'edX' | string
   institution?: string
   up_host?: string
   difficulty: '入门' | '进阶' | '高级'
@@ -875,23 +875,45 @@ class CozeAPIService {
       return null
     }
 
+    // 处理最推荐：如果最推荐是数组，取第一个作为主要推荐
+    let topRecommendationItem = {}
+    let otherFromTop = []
+    
+    if (Array.isArray(data['最推荐'])) {
+      if (data['最推荐'].length > 0) {
+        topRecommendationItem = data['最推荐'][0]
+        // 将剩余的最推荐加入其他推荐
+        otherFromTop = data['最推荐'].slice(1)
+      }
+    } else {
+      topRecommendationItem = data['最推荐'] || {}
+    }
+
     const result: CozeSearchResponse = {
-      top_recommendation: this.mapStructuredResource(data['最推荐'] || {}, 'B站'),
+      top_recommendation: this.mapStructuredResource(topRecommendationItem, 'B站'),
       other_recommendations: [],
       learning_advice: data['学习建议'] || '建议结合理论学习和实际操作，制定合理的学习计划。'
+    }
+
+    // 首先添加来自最推荐的剩余资源
+    if (otherFromTop.length > 0) {
+      result.other_recommendations.push(...otherFromTop.map(item => this.mapStructuredResource(item, 'B站')))
     }
 
     if (data['其他推荐']) {
       const others = data['其他推荐']
       if (Array.isArray(others)) {
-        result.other_recommendations = others.map(item => this.mapStructuredResource(item, 'B站'))
+        // 智能判断每个资源的平台类型 - 不再强制指定默认平台，让mapStructuredResource自动判断
+        result.other_recommendations.push(...others.map(item => {
+          return this.mapStructuredResource(item, '中国大学MOOC官网') // 默认使用MOOC，但会被智能判断覆盖
+        }))
       } else if (typeof others === 'object') {
         const bilibiliList = Array.isArray(others['B站API资源']) ? others['B站API资源'] : []
         const moocList = Array.isArray(others['MOOC知识库资源']) ? others['MOOC知识库资源'] : []
-        result.other_recommendations = [
+        result.other_recommendations.push(
           ...bilibiliList.map(item => this.mapStructuredResource(item, 'B站')),
           ...moocList.map(item => this.mapStructuredResource(item, '中国大学MOOC官网'))
-        ]
+        )
       }
     }
 
@@ -899,12 +921,72 @@ class CozeAPIService {
   }
 
   private mapStructuredResource(item: any, defaultPlatform: '中国大学MOOC官网' | 'B站'): CozeResource {
-    const platformSource = item?.['平台来源'] || ''
-    const mapPlatform = (source: string): '中国大学MOOC官网' | 'B站' => {
-      if (source.includes('MOOC') || source.includes('大学')) {
-        return '中国大学MOOC官网'
+    // 优先使用中文字段名，因为扣子API返回的是中文字段
+    const platformSource = item?.['来源平台'] || item?.['平台'] || item?.['平台来源'] || item?.platform || ''
+    const accessGuide = item?.['访问方式'] || item?.['访问指引'] || item?.['access_guide'] || ''
+    const resourceName = item?.['资源标题'] || item?.['资源名称'] || item?.name || ''
+    const studyData = item?.['学习数据'] || item?.['study_data'] || '暂无数据'
+    const reason = item?.['推荐理由'] || item?.reason || item?.['简要说明'] || 'AI智能推荐的学习资源'
+    
+    // 提取时长信息，处理"时长 2398:14"这样的格式
+    let duration = item?.['学习时长'] || item?.duration || ''
+    if (studyData && studyData.includes('时长')) {
+      const durationMatch = studyData.match(/时长\s+([0-9:]+)/)
+      if (durationMatch) {
+        duration = durationMatch[1]
       }
-      return 'B站'
+    }
+    
+    const difficulty = item?.['难度等级'] || item?.difficulty || '入门'
+    const bvNumber = item?.['访问/观看'] || item?.['访问方式'] || item?.['B站BV号'] || item?.['BV号'] || item?.bv_number
+    const institution = item?.['机构'] || item?.institution
+    const upHost = item?.['UP主'] || item?.up_host
+    
+    // 强制优先级：直接从平台字段获取 > access_guide内容判断 > 资源名称内容判断
+    const determinePlatform = (): '中国大学MOOC官网' | 'B站' | 'Coursera' | 'edX' => {
+      // 第一优先级：直接使用平台字段（最可靠）
+      if (platformSource) {
+        if (platformSource.includes('MOOC') || platformSource.includes('大学') || platformSource.includes('学堂')) {
+          return '中国大学MOOC官网'
+        }
+        if (platformSource.includes('Coursera')) {
+          return 'Coursera'
+        }
+        if (platformSource.includes('edX')) {
+          return 'edX'
+        }
+        if (platformSource.includes('B站') || platformSource.includes('Bilibili') || platformSource.includes('哔哩哔哩')) {
+          return 'B站'
+        }
+      }
+      
+      // 第二优先级：有access_guide，根据内容判断
+      if (accessGuide) {
+        if (accessGuide.includes('MOOC') || accessGuide.includes('大学') || accessGuide.includes('学堂在线')) {
+          return '中国大学MOOC官网'
+        }
+        if (accessGuide.includes('Coursera') || accessGuide.includes('edX')) {
+          return accessGuide.includes('Coursera') ? 'Coursera' : 'edX'
+        }
+      }
+      
+      // 第三优先级：根据资源名称内容判断
+      if (resourceName) {
+        if (resourceName.includes('MOOC') || resourceName.includes('大学') || resourceName.includes('学堂')) {
+          return '中国大学MOOC官网'
+        }
+        if (resourceName.includes('Coursera') || resourceName.includes('edX')) {
+          return resourceName.includes('Coursera') ? 'Coursera' : 'edX'
+        }
+      }
+      
+      // 如果访问信息包含BV号，说明是B站资源
+      if (bvNumber && typeof bvNumber === 'string' && bvNumber.startsWith('BV')) {
+        return 'B站'
+      }
+      
+      // 最后才使用默认值
+      return defaultPlatform
     }
 
     const mapDifficulty = (value: string): '入门' | '进阶' | '高级' => {
@@ -914,20 +996,27 @@ class CozeAPIService {
       return '入门'
     }
 
-    const platform = platformSource ? mapPlatform(platformSource) : defaultPlatform
+    // 智能判断平台类型
+    const platform = determinePlatform()
+    
+    // 对于B站资源，从访问方式中提取BV号；对于非B站资源，保留访问指引
+    const finalBvNumber = platform === 'B站' ? 
+      (typeof bvNumber === 'string' && bvNumber.startsWith('BV') ? bvNumber : undefined) : 
+      undefined
+    const finalAccessGuide = platform !== 'B站' ? (accessGuide || bvNumber) : undefined
 
     return {
-      name: item?.['资源名称'] || item?.name || '推荐学习资源',
+      name: resourceName,
       platform,
-      institution: item?.['机构'],
-      up_host: item?.['UP主'],
-      difficulty: mapDifficulty(item?.['难度等级'] || ''),
-      duration: item?.['学习时长'] || '',
-      study_data: item?.['学习数据'] || '暂无数据',
-      bv_number: item?.['B站BV号'] && item['B站BV号'] !== '待获取' ? item['B站BV号'] : undefined,
-      brief_description: item?.['简要说明'],
-      reason: item?.['推荐理由'] || item?.['简要说明'] || 'AI智能推荐的学习资源',
-      access_guide: item?.['访问指引'] || item?.['访问路径']
+      institution,
+      up_host: upHost,
+      difficulty: mapDifficulty(difficulty),
+      duration,
+      study_data: studyData,
+      bv_number: finalBvNumber,
+      access_guide: finalAccessGuide,
+      brief_description: item?.['简要说明'] || item?.brief_description,
+      reason
     }
   }
 

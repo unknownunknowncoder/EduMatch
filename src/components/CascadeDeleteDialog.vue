@@ -1,104 +1,126 @@
 <template>
-  <div v-if="visible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-      <div class="mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ title }}</h3>
-        <p class="text-gray-600 dark:text-gray-400">{{ message }}</p>
+  <transition name="fade">
+    <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#1a3c34]/95 backdrop-blur-sm px-4">
+      
+      <!-- Modal Container (Official Document) -->
+      <div class="bg-[#f4f1ea] w-full max-w-lg shadow-2xl relative border-t-8 border-[#b03e3e] max-h-[90vh] overflow-y-auto rounded-sm">
         
-        <!-- 关联帖子列表 -->
-        <div v-if="relatedPosts && relatedPosts.length > 0" class="mt-4">
-          <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <h4 class="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">
-              发现关联的帖子：
-            </h4>
-            <ul class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-              <li v-for="post in relatedPosts.slice(0, 3)" :key="post.id" class="flex items-center">
-                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                {{ post.title }}
-              </li>
-              <li v-if="relatedPosts.length > 3" class="text-yellow-600 dark:text-yellow-400 italic">
-                ...还有 {{ relatedPosts.length - 3 }} 个帖子
-              </li>
-            </ul>
-          </div>
+        <!-- Watermark -->
+        <AlertTriangle class="absolute -right-10 -top-10 w-48 h-48 text-[#b03e3e]/5 -z-0 pointer-events-none rotate-12" />
+
+        <div class="p-8 relative z-10">
           
-          <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-            <h4 class="text-sm font-medium text-red-800 dark:text-red-200 mb-2">
-              ⚠️ 删除选项
-            </h4>
-            <div class="space-y-2">
-              <label class="flex items-start cursor-pointer">
-                <input
-                  v-model="deleteOption"
-                  type="radio"
-                  value="cancel"
-                  class="mt-1 mr-2"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">取消删除</span>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">保留资源，先去删除关联的帖子</p>
-                </div>
-              </label>
-              <label class="flex items-start cursor-pointer">
-                <input
-                  v-model="deleteOption"
-                  type="radio"
-                  value="resource_only"
-                  class="mt-1 mr-2"
-                />
-                <div>
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    仅删除资源
-                  </span>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {{ relatedPosts.length > 0 ? '删除资源，帖子中将显示"发布者已删除"' : '删除资源本身' }}
-                  </p>
-                </div>
-              </label>
-              <label class="flex items-start cursor-pointer">
-                <input
-                  v-model="deleteOption"
-                  type="radio"
-                  value="cascade"
-                  class="mt-1 mr-2"
-                />
-                <div>
-                  <span class="text-sm font-medium text-red-700 dark:text-red-300">
-                    级联删除
-                  </span>
-                  <p class="text-xs text-red-600 dark:text-red-400">
-                    删除资源的同时删除所有关联的帖子（此操作不可恢复）
-                  </p>
-                </div>
-              </label>
+          <!-- Header -->
+          <div class="flex items-start gap-4 mb-6 border-b border-[#1a3c34]/10 pb-4">
+            <div class="p-3 bg-[#b03e3e]/10 rounded-sm">
+              <Trash2 class="w-8 h-8 text-[#b03e3e]" />
+            </div>
+            <div>
+              <h3 class="text-2xl font-serif font-bold text-[#1a3c34] leading-tight">Deletion Protocol</h3>
+              <p class="text-[#1a3c34]/60 text-sm mt-1 font-medium">
+                {{ message }}
+              </p>
             </div>
           </div>
+          
+          <!-- Linked References (Evidence List) -->
+          <div v-if="relatedPosts && relatedPosts.length > 0" class="mb-8">
+            <div class="bg-white border border-[#1a3c34]/20 p-4 shadow-sm relative">
+              <!-- Paperclip decoration -->
+              <div class="absolute -top-3 right-4 w-4 h-8 border-2 border-[#1a3c34]/40 rounded-full border-b-0"></div>
+              
+              <h4 class="text-xs font-bold text-[#1a3c34] uppercase tracking-widest mb-3 flex items-center gap-2">
+                <Link class="w-3 h-3" /> Linked References Detected
+              </h4>
+              
+              <ul class="space-y-2">
+                <li v-for="post in relatedPosts.slice(0, 3)" :key="post.id" class="flex items-start gap-2 text-sm text-[#1a3c34]/80 font-mono bg-[#f4f1ea] p-2 border-l-2 border-[#d4c5a3]">
+                  <FileText class="w-4 h-4 flex-shrink-0 mt-0.5 opacity-60" />
+                  <span class="line-clamp-1">{{ post.title }}</span>
+                </li>
+                <li v-if="relatedPosts.length > 3" class="text-xs text-[#1a3c34]/50 italic pl-2 pt-1 font-serif">
+                  ...and {{ relatedPosts.length - 3 }} other manuscripts.
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <!-- Execution Options -->
+          <div class="space-y-4 mb-8">
+            <h4 class="text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">Select Procedure</h4>
+            
+            <!-- Option 1: Cancel -->
+            <label class="flex items-start gap-3 p-4 border transition-all cursor-pointer group hover:bg-white"
+                   :class="deleteOption === 'cancel' ? 'border-[#1a3c34] bg-white shadow-md' : 'border-[#1a3c34]/10 bg-transparent'">
+              <div class="mt-0.5">
+                <input v-model="deleteOption" type="radio" value="cancel" class="accent-[#1a3c34] w-4 h-4" />
+              </div>
+              <div>
+                <span class="block font-serif font-bold text-[#1a3c34] text-sm group-hover:text-[#1a3c34]">Abort Procedure</span>
+                <p class="text-xs text-[#1a3c34]/60 mt-1">Do nothing. Review linked references first.</p>
+              </div>
+            </label>
+
+            <!-- Option 2: Resource Only -->
+            <label class="flex items-start gap-3 p-4 border transition-all cursor-pointer group hover:bg-white"
+                   :class="deleteOption === 'resource_only' ? 'border-[#1a3c34] bg-white shadow-md' : 'border-[#1a3c34]/10 bg-transparent'">
+              <div class="mt-0.5">
+                <input v-model="deleteOption" type="radio" value="resource_only" class="accent-[#1a3c34] w-4 h-4" />
+              </div>
+              <div>
+                <span class="block font-serif font-bold text-[#1a3c34] text-sm">Unlink & Archive</span>
+                <p class="text-xs text-[#1a3c34]/60 mt-1">
+                  {{ relatedPosts && relatedPosts.length > 0 ? 'Delete resource only. Linked posts will show "Resource Removed".' : 'Delete the resource.' }}
+                </p>
+              </div>
+            </label>
+
+            <!-- Option 3: Cascade (Danger) -->
+            <label class="flex items-start gap-3 p-4 border transition-all cursor-pointer group hover:bg-[#b03e3e]/5"
+                   :class="deleteOption === 'cascade' ? 'border-[#b03e3e] bg-[#b03e3e]/5 shadow-md' : 'border-[#1a3c34]/10 bg-transparent'">
+              <div class="mt-0.5">
+                <input v-model="deleteOption" type="radio" value="cascade" class="accent-[#b03e3e] w-4 h-4" />
+              </div>
+              <div>
+                <span class="block font-serif font-bold text-[#b03e3e] text-sm flex items-center gap-2">
+                  <AlertOctagon class="w-3 h-3" /> Cascade Purge
+                </span>
+                <p class="text-xs text-[#b03e3e]/80 mt-1 font-medium">
+                  Delete resource AND all linked posts. Irreversible action.
+                </p>
+              </div>
+            </label>
+          </div>
+          
+          <!-- Footer Actions -->
+          <div class="flex justify-end gap-4 pt-6 border-t border-[#1a3c34]/10">
+            <button
+              @click="handleCancel"
+              class="px-6 py-2 text-[#1a3c34]/60 font-bold uppercase tracking-widest text-xs hover:text-[#1a3c34] transition-colors"
+            >
+              Discard
+            </button>
+            <button
+              @click="handleConfirm"
+              :disabled="!canConfirm"
+              :class="confirmButtonClass"
+              class="px-8 py-2.5 font-bold uppercase tracking-widest text-xs text-white shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="deleteOption === 'cascade'">Execute Purge</span>
+              <span v-else>Confirm</span>
+              <ArrowRight class="w-3 h-3" />
+            </button>
+          </div>
+
         </div>
       </div>
-      
-      <div class="flex justify-end space-x-3">
-        <button
-          @click="handleCancel"
-          class="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-        >
-          取消
-        </button>
-        <button
-          @click="handleConfirm"
-          :class="confirmButtonClass"
-          :disabled="!canConfirm"
-        >
-          {{ confirmText }}
-        </button>
-      </div>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { Trash2, AlertTriangle, Link, FileText, ArrowRight, AlertOctagon } from 'lucide-vue-next'
 
 interface RelatedPost {
   id: string
@@ -114,8 +136,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '确认删除',
-  confirmText: '确认',
+  title: 'Confirm Deletion',
+  confirmText: 'Confirm',
   type: 'warning'
 })
 
@@ -128,17 +150,15 @@ const visible = ref(false)
 const deleteOption = ref('cancel')
 
 const confirmButtonClass = computed(() => {
-  const baseClass = 'px-4 py-2 rounded-lg transition-colors font-medium'
-  
   if (!canConfirm.value) {
-    return `${baseClass} bg-gray-300 text-gray-500 cursor-not-allowed`
+    return 'bg-[#1a3c34]/40'
   }
   
   if (deleteOption.value === 'cascade') {
-    return `${baseClass} bg-red-600 hover:bg-red-700 text-white`
+    return 'bg-[#b03e3e] hover:bg-[#8a2c2c]' // 红色警示
   }
   
-  return `${baseClass} bg-blue-600 hover:bg-blue-700 text-white`
+  return 'bg-[#1a3c34] hover:bg-[#235246]' // 墨绿标准
 })
 
 const canConfirm = computed(() => {
@@ -147,7 +167,6 @@ const canConfirm = computed(() => {
 
 const show = () => {
   visible.value = true
-  // 根据是否有关联帖子设置默认选项
   if (props.relatedPosts && props.relatedPosts.length > 0) {
     deleteOption.value = 'cancel'
   } else {
@@ -176,3 +195,23 @@ defineExpose({
   hide
 })
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 简单的行截断 */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

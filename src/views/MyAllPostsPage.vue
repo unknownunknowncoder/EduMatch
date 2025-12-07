@@ -1,131 +1,151 @@
 <template>
-  <div class="p-6 md:p-8">
-    <!-- 通用提示框 -->
-    <div 
-      v-if="showMessage" 
-      :class="getMessageClasses(messageType)"
-      :style="getMessageStyles()"
-      class="flex items-center space-x-2"
-    >
-      <span v-html="getMessageIcon(messageType)"></span>
-      <span>{{ messageText }}</span>
-    </div>
-    <!-- 页面标题 -->
-    <div class="mb-8">
-      <button 
-        @click="goBack"
-        class="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 transition-colors"
-      >
-        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-        </svg>
-        返回个人中心
-      </button>
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-        <svg class="h-8 w-8 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-        </svg>
-        我的全部帖子
-      </h1>
-      <p class="text-gray-600 dark:text-gray-400 mt-2">管理你在社区发布的所有帖子</p>
-    </div>
-
-    <!-- 帖子列表 -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
-      <div class="p-6">
-        <!-- 加载状态 -->
-        <div v-if="isLoadingPosts" class="text-center py-12">
-          <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-green-500 hover:bg-green-400 transition ease-in-out duration-150">
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            加载中...
-          </div>
+  <div class="min-h-screen bg-[#f4f1ea] font-sans selection:bg-[#0f281f] selection:text-[#d4c5a3] pb-20">
+    
+    <!-- 顶部导航 (Sticky) -->
+    <div class="sticky top-0 z-30 bg-[#f4f1ea]/90 backdrop-blur-sm border-b border-[#0f281f]/5 px-6 py-4">
+      <div class="max-w-5xl mx-auto flex items-center justify-between">
+        <button 
+          @click="goBack"
+          class="group flex items-center text-[#0f281f]/60 hover:text-[#0f281f] transition-colors font-serif italic"
+        >
+          <ArrowLeft class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          返回个人中心
+        </button>
+        
+        <div class="text-xs font-bold text-[#0f281f]/30 uppercase tracking-widest hidden md:block">
+           个人文稿档案
         </div>
+      </div>
+    </div>
 
-        <!-- 空状态 -->
-        <div v-else-if="myPosts.length === 0" class="text-center py-12">
-          <svg class="h-16 w-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-          </svg>
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">暂无发布的帖子</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-6">您还没有在社区发布任何帖子</p>
-          <button 
+    <!-- 主内容区 -->
+    <div class="max-w-5xl mx-auto px-4 mt-8">
+      
+      <!-- 页面标题区域 -->
+      <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-12 border-b-2 border-[#0f281f] pb-6">
+        <div class="space-y-2">
+           <div class="flex items-center gap-3">
+              <ScrollText class="w-8 h-8 text-[#0f281f]" />
+              <h1 class="text-4xl font-serif font-bold text-[#0f281f]">我的研讨记录</h1>
+           </div>
+           <p class="text-[#0f281f]/60 font-serif italic pl-11">
+              您在学术社区发布的所有观点与见解均归档于此。
+           </p>
+        </div>
+        
+        <button 
+           @click="navigateToCommunity"
+           class="px-6 py-3 bg-[#0f281f] text-[#d4c5a3] rounded-sm font-bold uppercase tracking-widest hover:bg-[#1a4533] hover:shadow-lg transition-all flex items-center gap-2 group"
+        >
+           <PenTool class="w-4 h-4 group-hover:-rotate-12 transition-transform" />
+           起草新文
+        </button>
+      </div>
+
+      <!-- 加载状态 -->
+      <div v-if="isLoadingPosts" class="flex flex-col items-center justify-center py-32 space-y-6">
+         <div class="w-16 h-16 border-4 border-[#d4c5a3] border-t-[#0f281f] rounded-full animate-spin"></div>
+         <p class="text-[#0f281f] font-serif tracking-widest uppercase">正在调取档案...</p>
+      </div>
+
+      <!-- 空状态 -->
+      <div v-else-if="myPosts.length === 0" class="text-center py-24 border-2 border-dashed border-[#0f281f]/10 rounded-sm bg-white/50">
+         <div class="w-24 h-24 bg-[#0f281f]/5 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FileX class="w-10 h-10 text-[#0f281f]/30" />
+         </div>
+         <h3 class="text-2xl font-serif font-bold text-[#0f281f] mb-2">暂无记录</h3>
+         <p class="text-[#0f281f]/60 max-w-md mx-auto mb-8 font-serif">
+            您的档案库中还没有任何文稿。去社区发表您的第一个观点吧。
+         </p>
+         <button 
             @click="navigateToCommunity"
-            class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-          >
-            去社区发帖
-          </button>
-        </div>
+            class="px-8 py-3 border-2 border-[#0f281f] text-[#0f281f] font-bold uppercase tracking-widest hover:bg-[#0f281f] hover:text-[#d4c5a3] transition-colors"
+         >
+            前往社区
+         </button>
+      </div>
 
-        <!-- 帖子列表 -->
-        <div v-else class="space-y-4">
-          <div 
-            v-for="post in myPosts"
-            :key="post.id"
-            class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-            @click="navigateToPost(post.id)"
-          >
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex-1">
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-2">{{ post.title }}</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-2">{{ post.content }}</p>
-                <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                  <span v-if="post.category" class="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full">
-                    {{ post.category }}
-                  </span>
-                  <span class="flex items-center">
-                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                    </svg>
-                    已发布
-                  </span>
-                </div>
+      <!-- 帖子列表 -->
+      <div v-else class="space-y-4">
+        <div 
+          v-for="post in myPosts"
+          :key="post.id"
+          class="group bg-white border border-[#0f281f]/10 hover:border-[#0f281f]/30 p-6 rounded-sm transition-all hover:shadow-lg cursor-pointer relative overflow-hidden"
+          @click="navigateToPost(post.id)"
+        >
+          <!-- 左侧装饰线 -->
+          <div class="absolute top-0 left-0 w-1 h-full bg-[#d4c5a3] group-hover:bg-[#0f281f] transition-colors"></div>
+
+          <div class="flex justify-between items-start gap-4">
+            <div class="flex-1 space-y-3">
+              <!-- 头部标签 -->
+              <div class="flex items-center gap-3">
+                 <span class="px-2 py-0.5 bg-[#f4f1ea] text-[#0f281f] text-xs font-bold uppercase tracking-wider border border-[#0f281f]/10">
+                    {{ post.category || '未分类' }}
+                 </span>
+                 <span class="text-xs font-mono text-[#0f281f]/40 flex items-center gap-1">
+                    <Calendar class="w-3 h-3" />
+                    {{ formatDate(post.created_at) }}
+                 </span>
               </div>
-              <div class="flex items-center space-x-2">
-                <button
+
+              <!-- 标题与摘要 -->
+              <div>
+                 <h3 class="text-xl font-serif font-bold text-[#0f281f] group-hover:text-[#b49b67] transition-colors mb-2">
+                    {{ post.title }}
+                 </h3>
+                 <p class="text-[#0f281f]/60 text-sm font-serif line-clamp-2 leading-relaxed">
+                    {{ post.content }}
+                 </p>
+              </div>
+
+              <!-- 底部数据 -->
+              <div class="flex items-center gap-6 text-xs font-mono text-[#0f281f]/40 pt-2">
+                 <span class="flex items-center gap-1"><Eye class="w-3 h-3"/> {{ post.views || 0 }}</span>
+                 <span class="flex items-center gap-1"><Heart class="w-3 h-3"/> {{ post.likes || 0 }}</span>
+                 <span class="flex items-center gap-1"><MessageSquare class="w-3 h-3"/> {{ post.comments || 0 }}</span>
+              </div>
+            </div>
+
+            <!-- 操作按钮 (悬浮显示) -->
+            <div class="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+               <button
                   @click.stop="navigateToPost(post.id)"
-                  class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                  title="查看详情"
+                  class="p-2 text-[#0f281f]/40 hover:text-[#0f281f] hover:bg-[#f4f1ea] rounded-sm transition-colors"
+                  title="查阅档案"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                  </svg>
+                  <Eye class="w-5 h-5" />
                 </button>
                 <button
                   @click.stop="showDeleteConfirm(post)"
-                  class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                  title="删除帖子"
+                  class="p-2 text-red-400 hover:text-red-700 hover:bg-red-50 rounded-sm transition-colors"
+                  title="销毁记录"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
+                  <Trash2 class="w-5 h-5" />
                 </button>
-              </div>
-            </div>
-            
-            <div class="text-sm text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-200 dark:border-gray-600">
-              <div class="flex items-center">
-                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                {{ formatDate(post.created_at) }}
-              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 删除确认对话框 -->
+    <!-- 删除确认对话框 (组件需自行适配样式，或使用插槽) -->
     <DeleteConfirmDialog
       :show="showDeleteDialog"
-      :message="`确定要删除帖子「${selectedPost?.title}」吗？删除后无法恢复。`"
+      :message="`确认要从档案中永久销毁「${selectedPost?.title}」吗？此操作不可逆。`"
       @confirm="handleDeletePost"
       @cancel="hideDeleteConfirm"
     />
+
+    <!-- Toast Message -->
+    <div 
+      v-if="showMessage" 
+      :class="getMessageClasses(messageType)"
+    >
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
+
   </div>
 </template>
 
@@ -134,7 +154,11 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabaseService } from '@/services/supabase'
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog.vue'
-import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon, getMessageStyles } from '@/utils/message'
+import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
+import { 
+  ArrowLeft, ScrollText, PenTool, FileX, Calendar, 
+  Eye, Heart, MessageSquare, Trash2 
+} from 'lucide-vue-next'
 
 interface MyPost {
   id: string
@@ -191,41 +215,22 @@ const handleDeletePost = async () => {
   if (!selectedPost.value) return
   
   try {
-    // 保存帖子标题，避免在hideDeleteConfirm()后访问
     const postTitle = selectedPost.value.title
     const postId = selectedPost.value.id
     
-    console.log('🗑️ 开始删除帖子:', postId)
-    
-    // 使用新的服务方法删除帖子
     await supabaseService.deleteCommunityPost(postId)
     
-    // 从本地列表中移除
     myPosts.value = myPosts.value.filter(post => post.id !== postId)
     
-    // 关闭对话框
     hideDeleteConfirm()
-    
-    // 显示成功提示
-    showToast(`帖子「${postTitle}」已成功删除`, 'success')
+    showToast(`手稿「${postTitle}」已成功销毁`, 'success')
     
   } catch (error) {
     console.error('❌ 删除帖子失败:', error)
-    
-    // 更详细的错误信息
     let errorMessage = '删除失败，请稍后重试'
     if (error instanceof Error) {
-      if (error.message.includes('Failed to fetch')) {
-        errorMessage = '网络连接失败，请检查网络连接后重试'
-      } else if (error.message.includes('permission')) {
-        errorMessage = '没有删除权限，请联系管理员'
-      } else if (error.message.includes('row-level security')) {
-        errorMessage = '安全策略阻止删除，请联系管理员'
-      } else {
-        errorMessage = `删除失败: ${error.message}`
-      }
+      errorMessage = `删除失败: ${error.message}`
     }
-    
     showToast(errorMessage, 'error')
   }
 }
@@ -233,47 +238,35 @@ const handleDeletePost = async () => {
 const loadMyPosts = async () => {
   isLoadingPosts.value = true
   try {
-    console.log('🔄 开始加载用户全部帖子...')
-    
-    // 获取当前用户ID
     let currentUserId = null
-    
     const currentUser = localStorage.getItem('currentUser')
     if (currentUser) {
       const user = JSON.parse(currentUser)
-      if (user.id) {
-        currentUserId = user.id
-        console.log('✅ 当前用户ID:', currentUserId)
-      }
+      if (user.id) currentUserId = user.id
     }
     
     if (!currentUserId) {
-      console.error('❌ 用户未登录')
       myPosts.value = []
-      showToast('请先登录后再查看您的帖子', 'warning')
+      showToast('请先登录身份以查阅档案', 'warning')
       return
     }
     
-    // 使用新的服务方法获取用户发布的帖子
     const posts = await supabaseService.getCommunityPostsByUserId(currentUserId)
     
     if (!posts || posts.length === 0) {
-      console.log('ℹ️ 该用户没有发布任何帖子')
       myPosts.value = []
       return
     }
     
-    // 转换数据格式并添加评论数
     const postsWithDetails = []
     
     for (const post of posts) {
       try {
-        // 获取评论数
         const commentCount = await supabaseService.getPostCommentsCount(post.id)
         
         const transformedPost = {
           id: post.id,
-          title: post.title || '无标题',
+          title: post.title || '无标题手稿',
           content: post.content || '',
           category: post.category || '未分类',
           tags: [],
@@ -287,33 +280,25 @@ const loadMyPosts = async () => {
         
         postsWithDetails.push(transformedPost)
       } catch (error) {
-        console.error('❌ 处理帖子详情时出错:', post.id, error)
-        // 即使获取评论数失败，也保留帖子基本信息
-        const transformedPost = {
+        console.error('❌ 档案详情处理出错:', post.id, error)
+        postsWithDetails.push({
           id: post.id,
-          title: post.title || '无标题',
-          content: post.content || '',
-          category: post.category || '未分类',
-          tags: [],
+          title: post.title,
+          content: post.content,
+          category: post.category,
           status: 'published',
-          views: post.views_count || 0,
-          likes: post.likes_count || 0,
-          comments: 0,
-          created_at: post.created_at,
-          updated_at: post.updated_at
-        }
-        
-        postsWithDetails.push(transformedPost)
+          views: 0, likes: 0, comments: 0,
+          created_at: post.created_at
+        })
       }
     }
     
-    myPosts.value = postsWithDetails
-    console.log('✅ 成功加载我的全部帖子:', myPosts.value.length)
+    myPosts.value = postsWithDetails as MyPost[]
     
   } catch (error) {
-    console.error('❌ 加载我的帖子时出错:', error)
+    console.error('❌ 档案调取失败:', error)
     myPosts.value = []
-    showToast('加载帖子失败，请稍后重试', 'error')
+    showToast('档案调取失败，请稍后重试', 'error')
   } finally {
     isLoadingPosts.value = false
   }
@@ -323,3 +308,27 @@ onMounted(() => {
   loadMyPosts()
 })
 </script>
+
+<style scoped>
+/* 覆盖 Toast 样式 (匹配 Theme C) */
+:deep(.bg-green-100) {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border-color: #166534 !important;
+}
+
+:deep(.bg-red-100) {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border-color: #991b1b !important;
+}
+
+/* 旋转动画 */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>

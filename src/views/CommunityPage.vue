@@ -1,418 +1,337 @@
 <template>
-  <div class="min-h-screen bg-[#F3F4F6] font-sans text-slate-800 pb-10">
-    <!-- 通用提示框 -->
-    <div 
-      v-if="showMessage" 
-      :class="getMessageClasses(messageType)"
-      class="flex items-center space-x-2"
-    >
-      <span v-html="getMessageIcon(messageType)"></span>
-      <span>{{ messageText }}</span>
-    </div>
+  <div class="min-h-screen bg-[#f2f0e9] font-sans selection:bg-[#1a3c34] selection:text-[#e8e4d9] pb-24">
     
-    <!-- 1. 顶部 Hero 区域 -->
-    <div class="bg-white border-b border-slate-200 pt-8 pb-12 mb-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <!-- 1. 顶部 Hero (高清、明亮、大场面) -->
+    <div class="relative h-[400px] w-full overflow-hidden border-b-8 border-[#1a3c34]">
+      <!-- 图片：选用明亮的古典图书馆全景 -->
+      <img 
+        src="https://images.unsplash.com/photo-1568667256549-094345857637?q=85&w=2000&auto=format&fit=crop" 
+        class="absolute inset-0 w-full h-full object-cover object-center transform transition-transform duration-[30s] hover:scale-105"
+        alt="Grand Academic Hall"
+      />
+      
+      <!-- 遮罩：仅在底部加渐变，保证图片上方清晰 -->
+      <div class="absolute inset-0 bg-gradient-to-t from-[#1a3c34]/90 via-[#1a3c34]/20 to-transparent"></div>
+      
+      <!-- 标题内容 -->
+      <div class="absolute bottom-0 left-0 w-full p-10">
+        <div class="max-w-7xl mx-auto flex items-end justify-between">
           <div>
-            <h1 class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">学习社区</h1>
-            <p class="mt-2 text-slate-500 text-lg">与志同道合的伙伴交流，分享你的学习经验。</p>
+            <div class="flex items-center gap-4 mb-2 text-[#d4c5a3]">
+              <div class="h-px w-12 bg-[#d4c5a3]"></div>
+              <span class="uppercase tracking-[0.3em] text-sm font-bold">学术社区</span>
+            </div>
+            <h1 class="text-5xl md:text-6xl font-serif font-bold text-white tracking-wide shadow-black drop-shadow-lg">
+              学术研讨会
+            </h1>
           </div>
           
-          <!-- 搜索框 -->
-          <div class="relative w-full md:w-96">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search class="h-5 w-5 text-slate-400" />
+          <div class="hidden md:block text-right text-white/80 font-serif italic max-w-md">
+            "知识通过传播而增加，通过扩散而成长。"
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 主内容区域 -->
+    <div class="max-w-7xl mx-auto px-6 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-10">
+      
+      <!-- === 左侧侧边栏 (控制台) === -->
+      <div class="lg:col-span-1 space-y-8">
+        
+        <!-- 发布按钮 (Primary Action) -->
+        <button 
+          @click="openModal"
+          class="w-full py-4 bg-[#1a3c34] text-[#e8e4d9] font-bold text-sm uppercase tracking-widest hover:bg-[#235246] shadow-xl transition-all flex items-center justify-center gap-3 border border-[#1a3c34]"
+        >
+          <PenTool class="w-5 h-5" />
+          发起讨论
+        </button>
+
+        <!-- 搜索与筛选 (Control Panel) -->
+        <div class="bg-white border border-[#1a3c34]/10 shadow-sm p-6">
+          <h3 class="text-xs font-bold text-[#1a3c34] uppercase tracking-widest mb-4 pb-2 border-b border-[#1a3c34]/10">
+            搜索档案
+          </h3>
+          
+          <div class="space-y-4">
+            <div class="relative">
+              <input 
+                v-model="searchKeyword"
+                @keyup.enter="performSearch"
+                :disabled="isSearching"
+                type="text" 
+                placeholder="关键词..." 
+                class="w-full bg-[#f2f0e9] border border-[#1a3c34]/20 p-3 pl-10 text-[#1a3c34] text-sm focus:outline-none focus:border-[#1a3c34] transition-colors disabled:opacity-50"
+              />
+              <Search v-if="!isSearching" class="absolute left-3 top-3.5 w-4 h-4 text-[#1a3c34]/50" />
+              <svg v-else class="animate-spin absolute left-3 top-3.5 h-4 w-4 text-[#1a3c34]/50" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             </div>
-            <input 
-              v-model="searchKeyword"
-              @input="handleSearchInput"
-              @keyup.enter="performSearch"
-              @keyup.escape="clearSearch"
-              type="text" 
-              class="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all sm:text-sm shadow-sm"
-              placeholder="搜索帖子、话题或关键词..."
-            />
+            
             <button 
-              v-if="searchKeyword"
-              @click="clearSearch"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+              @click="performSearch"
+              :disabled="isSearching"
+              class="w-full py-2 border border-[#1a3c34]/30 text-[#1a3c34] text-xs font-bold uppercase hover:bg-[#1a3c34] hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <X class="w-4 h-4" />
+              <svg v-if="isSearching" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ isSearching ? '搜索中...' : '搜索' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 排序选项 (Sort Options) -->
+        <div class="bg-white border border-[#1a3c34]/10 shadow-sm p-6">
+          <h3 class="text-xs font-bold text-[#1a3c34] uppercase tracking-widest mb-4 pb-2 border-b border-[#1a3c34]/10">
+            档案排序
+          </h3>
+          <div class="space-y-2">
+            <button 
+              @click="sortByOption('latest')"
+              :class="{'bg-[#1a3c34] text-white': currentSort === 'latest'}"
+              class="w-full py-2 px-3 text-left text-xs font-medium hover:bg-[#1a3c34] hover:text-white transition-colors border border-[#1a3c34]/10"
+            >
+              🕐 最新发布
+            </button>
+            <button 
+              @click="sortByOption('mostLikes')"
+              :class="{'bg-[#1a3c34] text-white': currentSort === 'mostLikes'}"
+              class="w-full py-2 px-3 text-left text-xs font-medium hover:bg-[#1a3c34] hover:text-white transition-colors border border-[#1a3c34]/10"
+            >
+              ❤️ 最多点赞
+            </button>
+            <button 
+              @click="sortByOption('mostFavorites')"
+              :class="{'bg-[#1a3c34] text-white': currentSort === 'mostFavorites'}"
+              class="w-full py-2 px-3 text-left text-xs font-medium hover:bg-[#1a3c34] hover:text-white transition-colors border border-[#1a3c34]/10"
+            >
+              ⭐ 最多收藏
+            </button>
+            <button 
+              @click="sortByOption('mostComments')"
+              :class="{'bg-[#1a3c34] text-white': currentSort === 'mostComments'}"
+              class="w-full py-2 px-3 text-left text-xs font-medium hover:bg-[#1a3c34] hover:text-white transition-colors border border-[#1a3c34]/10"
+            >
+              💬 最多讨论
+            </button>
+          </div>
+        </div>
+
+        <!-- 热门话题 (Index) -->
+        <div class="bg-white border border-[#1a3c34]/10 shadow-sm p-6">
+          <h3 class="text-xs font-bold text-[#1a3c34] uppercase tracking-widest mb-4 pb-2 border-b border-[#1a3c34]/10">
+            话题索引
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            <button 
+              v-for="tag in popularTags"
+              :key="tag.id"
+              @click="filterByTag(tag.name)"
+              class="px-3 py-1 bg-[#f2f0e9] text-[#1a3c34] text-xs font-medium hover:bg-[#1a3c34] hover:text-white transition-colors border border-[#1a3c34]/10"
+            >
+              #{{ tag.name }}
             </button>
           </div>
         </div>
       </div>
+
+      <!-- === 右侧内容流 (文章列表) === -->
+      <div class="lg:col-span-3 space-y-6">
+        
+        <!-- 状态栏 -->
+        <div class="flex items-center justify-between pb-4 border-b border-[#1a3c34]/10">
+          <h2 class="text-xl font-serif font-bold text-[#1a3c34]">最新手稿</h2>
+          <div v-if="showSearchResults" class="text-sm text-[#1a3c34]/60 flex items-center gap-2">
+            找到 {{ filteredPosts.length }} 条结果
+            <button @click="clearSearch" class="text-[#b03e3e] hover:underline text-xs font-bold uppercase">清除</button>
+          </div>
+        </div>
+
+        <!-- 加载中 -->
+        <div v-if="isLoading" class="py-20 text-center">
+          <div class="w-12 h-12 border-4 border-[#d4c5a3] border-t-[#1a3c34] rounded-full animate-spin mx-auto"></div>
+          <p class="mt-4 text-[#1a3c34]/60 font-serif italic">检索文档中...</p>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else-if="displayedPosts.length === 0" class="py-20 text-center bg-white border border-[#1a3c34]/10">
+          <Feather class="w-12 h-12 text-[#1a3c34]/20 mx-auto mb-4" />
+          <h3 class="text-lg font-serif font-bold text-[#1a3c34]">未找到记录</h3>
+          <p class="text-[#1a3c34]/60 text-sm mt-2">请尝试调整筛选条件或创建新条目。</p>
+        </div>
+
+        <!-- 帖子列表 -->
+        <div v-else class="space-y-6">
+          <div 
+            v-for="post in displayedPosts" 
+            :key="post.id"
+            class="group bg-white p-8 border border-[#1a3c34]/10 shadow-sm hover:shadow-xl hover:border-[#1a3c34]/30 transition-all duration-300 cursor-pointer relative"
+            @click="viewPostDetail(post.id)"
+          >
+            <!-- 顶部标签栏 -->
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 bg-[#1a3c34] text-white text-[10px] font-bold uppercase tracking-wider">
+                  {{ post.category || 'General' }}
+                </span>
+                <span class="text-xs text-[#1a3c34]/50 font-mono">
+                  {{ formatDate(post.created_at) }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2 text-[#1a3c34]/40">
+                <User class="w-4 h-4" />
+                <span class="text-xs font-bold uppercase tracking-wider hover:text-[#1a3c34]" @click.stop="navigateToUserProfile(post.user_id)">
+                  {{ post.author || 'Anonymous' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- 标题与内容 -->
+            <h3 class="text-2xl font-serif font-bold text-[#1a3c34] mb-3 group-hover:text-[#8c734b] transition-colors">
+              {{ post.title }}
+            </h3>
+            <p class="text-[#1a3c34]/70 font-serif leading-relaxed line-clamp-3 mb-6 text-base">
+              {{ post.content }}
+            </p>
+
+            <!-- 关联资源 (精致卡片) -->
+            <div v-if="post.resource" class="mb-6 p-4 bg-[#f9f9f7] border-l-4 border-[#1a3c34] flex items-center justify-between group/res hover:bg-[#f2f0e9] transition-colors">
+              <div class="flex items-center gap-3">
+                <FileText class="w-5 h-5 text-[#1a3c34]/60" />
+                <div>
+                  <div class="text-xs font-bold text-[#1a3c34]/40 uppercase">参考资料</div>
+                  <div class="text-sm font-serif font-bold text-[#1a3c34]">{{ post.resource.title }}</div>
+                </div>
+              </div>
+              <a :href="post.resource.url" target="_blank" @click.stop class="text-[#1a3c34]/60 hover:text-[#1a3c34]">
+                <ExternalLink class="w-4 h-4" />
+              </a>
+            </div>
+
+            <!-- 底部互动栏 -->
+            <div class="pt-4 border-t border-[#1a3c34]/5 flex items-center justify-between">
+              <div class="flex gap-2">
+                <span v-for="tag in post.tags" :key="tag" class="text-xs text-[#1a3c34]/50 font-mono hover:text-[#1a3c34] transition-colors">
+                  #{{ tag }}
+                </span>
+              </div>
+              
+              <div class="flex gap-4">
+                <button 
+                  @click.stop="toggleLike(post)"
+                  class="flex items-center gap-1.5 text-[#1a3c34]/50 hover:text-[#b03e3e] transition-colors"
+                  :class="{'text-[#b03e3e]': post.is_liked}"
+                >
+                  <Heart class="w-4 h-4" :class="{'fill-current': post.is_liked}" />
+                  <span class="text-xs font-mono">{{ post.like_count || 0 }}</span>
+                </button>
+                <button 
+                  @click.stop="toggleFavorite(post)"
+                  class="flex items-center gap-1.5 text-[#1a3c34]/50 hover:text-[#f59e0b] transition-colors"
+                  :class="{'text-[#f59e0b]': post.is_favorited}"
+                >
+                  <Star class="w-4 h-4" :class="{'fill-current': post.is_favorited}" />
+                  <span class="text-xs font-mono">{{ post.favorite_count || 0 }}</span>
+                </button>
+                <button class="flex items-center gap-1.5 text-[#1a3c34]/50 hover:text-[#1a3c34] transition-colors">
+                  <MessageSquare class="w-4 h-4" />
+                  <span class="text-xs font-mono">{{ post.comment_count || 0 }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 分页 (复古按钮) -->
+        <div class="flex justify-center gap-4 pt-8">
+          <button @click="prevPage" :disabled="currentPage === 1" class="px-4 py-2 border border-[#1a3c34]/20 text-[#1a3c34] text-sm hover:bg-[#1a3c34] hover:text-white transition-colors disabled:opacity-30">
+            上一页
+          </button>
+          <span class="px-4 py-2 font-mono text-[#1a3c34]">{{ currentPage }} / {{ totalPages }}</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages" class="px-4 py-2 border border-[#1a3c34]/20 text-[#1a3c34] text-sm hover:bg-[#1a3c34] hover:text-white transition-colors disabled:opacity-30">
+            下一页
+          </button>
+        </div>
+
+      </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-12 gap-8">
-        
-        <!-- 2. 左侧：帖子列表 (占8列) -->
-        <div class="lg:col-span-8 space-y-6">
+    <!-- 发帖弹窗 (保持风格一致) -->
+    <transition name="fade">
+      <div v-if="showCreatePostModal" class="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-[#1a3c34]/90 backdrop-blur-sm px-4">
+        <div class="bg-[#f4f1ea] w-full max-w-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto border border-[#1a3c34]/20">
+          <button @click="closeCreatePostModal" class="absolute top-6 right-6 text-[#1a3c34]/40 hover:text-[#1a3c34] hover:bg-[#1a3c34]/10 rounded-sm p-2 transition-all"><X class="w-6 h-6"/></button>
           
-          <!-- 搜索结果提示 -->
-          <div v-if="showSearchResults" class="flex items-center justify-between bg-white px-4 py-3 rounded-lg border border-slate-200 shadow-sm">
-            <span class="text-sm text-slate-600">
-              搜索 "<span class="font-bold text-indigo-600">{{ searchKeyword }}</span>" 的结果：{{ filteredPosts.length }} 条
-            </span>
-            <button @click="clearSearch" class="text-xs text-slate-400 hover:text-red-500 transition-colors">清除搜索</button>
-          </div>
-
-          <!-- 加载状态 (Skeleton) -->
-          <div v-if="isLoading" class="space-y-4">
-             <div v-for="n in 3" :key="n" class="bg-white p-6 rounded-xl border border-slate-100 shadow-sm animate-pulse">
-                <div class="flex items-center gap-3 mb-4">
-                   <div class="w-10 h-10 rounded-full bg-slate-200"></div>
-                   <div class="h-4 bg-slate-200 w-32 rounded"></div>
-                </div>
-                <div class="h-6 bg-slate-200 w-3/4 rounded mb-2"></div>
-                <div class="h-4 bg-slate-200 w-full rounded mb-2"></div>
-                <div class="h-4 bg-slate-200 w-1/2 rounded"></div>
+          <div class="p-10">
+             <div class="text-center mb-8 pb-4 border-b border-[#1a3c34]/10">
+                <h2 class="text-3xl font-serif font-bold text-[#1a3c34]">新提交</h2>
              </div>
-          </div>
 
-          <!-- 错误状态 -->
-          <div v-else-if="hasError" class="text-center py-12 bg-white rounded-xl border border-red-100">
-             <p class="text-red-500 mb-4">{{ errorMessage }}</p>
-             <button @click="retryLoading" class="text-indigo-600 hover:underline">重新加载</button>
-          </div>
+             <form @submit.prevent="submitPost" class="space-y-6">
+                <div>
+                   <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">标题</label>
+                   <input v-model="newPostForm.title" type="text" class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif focus:border-[#1a3c34] focus:outline-none" placeholder="研究标题..." />
+                </div>
 
-          <!-- 空状态 -->
-          <div v-else-if="displayedPosts.length === 0" class="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300">
-             <MessageSquare class="w-12 h-12 text-slate-300 mx-auto mb-4" />
-             <h3 class="text-lg font-medium text-slate-900">未找到相关内容</h3>
-             <p class="text-slate-500 mt-1">尝试使用其他关键词，或成为第一个发帖的人！</p>
-             <button @click="openModal" class="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition-colors">
-                发表第一篇经验
-             </button>
-          </div>
-
-          <!-- 帖子列表 -->
-          <template v-else>
-            <div 
-              v-for="post in displayedPosts" 
-              :key="post.id"
-              class="group bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-              @click="viewPostDetail(post.id)"
-            >
-              <!-- 头部：作者与元数据 -->
-              <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center gap-3">
-                   <button 
-                     @click.stop="navigateToUserProfile(post.user_id)"
-                     class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm hover:bg-indigo-200 hover:ring-2 hover:ring-indigo-500 transition-all"
-                   >
-                      <User class="w-5 h-5" />
-                   </button>
+                <div class="grid grid-cols-2 gap-4">
                    <div>
-                      <button 
-                        @click.stop="navigateToUserProfile(post.user_id)"
-                        class="text-sm font-bold text-slate-800 hover:text-indigo-600 transition-colors text-left"
-                      >
-                        {{ post.author || '匿名用户' }}
-                      </button>
-                      <div class="text-xs text-slate-400 flex items-center gap-1">
-                         <span>{{ formatDate(post.created_at) }}</span>
-                         <span>·</span>
-                         <span>{{ post.category || '未分类' }}</span>
-                      </div>
+                      <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">分类</label>
+                      <select v-model="newPostForm.category" class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] focus:border-[#1a3c34] focus:outline-none">
+                         <option value="" disabled>选择...</option>
+                         <option value="前端开发">前端开发</option>
+                         <option value="后端开发">后端开发</option>
+                         <option value="算法与数据结构">算法与数据结构</option>
+                         <option value="其他">综合</option>
+                      </select>
+                   </div>
+                   <div>
+                      <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">参考资料</label>
+                      <select v-model="newPostForm.resourceId" class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] focus:border-[#1a3c34] focus:outline-none">
+                         <option value="">无</option>
+                         <option v-for="res in myResources" :key="res.id" :value="res.id">{{ res.title }}</option>
+                      </select>
                    </div>
                 </div>
-                <!-- 点赞和收藏按钮 -->
-                <div class="flex space-x-3">
-                  <!-- 点赞按钮 -->
-                  <button 
-                    @click.stop="toggleLike(post)"
-                    :disabled="isLiking"
-                    class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-                    :class="post.is_liked ? 'text-red-500 bg-red-50' : 'bg-gray-100'"
-                  >
-                    <Heart class="w-4 h-4" :class="{ 'fill-current': post.is_liked }" />
-                    <span class="text-sm font-medium">{{ post.like_count || 0 }}</span>
-                  </button>
-                  
-                  <!-- 收藏按钮 -->
-                  <button 
-                    @click.stop="toggleFavorite(post)"
-                    :disabled="isFavoriting"
-                    class="flex items-center space-x-1 px-3 py-1 rounded-full text-gray-500 hover:text-yellow-500 hover:bg-yellow-50 transition-colors disabled:opacity-50"
-                    :class="post.is_favorited ? 'text-yellow-500 bg-yellow-50' : 'bg-gray-100'"
-                  >
-                    <Tag class="w-4 h-4" />
-                    <span class="text-sm font-medium">{{ post.favorite_count || 0 }}</span>
-                  </button>
+
+                <div>
+                   <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">内容</label>
+                   <textarea v-model="newPostForm.content" rows="6" class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif leading-relaxed focus:border-[#1a3c34] focus:outline-none resize-none"></textarea>
                 </div>
-              </div>
 
-              <!-- 内容区 -->
-              <h2 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-1">
-                 {{ post.title }}
-              </h2>
-              <p class="text-slate-600 text-sm leading-relaxed mb-4 line-clamp-2">
-                 {{ post.content }}
-              </p>
-              <div
-                v-if="post.resource"
-                class="mb-4 p-4 rounded-2xl border border-indigo-100 bg-indigo-50/60"
-              >
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    <p class="text-sm font-semibold text-indigo-900">{{ post.resource.title }}</p>
-                    <p class="text-xs text-indigo-500">{{ post.resource.category || '未分类' }}</p>
-                    <p class="text-sm text-slate-600 mt-2 line-clamp-2">
-                      {{ post.resource.description || '暂无资源描述' }}
-                    </p>
-                  </div>
-                  <a
-                    v-if="post.resource.url"
-                    :href="post.resource.url"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-sm font-medium text-indigo-600 hover:text-indigo-800 whitespace-nowrap"
-                    @click.stop
-                  >
-                    查看资源
-                  </a>
+                <div>
+                   <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">标签</label>
+                   <div class="flex gap-2 mb-2">
+                      <input v-model="tagInput" class="flex-1 bg-white border border-[#1a3c34]/20 px-3 py-2 text-sm focus:border-[#1a3c34] focus:outline-none" placeholder="添加标签" />
+                      <button type="button" @click="addTag" class="px-4 bg-[#1a3c34] text-white text-xs font-bold uppercase hover:bg-[#235246] transition-colors">添加</button>
+                   </div>
+                   <div class="flex flex-wrap gap-2">
+                      <span v-for="(tag, i) in newPostForm.tags" :key="i" class="px-2 py-1 bg-[#1a3c34]/10 text-[#1a3c34] text-xs flex items-center gap-1">#{{ tag }} <button type="button" @click="removeTag(i)" class="hover:text-red-600"><X class="w-3 h-3"/></button></span>
+                   </div>
                 </div>
-              </div>
 
-              <!-- 底部：标签与互动 -->
-              <div class="flex items-center justify-between pt-4 border-t border-slate-50">
-                 <div class="flex flex-wrap gap-2">
-                    <span v-for="tag in post.tags" :key="tag" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
-                       <Hash class="w-3 h-3 mr-0.5 text-slate-400" />
-                       {{ tag }}
-                    </span>
-                 </div>
-                 <div class="flex items-center gap-4 text-slate-400 text-sm">
-                    <button class="flex items-center gap-1.5 hover:text-indigo-500 transition-colors">
-                       <MessageSquare class="w-4 h-4" />
-                       {{ post.comment_count || 0 }}
-                    </button>
-                 </div>
-              </div>
-            </div>
-
-            <!-- 分页 -->
-            <div class="flex flex-wrap items-center justify-center gap-4 py-4">
-              <div class="flex items-center gap-4">
-                <button 
-                  @click="prevPage"
-                  :disabled="currentPage === 1" 
-                  class="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
-                >
-                  <ChevronLeft class="w-5 h-5" />
-                </button>
-                <span class="text-sm text-slate-600 font-medium">第 {{ currentPage }} / {{ totalPages }} 页</span>
-                <button 
-                  @click="nextPage"
-                  :disabled="currentPage === totalPages" 
-                  class="p-2 rounded-lg border border-slate-200 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600"
-                >
-                  <ChevronRight class="w-5 h-5" />
-                </button>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-slate-600">
-                <span>跳转到</span>
-                <input
-                  v-model="jumpPageInput"
-                  type="number"
-                  min="1"
-                  :max="totalPages"
-                  @keyup.enter="jumpToPage"
-                  class="w-20 rounded-lg border border-slate-200 bg-white px-2 py-1 text-center focus:border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="页码"
-                />
-                <span>页</span>
-                <button
-                  type="button"
-                  @click="jumpToPage"
-                  class="px-3 py-1.5 rounded-lg border border-indigo-200 text-indigo-600 font-medium hover:bg-indigo-50 disabled:opacity-50"
-                  :disabled="!totalPages"
-                >
-                  跳转
-                </button>
-              </div>
-            </div>
-          </template>
-        </div>
-
-        <!-- 3. 右侧：侧边栏 (占4列) -->
-        <div class="lg:col-span-4 space-y-6">
-          
-          <!-- 发布按钮 -->
-          <button 
-            @click="openModal"
-            class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
-          >
-             <Plus class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-             发表我的经验
-          </button>
-
-          <!-- 热门标签卡片 -->
-          <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-             <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <Tag class="w-5 h-5 text-indigo-500" />
-                热门话题
-             </h3>
-             <div class="flex flex-wrap gap-2">
-                <span 
-                   v-for="tag in popularTags" 
-                   :key="tag.name"
-                   @click="filterByTag(tag.name)"
-                   class="cursor-pointer px-3 py-1.5 bg-slate-50 text-slate-600 rounded-lg text-sm hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center gap-2 group"
-                >
-                   {{ tag.name }}
-                   <span class="text-xs bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded-md group-hover:bg-indigo-200 group-hover:text-indigo-700">{{ tag.count }}</span>
-                </span>
-                <div v-if="popularTags.length === 0" class="text-slate-400 text-sm">暂无热门标签</div>
-             </div>
-          </div>
-
-          <!-- 社区规范/公告 -->
-          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-             <h3 class="font-bold text-slate-800 mb-2 text-sm uppercase tracking-wider">🌟 社区公约</h3>
-             <ul class="text-sm text-slate-600 space-y-2 list-disc list-inside marker:text-indigo-400">
-                <li>友善交流，互相尊重</li>
-                <li>分享真实、有价值的学习经验</li>
-                <li>禁止发布广告或违规内容</li>
-             </ul>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- 4. 发布模态框 (Modal) -->
-    <transition name="modal">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <!-- 遮罩 -->
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" @click="closeModal"></div>
-        
-        <!-- 内容 -->
-        <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-          <!-- Header -->
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-             <h3 class="text-lg font-bold text-slate-800">发表学习经验</h3>
-             <button @click="closeModal" class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
-                <X class="w-5 h-5" />
-             </button>
-          </div>
-
-          <!-- Body (Scrollable) -->
-          <div class="p-6 overflow-y-auto space-y-5">
-             <!-- 标题 -->
-             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">标题</label>
-                <input 
-                  v-model="newPostForm.title" 
-                  type="text" 
-                  placeholder="一句话概括你的核心观点" 
-                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none" 
-                />
-             </div>
-
-             <!-- 分类 -->
-             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">分类</label>
-                <select 
-                  v-model="newPostForm.category" 
-                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-slate-600"
-                >
-                   <option value="" disabled selected>选择分类</option>
-                   <option value="前端开发">前端开发</option>
-                   <option value="后端开发">后端开发</option>
-                   <option value="算法与数据结构">算法与数据结构</option>
-                   <option value="语言学习">语言学习</option>
-                   <option value="考研/考证">考研/考证</option>
-                   <option value="其他">其他</option>
-                </select>
-             </div>
-
-             <!-- 内容 -->
-             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">内容详情</label>
-                <textarea 
-                  v-model="newPostForm.content" 
-                  rows="6" 
-                  placeholder="详细分享你的经验、心得或问题...（选填）" 
-                  class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
-                ></textarea>
-             </div>
-
-             <!-- 标签输入 -->
-             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">标签 (Enter添加)</label>
-                <div class="flex flex-wrap items-center gap-2 p-2 bg-slate-50 border border-slate-200 rounded-xl min-h-[46px] focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent">
-                   <span v-for="(tag, idx) in newPostForm.tags" :key="idx" class="inline-flex items-center px-2 py-1 rounded-md text-sm bg-indigo-100 text-indigo-700">
-                      {{ tag }}
-                      <button @click="removeTag(idx)" class="ml-1 hover:text-indigo-900"><X class="w-3 h-3" /></button>
-                   </span>
-                   <input 
-                      v-model="tagInput" 
-                      @keydown.enter.prevent="addTag"
-                      @keydown.backspace="tagInput==='' && newPostForm.tags.length ? newPostForm.tags.pop() : null"
-                      type="text" 
-                      placeholder="添加标签..." 
-                      class="flex-1 bg-transparent border-none outline-none text-sm min-w-[80px]" 
-                   />
+                <div class="pt-4 flex justify-end gap-4">
+                   <button type="button" @click="closeCreatePostModal" class="px-6 py-3 text-[#1a3c34] font-bold text-sm hover:underline">取消</button>
+                   <button type="submit" :disabled="isSubmitting" class="px-8 py-3 bg-[#1a3c34] text-white font-bold text-sm uppercase tracking-widest hover:bg-[#235246] transition-colors flex items-center gap-2">
+                      <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
+                      <span>发布</span>
+                   </button>
                 </div>
-             </div>
-
-             <!-- 关联我的资源 -->
-             <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">关联我的资源</label>
-                <div class="space-y-2">
-                  <p v-if="isLoadingResources" class="text-sm text-slate-500">正在加载资源...</p>
-                  <p v-else-if="resourcesError" class="text-sm text-red-500">{{ resourcesError }}</p>
-                  <div v-else-if="myResources.length === 0" class="text-sm text-slate-500 flex flex-wrap items-center gap-2">
-                    你还没有创建学习资源
-                    <button 
-                      @click="router.push('/my-all-resources')" 
-                      class="text-indigo-600 hover:underline font-medium"
-                    >
-                      前往创建
-                    </button>
-                  </div>
-                  <div v-else class="space-y-3">
-                    <select 
-                      v-model="newPostForm.resourceId"
-                      class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-slate-600"
-                    >
-                      <option value="">不关联资源</option>
-                      <option 
-                        v-for="resource in myResources" 
-                        :key="resource.id" 
-                        :value="resource.id"
-                      >
-                        {{ resource.title }}
-                      </option>
-                    </select>
-                    <div v-if="selectedResource" class="p-3 rounded-xl border border-slate-200 bg-slate-50">
-                      <p class="text-sm font-semibold text-slate-800">{{ selectedResource.title }}</p>
-                      <p class="text-xs text-slate-500">{{ selectedResource.category || '未分类' }}</p>
-                      <p class="text-sm text-slate-600 mt-1 line-clamp-2">{{ selectedResource.description || '暂无描述' }}</p>
-                    </div>
-                  </div>
-                </div>
-             </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-             <button @click="closeModal" class="px-5 py-2 text-slate-600 font-medium hover:bg-white border border-transparent hover:border-slate-200 rounded-lg transition-all">取消</button>
-             <button 
-                @click="submitPost" 
-                :disabled="isSubmitting || !newPostForm.title"
-                class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
-             >
-                <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin" />
-                {{ isSubmitting ? '发布中...' : '发布经验' }}
-             </button>
+             </form>
           </div>
         </div>
       </div>
     </transition>
+
+    <!-- Toast Message -->
+    <div v-if="showMessage" :class="getMessageClasses(messageType)">
+      <span v-html="getMessageIcon(messageType)"></span>
+      <span>{{ messageText }}</span>
+    </div>
 
   </div>
 </template>
@@ -423,923 +342,300 @@ import { useRouter } from 'vue-router';
 import { useDatabaseStore } from '@/stores/database';
 import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message';
 import { 
-  Search, 
-  Plus, 
-  MessageSquare, 
-  Heart, 
-  Share2, 
-  Tag, 
-  User, 
-  Clock, 
-  X, 
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  Hash
+  Users, Search, ArrowRight, PenTool, Tag, 
+  Feather, FileText, User, Heart, Star, MessageSquare, X,
+  Loader2, ExternalLink
 } from 'lucide-vue-next';
 
-// --- 类型定义 ---
-interface LinkedResource {
-  id: string
-  title: string
-  description?: string
-  category?: string
-  url?: string
-}
-
+// --- Types ---
+interface LinkedResource { id: string; title: string; description?: string; category?: string; url?: string }
 interface Post {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  user_id?: string;
-  avatar_color?: string; // 模拟头像颜色
-  category: string;
-  created_at: string;
-  like_count: number;
-  favorite_count: number;
-  comment_count: number;
-  tags: string[];
-  resource_id?: string | null;
-  resource?: LinkedResource | null;
-  is_liked?: boolean;
-  is_favorited?: boolean;
+  id: string; title: string; content: string; author: string; user_id?: string;
+  category: string; created_at: string; like_count: number; favorite_count: number;
+  comment_count: number; tags: string[]; resource?: LinkedResource | null;
+  is_liked?: boolean; is_favorited?: boolean;
 }
 
-// --- 状态管理 ---
+// --- State ---
 const router = useRouter();
 const dbStore = useDatabaseStore();
-
 const isLoading = ref(true);
 const hasError = ref(false);
 const errorMessage = ref('');
 const searchKeyword = ref('');
 const showSearchResults = ref(false);
-const showModal = ref(false);
+const showCreatePostModal = ref(false);
 const isSubmitting = ref(false);
+const isSearching = ref(false);
 const isLiking = ref(false);
 const isFavoriting = ref(false);
-const myResources = ref<LinkedResource[]>([])
-const isLoadingResources = ref(false)
-const resourcesError = ref('')
-
-// 分页状态
 const currentPage = ref(1);
 const pageSize = ref(10);
 const totalPages = ref(0);
-const jumpPageInput = ref('');
-
-// 数据
+const currentSort = ref('latest');
 const posts = ref<Post[]>([]);
 const filteredPosts = ref<Post[]>([]);
 const popularTags = ref<any[]>([]);
-
-// 表单数据
-const newPostForm = reactive({
-  title: '',
-  content: '',
-  category: '',
-  tags: [] as string[],
-  resourceId: '' as string | null
-});
+const myResources = ref<LinkedResource[]>([]);
+const newPostForm = reactive({ title: '', content: '', category: '', tags: [] as string[], resourceId: '' as string | null });
 const tagInput = ref('');
-const selectedResource = computed(() => {
-  if (!newPostForm.resourceId) return null
-  return myResources.value.find(res => res.id === newPostForm.resourceId) || null
-})
 
-// --- 计算属性 ---
+// --- Computed ---
 const displayedPosts = computed(() => {
-  const currentPosts = showSearchResults.value ? filteredPosts.value : posts.value;
-  const startIndex = (currentPage.value - 1) * pageSize.value;
-  const endIndex = startIndex + pageSize.value;
-  return currentPosts.slice(startIndex, endIndex);
+  const current = showSearchResults.value ? filteredPosts.value : posts.value;
+  return current.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
 });
 
-// --- 方法 ---
-
-// 处理搜索输入变化
-const handleSearchInput = () => {
-  if (!searchKeyword.value.trim()) {
-    clearSearch();
-  }
+// --- Methods ---
+const handleSearchInput = () => { if (!searchKeyword.value.trim()) clearSearch(); };
+const clearSearch = () => { searchKeyword.value = ''; showSearchResults.value = false; filteredPosts.value = []; currentPage.value = 1; updatePagination(); };
+const performSearch = () => {
+  const k = searchKeyword.value.trim().toLowerCase();
+  if(!k) return clearSearch();
+  isSearching.value = true;
+  setTimeout(() => {
+    filteredPosts.value = posts.value.filter(p => 
+      p.title.toLowerCase().includes(k) || p.content.toLowerCase().includes(k) || 
+      p.author.toLowerCase().includes(k) || p.tags.some(t => t.toLowerCase().includes(k))
+    );
+    showSearchResults.value = true;
+    currentPage.value = 1;
+    // 应用当前排序到搜索结果
+    applySortingToResults(filteredPosts.value);
+    updatePagination();
+    isSearching.value = false;
+  }, 300);
 };
 
-// 清除搜索
-const clearSearch = () => {
-  searchKeyword.value = '';
-  showSearchResults.value = false;
-  filteredPosts.value = [];
-  currentPage.value = 1;
-  updatePagination();
+const applySortingToResults = (targetPosts: Post[]) => {
+   switch(currentSort.value) {
+      case 'latest':
+         targetPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+         break;
+      case 'mostLikes':
+         targetPosts.sort((a, b) => (b.like_count || 0) - (a.like_count || 0));
+         break;
+      case 'mostFavorites':
+         targetPosts.sort((a, b) => (b.favorite_count || 0) - (a.favorite_count || 0));
+         break;
+      case 'mostComments':
+         targetPosts.sort((a, b) => (b.comment_count || 0) - (a.comment_count || 0));
+         break;
+   }
 };
 
-// 执行搜索
-const performSearch = async () => {
-  const keyword = searchKeyword.value.trim();
-  
-  if (!keyword) {
-    clearSearch();
-    return;
-  }
-  
-  showSearchResults.value = true;
-  
-  const keywordLower = keyword.toLowerCase();
-  const matchedPosts = posts.value.filter(post => {
-    if (post.title && post.title.toLowerCase().includes(keywordLower)) {
-      return true;
-    }
-    if (post.content && post.content.toLowerCase().includes(keywordLower)) {
-      return true;
-    }
-    if (post.category && post.category.toLowerCase().includes(keywordLower)) {
-      return true;
-    }
-    if (post.author && post.author.toLowerCase().includes(keywordLower)) {
-      return true;
-    }
-    if (post.tags && Array.isArray(post.tags)) {
-      const tagMatch = post.tags.some(tag => 
-        typeof tag === 'string' && tag.toLowerCase().includes(keywordLower)
-      );
-      if (tagMatch) {
-        return true;
-      }
-    }
-    return false;
-  });
-  
-  filteredPosts.value = matchedPosts;
-  currentPage.value = 1;
-  updatePagination();
+const updatePagination = () => { totalPages.value = Math.ceil((showSearchResults.value ? filteredPosts.value : posts.value).length / pageSize.value) || 1; };
+const prevPage = () => { if(currentPage.value > 1) { currentPage.value--; window.scrollTo({ top: 0, behavior: 'smooth' }); } };
+const nextPage = () => { if(currentPage.value < totalPages.value) { currentPage.value++; window.scrollTo({ top: 0, behavior: 'smooth' }); } };
+
+const formatDate = (str: string) => new Date(str).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const viewPostDetail = (id: string) => router.push(`/post/${id}`);
+const navigateToUserProfile = (id?: string) => { if(id) router.push(`/user/${id}`); };
+const filterByTag = (tag: string) => { searchKeyword.value = tag; performSearch(); };
+
+const openModal = async () => {
+  const userStr = localStorage.getItem('currentUser');
+  if(!userStr) { router.push('/login'); return; }
+  try { const u = JSON.parse(userStr); if(u.id) await loadMyResources(u.id); } catch(e){}
+  showCreatePostModal.value = true;
 };
+const closeCreatePostModal = () => { showCreatePostModal.value = false; Object.assign(newPostForm, {title:'', content:'', category:'', tags:[], resourceId:''}); tagInput.value=''; };
+const addTag = () => { const t = tagInput.value.trim(); if(t && !newPostForm.tags.includes(t)) newPostForm.tags.push(t); tagInput.value=''; };
+const removeTag = (i: number) => newPostForm.tags.splice(i, 1);
 
-// 更新分页
-const updatePagination = () => {
-  const currentPosts = showSearchResults.value ? filteredPosts.value : posts.value;
-  totalPages.value = Math.ceil(currentPosts.length / pageSize.value);
-};
-
-// 分页控制
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-};
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-};
-
-const jumpToPage = () => {
-  const total = totalPages.value;
-  if (!total) {
-    showToast('暂无可跳转的页码', 'warning');
-    return;
-  }
-
-  if (!jumpPageInput.value) {
-    showToast('请输入要跳转的页码', 'warning');
-    return;
-  }
-
-  const target = Number(jumpPageInput.value);
-  if (!Number.isInteger(target)) {
-    showToast('请输入有效的整数页码', 'warning');
-    return;
-  }
-
-  if (target < 1 || target > total) {
-    showToast(`页码需在 1 到 ${total} 之间`, 'warning');
-    return;
-  }
-
-  currentPage.value = target;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  jumpPageInput.value = '';
-};
-
-// 查看帖子详情
-const viewPostDetail = (postId: string) => {
-  router.push(`/post/${postId}`);
-};
-
-// 格式化日期
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diff = now.getTime() - date.getTime();
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  
-  if (days === 0) {
-    return '今天';
-  } else if (days === 1) {
-    return '昨天';
-  } else if (days < 7) {
-    return `${days}天前`;
-  } else if (days < 30) {
-    return `${Math.floor(days / 7)}周前`;
-  } else {
-    return `${date.getMonth() + 1}月${date.getDate()}日`;
-  }
-};
-
-// 按标签过滤
-const filterByTag = async (tagName: string) => {
-  const keywordLower = tagName.toLowerCase();
-  const matchedPosts = posts.value.filter(post => {
-    if (post.tags && Array.isArray(post.tags)) {
-      const tagMatch = post.tags.some(tag => 
-        typeof tag === 'string' && tag.toLowerCase().includes(keywordLower)
-      );
-      if (tagMatch) {
-        return true;
-      }
-    }
-    return false;
-  });
-  
-  filteredPosts.value = matchedPosts;
-  showSearchResults.value = true;
-  currentPage.value = 1;
-  searchKeyword.value = tagName;
-  updatePagination();
-};
-
-const loadMyResources = async (userId: string) => {
-  isLoadingResources.value = true;
-  resourcesError.value = '';
+const loadMyResources = async (uid: string) => {
   try {
-    const resources = await dbStore.getUserResources(userId);
-    myResources.value = (resources || []).map((res: any) => ({
-      id: res.id,
-      title: res.title || '未命名资源',
-      description: res.description,
-      category: res.category,
-      url: res.url
-    }));
-  } catch (error) {
-    console.error('获取用户资源失败:', error);
-    resourcesError.value = '加载资源失败，请稍后再试';
-    myResources.value = [];
-  } finally {
-    isLoadingResources.value = false;
-  }
+    const res = await dbStore.getUserResources(uid);
+    myResources.value = (res||[]).map((r:any) => ({ id: r.id, title: r.title, description: r.description, category: r.type, url: r.url }));
+  } catch(e) { console.error(e); }
 };
 
-// --- 点赞收藏功能 ---
-const toggleLike = async (post: any) => {
-  if (isLiking.value) return;
-  
-  isLiking.value = true;
-  try {
-    // 获取当前用户ID
-    let currentUserId = null;
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-      try {
-        const user = JSON.parse(currentUser);
-        if (user.id) {
-          currentUserId = user.id.toString();
-        }
-      } catch (error: any) {
-        console.error('解析用户信息失败:', error);
-      }
-    }
-    
-    if (!currentUserId) {
-      router.push('/login');
-      return;
-    }
-    
-    // 确保数据库连接
-    let client = null;
-    try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (supabaseUrl && supabaseKey) {
-        client = createClient(supabaseUrl, supabaseKey);
-      } else {
-        throw new Error('Supabase环境变量未配置');
-      }
-    } catch (error: any) {
-      console.error('❌ 数据库连接失败:', error.message);
-      showToast('数据库连接失败，请稍后重试', 'error');
-      return;
-    }
-    
-    if (post.is_liked) {
-      // 取消点赞
-      const { error } = await client
-        .from('post_likes')
-        .delete()
-        .eq('user_id', currentUserId)
-        .eq('post_id', post.id);
-      
-      if (error) {
-        console.error('❌ 取消点赞失败:', error);
-      } else {
-        post.is_liked = false;
-        post.like_count = Math.max((post.like_count || 0) - 1, 0);
-      }
-    } else {
-      // 添加点赞
-      const { data: existingLike } = await client
-        .from('post_likes')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .eq('post_id', post.id)
-        .limit(1);
-      
-      if (existingLike && existingLike.length > 0) {
-        post.is_liked = true;
-      } else {
-        const { error } = await client
-          .from('post_likes')
-          .insert({
-            user_id: currentUserId,
-            post_id: post.id
-          });
-        
-        if (error) {
-          if (error.code === '23503' && error.message.includes('fk_post_likes_user')) {
-            // 外键约束错误的临时解决方案
-            post.is_liked = true;
-            post.like_count = (post.like_count || 0) + 1;
-            return;
-          } else {
-            throw error;
-          }
-        } else {
-          post.is_liked = true;
-          post.like_count = (post.like_count || 0) + 1;
-        }
-      }
-    }
-  } catch (error) {
-    console.error('❌ 点赞操作失败:', error);
-    showToast('操作失败，请稍后重试', 'error');
-  } finally {
-    isLiking.value = false;
-  }
-};
-
-const toggleFavorite = async (post: any) => {
-  if (isFavoriting.value) return;
-  
-  isFavoriting.value = true;
-  try {
-    // 获取当前用户ID
-    let currentUserId = null;
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-      try {
-        const user = JSON.parse(currentUser);
-        if (user.id) {
-          currentUserId = user.id.toString();
-        }
-      } catch (error: any) {
-        console.error('解析用户信息失败:', error);
-      }
-    }
-    
-    if (!currentUserId) {
-      router.push('/login');
-      return;
-    }
-    
-    // 确保数据库连接
-    let client = null;
-    try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (supabaseUrl && supabaseKey) {
-        client = createClient(supabaseUrl, supabaseKey);
-      } else {
-        throw new Error('Supabase环境变量未配置');
-      }
-    } catch (error: any) {
-      console.error('❌ 数据库连接失败:', error.message);
-      showToast('数据库连接失败，请稍后重试', 'error');
-      return;
-    }
-    
-    if (post.is_favorited) {
-      // 取消收藏
-      const { error } = await client
-        .from('post_favorites')
-        .delete()
-        .eq('user_id', currentUserId)
-        .eq('post_id', post.id);
-      
-      if (error) {
-        console.error('❌ 取消收藏失败:', error);
-      } else {
-        post.is_favorited = false;
-        post.favorite_count = Math.max((post.favorite_count || 0) - 1, 0);
-      }
-    } else {
-      // 添加收藏
-      const { data: existingFavorite } = await client
-        .from('post_favorites')
-        .select('*')
-        .eq('user_id', currentUserId)
-        .eq('post_id', post.id)
-        .limit(1);
-      
-      if (existingFavorite && existingFavorite.length > 0) {
-        post.is_favorited = true;
-      } else {
-        const { error } = await client
-          .from('post_favorites')
-          .insert({
-            user_id: currentUserId,
-            post_id: post.id
-          });
-        
-        if (error) {
-          if (error.code === '23503' && error.message.includes('fk_post_favorites_user')) {
-            // 外键约束错误的临时解决方案
-            post.is_favorited = true;
-            post.favorite_count = (post.favorite_count || 0) + 1;
-            return;
-          } else {
-            throw error;
-          }
-        } else {
-          post.is_favorited = true;
-          post.favorite_count = (post.favorite_count || 0) + 1;
-        }
-      }
-    }
-  } catch (error) {
-    console.error('❌ 收藏操作失败:', error);
-    showToast('操作失败，请稍后重试', 'error');
-  } finally {
-    isFavoriting.value = false;
-  }
-};
-
-// --- 数据加载 ---
 const loadPosts = async () => {
   isLoading.value = true;
   try {
-    let client = await dbStore.getClient();
-    if (!client) {
-      await dbStore.reconnect();
-      client = await dbStore.getClient();
-    }
-    
-    if (!client) {
-      throw new Error('数据库客户端初始化失败');
-    }
-    
-    // 获取帖子数据
-    const { data: postsData, error: postsError } = await client
-      .from('community_posts')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (postsError) {
-      throw postsError;
-    }
+    const client = await dbStore.getClient();
+    if(!client) return;
+    const { data: pData, error } = await client.from('community_posts').select('*').order('created_at', { ascending: false });
+    if(error) throw error;
 
-    // 获取作者信息
-    const userIds = Array.from(new Set((postsData || [])
-      .map((post: any) => post.user_id)
-      .filter((id: string | null): id is string => !!id)));
-
-    const userMap: Record<string, { id: string; username?: string; nickname?: string }> = {};
-    if (userIds.length > 0) {
-      const { data: usersData, error: usersError } = await client
-        .from('users')
-        .select('id, username, nickname')
-        .in('id', userIds);
-
-      if (usersError) {
-        console.warn('加载用户信息失败:', usersError);
-      } else {
-        usersData?.forEach((user: any) => {
-          userMap[user.id] = user;
-        });
-      }
-    }
-
-    // 获取与帖子关联的资源
-    const resourceIds = Array.from(new Set((postsData || [])
-      .map((post: any) => post.resource_id)
-      .filter((id: string | null): id is string => !!id)));
-
-    const resourceMap: Record<string, LinkedResource> = {};
-    if (resourceIds.length > 0) {
-      const { data: resourcesData, error: resourcesError } = await client
-        .from('resources')
-        .select('id, title, description, category, url')
-        .in('id', resourceIds);
-
-      if (resourcesError) {
-        console.warn('加载资源信息失败:', resourcesError);
-      } else {
-        resourcesData?.forEach((res: any) => {
-          resourceMap[res.id] = {
-            id: res.id,
-            title: res.title || '未命名资源',
-            description: res.description,
-            category: res.category,
-            url: res.url
-          };
-        });
-      }
-    }
-    
-    // 获取所有帖子的评论数
-    const { data: commentsData, error: commentsError } = await client
-      .from('post_comments')
-      .select('post_id')
-      .not('post_id', 'is', null);
-    
-    if (commentsError) {
-      console.error('获取评论数据失败:', commentsError);
-    }
-    
-    // 计算每个帖子的评论数
-    const commentCounts: Record<string, number> = {};
-    if (commentsData) {
-      commentsData.forEach(comment => {
-        const postId = comment.post_id;
-        commentCounts[postId] = (commentCounts[postId] || 0) + 1;
-      });
-    }
-    
-    // 获取当前用户ID以检查收藏状态
-    let currentUserId: string | null = null;
-    let currentUserName = '';
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-      try {
-        const user = JSON.parse(currentUser);
-        if (user.id) {
-          currentUserId = user.id;
-          currentUserName = user.nickname || user.username || '';
-        }
-      } catch (error: any) {
-        console.error('解析用户信息失败:', error);
-      }
-    }
-    
-    posts.value = (postsData || []).map((post: any) => {
-      const userInfo = post.user_id ? userMap[post.user_id] : null;
-      const authorName = userInfo?.nickname || userInfo?.username || (post.user_id ? `用户${post.user_id.substring(0, 8)}` : '匿名用户');
-      const linkedResource = post.resource_id ? (resourceMap[post.resource_id] || null) : null;
-
-      return {
-        ...post,
-        author: authorName,
-        is_liked: false,
-        is_favorited: false,
-        like_count: post.like_count || 0,
-        favorite_count: post.favorite_count || 0,
-        comment_count: commentCounts[post.id] || 0,
-        resource: linkedResource
-      };
+    const userIds = new Set<string>();
+    const resIds = new Set<string>();
+    pData?.forEach((p: any) => {
+       if(p.user_id) userIds.add(p.user_id);
+       if(p.resource_id) resIds.add(p.resource_id);
     });
-    
-    // 如果用户已登录，加载点赞和收藏状态
-    if (currentUserId) {
-      await loadLikesStatus(currentUserId);
-      await loadFavoritesStatus(currentUserId);
+
+    const userMap: Record<string, any> = {};
+    if(userIds.size) {
+       const { data: uData } = await client.from('users').select('id, username, nickname').in('id', Array.from(userIds));
+       uData?.forEach((u: any) => userMap[u.id] = u);
     }
+
+    const resMap: Record<string, any> = {};
+    if(resIds.size) {
+       const { data: rData } = await client.from('resources').select('id, title, description, category, url').in('id', Array.from(resIds));
+       rData?.forEach((r: any) => resMap[r.id] = r);
+    }
+
+    posts.value = (pData||[]).map((p:any) => {
+       const u = userMap[p.user_id];
+       const r = resMap[p.resource_id];
+       return {
+          ...p,
+          author: u?.nickname || u?.username || 'Anonymous',
+          resource: r,
+          is_liked: false, is_favorited: false
+       };
+    });
+
+    // 获取真实的评论数和收藏数
+    await loadPostCounts(client);
+    
+    const currentUser = localStorage.getItem('currentUser');
+    if(currentUser) {
+       const uid = JSON.parse(currentUser).id;
+       await checkUserInteractions(client, uid);
+    }
+    
+    // 应用默认排序
+    applySortingToResults(posts.value);
     
     updatePagination();
-    
-  } catch (error) {
-    console.error('❌ 加载帖子失败:', error);
-    hasError.value = true;
-    errorMessage.value = '加载帖子失败：' + (error.message || '未知错误');
-  } finally {
-    isLoading.value = false;
-  }
+  } catch(e:any) { hasError.value = true; errorMessage.value = e.message; }
+  finally { isLoading.value = false; }
 };
 
-const loadLikesStatus = async (userId: string) => {
-  try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    
-    if (supabaseUrl && supabaseKey) {
-      const client = createClient(supabaseUrl, supabaseKey);
-      
-      const { data, error } = await client
-        .from('post_likes')
-        .select('post_id')
-        .eq('user_id', userId);
-      
-      if (!error && data) {
-        const likedPostIds = new Set(data.map((like: any) => like.post_id));
-        posts.value.forEach(post => {
-          post.is_liked = likedPostIds.has(post.id);
-        });
-      }
-    }
-  } catch (error) {
-    console.error('❌ 加载点赞状态失败:', error);
-  }
+const loadPostCounts = async (client: any) => {
+   const postIds = posts.value.map(p => p.id);
+   if (postIds.length === 0) return;
+   
+   const [comments, favorites] = await Promise.all([
+      client.from('post_comments').select('post_id').in('post_id', postIds),
+      client.from('post_favorites').select('post_id').in('post_id', postIds)
+   ]);
+   
+   const commentCounts: Record<string, number> = {};
+   const favoriteCounts: Record<string, number> = {};
+   
+   comments.data?.forEach((c: any) => {
+      commentCounts[c.post_id] = (commentCounts[c.post_id] || 0) + 1;
+   });
+   
+   favorites.data?.forEach((f: any) => {
+      favoriteCounts[f.post_id] = (favoriteCounts[f.post_id] || 0) + 1;
+   });
+   
+   posts.value.forEach(p => {
+      p.comment_count = commentCounts[p.id] || 0;
+      p.favorite_count = favoriteCounts[p.id] || 0;
+   });
 };
 
-const loadFavoritesStatus = async (userId: string) => {
-  try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    
-    if (supabaseUrl && supabaseKey) {
-      const client = createClient(supabaseUrl, supabaseKey);
-      
-      const { data, error } = await client
-        .from('post_favorites')
-        .select('post_id')
-        .eq('user_id', userId);
-      
-      if (!error && data) {
-        const favoritedPostIds = new Set(data.map((fav: any) => fav.post_id));
-        posts.value.forEach(post => {
-          post.is_favorited = favoritedPostIds.has(post.id);
-        });
-      }
-    }
-  } catch (error) {
-    console.error('❌ 加载收藏状态失败:', error);
-  }
+const checkUserInteractions = async (client: any, userId: string) => {
+   const [likes, favs] = await Promise.all([
+      client.from('post_likes').select('post_id').eq('user_id', userId),
+      client.from('post_favorites').select('post_id').eq('user_id', userId)
+   ]);
+   const likedSet = new Set(likes.data?.map((x: any) => x.post_id));
+   const favSet = new Set(favs.data?.map((x: any) => x.post_id));
+   posts.value.forEach(p => {
+      p.is_liked = likedSet.has(p.id);
+      p.is_favorited = favSet.has(p.id);
+   });
 };
 
 const loadPopularTags = async () => {
-  try {
-    let client = await dbStore.getClient();
-    if (!client) {
-      await dbStore.reconnect();
-      client = await dbStore.getClient();
-    }
-    
-    if (!client) {
-      return;
-    }
-    
-    const { data, error } = await client
-      .from('community_posts')
-      .select('tags');
-    
-    if (error) {
-      console.error('❌ 加载标签失败:', error);
-      return;
-    }
-    
-    const tagCount: any = {};
-    data?.forEach((post: any) => {
-      if (post.tags && Array.isArray(post.tags)) {
-        post.tags.forEach((tag: string) => {
-          tagCount[tag] = (tagCount[tag] || 0) + 1;
-        });
-      }
-    });
-    
-    popularTags.value = Object.entries(tagCount)
-      .map(([name, count]) => ({ name, count, id: name }))
-      .sort((a: any, b: any) => b.count - a.count)
-      .slice(0, 6);
-      
-  } catch (error) {
-    console.error('❌ 加载标签异常:', error);
-  }
-};
-
-const retryLoading = async () => {
-  hasError.value = false;
-  errorMessage.value = '';
-  currentPage.value = 1;
-  await loadPosts();
-};
-
-// --- 模态框与表单逻辑 ---
-const openModal = async () => {
-  // 检查用户是否登录
-  const currentUserStr = localStorage.getItem('currentUser');
-  if (!currentUserStr) {
-    router.push('/login');
-    return;
-  }
-
-  try {
-    const currentUser = JSON.parse(currentUserStr);
-    if (currentUser?.id) {
-      await loadMyResources(currentUser.id);
-    }
-  } catch (error) {
-    console.error('解析当前用户失败:', error);
-  }
-
-  showModal.value = true;
-};
-
-const closeModal = () => {
-  showModal.value = false;
-  newPostForm.title = '';
-  newPostForm.content = '';
-  newPostForm.category = '';
-  newPostForm.tags = [];
-  newPostForm.resourceId = '';
-  tagInput.value = '';
-};
-
-const addTag = () => {
-  const val = tagInput.value.trim();
-  if (val && !newPostForm.tags.includes(val)) {
-    newPostForm.tags.push(val);
-  }
-  tagInput.value = '';
-};
-
-const removeTag = (index: number) => {
-  newPostForm.tags.splice(index, 1);
+   const counts: Record<string, number> = {};
+   posts.value.forEach(p => p.tags?.forEach((t:string) => counts[t] = (counts[t]||0)+1));
+   popularTags.value = Object.entries(counts).map(([name, count]) => ({name, count, id:name})).sort((a,b)=>b.count-a.count).slice(0,8);
 };
 
 const submitPost = async () => {
-  if (!newPostForm.title.trim()) {
-    showToast('请填写标题', 'warning');
-    return;
-  }
-  
+  if(!newPostForm.title.trim()) return;
   isSubmitting.value = true;
   try {
-    let client = await dbStore.getClient();
-    if (!client) {
-      await dbStore.reconnect();
-      client = await dbStore.getClient();
-    }
+    const client = await dbStore.getClient();
+    const user = JSON.parse(localStorage.getItem('currentUser')||'{}');
+    if(!user.id) throw new Error("Auth required");
     
-    if (!client) {
-      throw new Error('数据库客户端初始化失败');
-    }
+    const { data, error } = await client.from('community_posts').insert([{
+      title: newPostForm.title, content: newPostForm.content, category: newPostForm.category||'General',
+      tags: newPostForm.tags, resource_id: newPostForm.resourceId||null, user_id: user.id,
+      like_count:0, favorite_count:0, comment_count:0
+    }]).select();
     
-    // 获取当前用户ID
-    let currentUserId: string | null = null;
-    let currentUserName = '';
-    const currentUser = localStorage.getItem('currentUser');
-    if (currentUser) {
-      try {
-        const user = JSON.parse(currentUser);
-        if (user.id) {
-          currentUserId = user.id;
-          currentUserName = user.nickname || user.username || '';
-        }
-      } catch (error: any) {
-        console.error('解析用户信息失败:', error);
-      }
-    }
+    if(error) throw error;
+    if(data?.[0]) posts.value.unshift({ ...data[0], author: user.nickname||user.username, is_liked:false, is_favorited:false, comment_count:0, resource: myResources.value.find(r=>r.id===newPostForm.resourceId) });
     
-    if (!currentUserId) {
-      router.push('/login');
-      isSubmitting.value = false;
-      return;
-    }
-    
-    const { data, error } = await client
-      .from('community_posts')
-      .insert([{
-        title: newPostForm.title,
-        content: newPostForm.content,
-        category: newPostForm.category || '学习经验',
-        tags: newPostForm.tags,
-        resource_id: newPostForm.resourceId || null,
-        user_id: currentUserId,
-        like_count: 0,
-        favorite_count: 0,
-        view_count: 0,
-        comment_count: 0
-      }])
-      .select();
-    
-    if (error) {
-      throw error;
-    }
-    
-    if (data && data[0]) {
-      const linkedResource = newPostForm.resourceId
-        ? myResources.value.find(res => res.id === newPostForm.resourceId) || null
-        : null;
-
-      const newPostData = {
-        ...data[0],
-        author: currentUserName || (currentUserId ? `用户${currentUserId.substring(0, 8)}` : '匿名'),
-        is_liked: false,
-        is_favorited: false,
-        like_count: data[0].like_count || 0,
-        favorite_count: data[0].favorite_count || 0,
-        comment_count: data[0].comment_count || 0,
-        resource: linkedResource
-      };
-      posts.value.unshift(newPostData);
-      
-      currentPage.value = 1;
-      updatePagination();
-    }
-    
-    closeModal();
-    loadPopularTags();
-    
-    // 显示成功提示
-    showToast('发布经验成功', 'success');
-    
-  } catch (error) {
-    console.error('❌ 发布帖子失败:', error);
-    showToast('发布失败，请重试', 'error');
-  } finally {
-    isSubmitting.value = false;
-  }
+    closeCreatePostModal();
+    showToast('Manuscript submitted.', 'success');
+    updatePagination();
+  } catch(e) { showToast('Submission failed.', 'error'); }
+  finally { isSubmitting.value = false; }
 };
 
-// 导航到用户主页
-const navigateToUserProfile = (userId: string) => {
-  if (!userId) return
-  
-  // 如果点击的是自己的用户ID，跳转到个人资料页面
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
-  if (currentUser.id === userId) {
-    router.push('/profile')
-  } else {
-    router.push(`/user/${userId}`)
-  }
-}
+const toggleLike = async (post: Post) => {
+   if(isLiking.value) return;
+   isLiking.value = true;
+   try {
+      const client = await dbStore.getClient();
+      const userStr = localStorage.getItem('currentUser');
+      if(!userStr) { router.push('/login'); return; }
+      const uid = JSON.parse(userStr).id;
 
-// --- 初始化 ---
-onMounted(async () => {
-  try {
-    if (dbStore.isConnected) {
-      console.log('✅ 数据库已连接');
-    } else {
-      await dbStore.reconnect();
-    }
-    
-    await Promise.all([
-      loadPosts(),
-      loadPopularTags()
-    ]);
-    
-    console.log('🎉 CommunityPage 初始化完成');
-  } catch (error) {
-    console.error('❌ 初始化失败:', error);
-    hasError.value = true;
-    errorMessage.value = '初始化失败：' + (error.message || '未知错误');
-  } finally {
-    isLoading.value = false;
-  }
-});
+      if(post.is_liked) {
+         await client.from('post_likes').delete().eq('user_id', uid).eq('post_id', post.id);
+         post.like_count--;
+         post.is_liked = false;
+      } else {
+         await client.from('post_likes').insert({ user_id: uid, post_id: post.id });
+         post.like_count++;
+         post.is_liked = true;
+      }
+   } catch(e) { console.error(e); } 
+   finally { isLiking.value = false; }
+};
+
+const toggleFavorite = async (post: Post) => {
+   if(isFavoriting.value) return;
+   isFavoriting.value = true;
+   try {
+      const client = await dbStore.getClient();
+      const userStr = localStorage.getItem('currentUser');
+      if(!userStr) { router.push('/login'); return; }
+      const uid = JSON.parse(userStr).id;
+
+      if(post.is_favorited) {
+         await client.from('post_favorites').delete().eq('user_id', uid).eq('post_id', post.id);
+         post.favorite_count--;
+         post.is_favorited = false;
+      } else {
+         await client.from('post_favorites').insert({ user_id: uid, post_id: post.id });
+         post.favorite_count++;
+         post.is_favorited = true;
+      }
+   } catch(e) { console.error(e); } 
+   finally { isFavoriting.value = false; }
+};
+
+const sortByOption = (sortType: string) => {
+   currentSort.value = sortType;
+   applySorting();
+};
+
+const applySorting = () => {
+   const currentPosts = showSearchResults.value ? filteredPosts.value : posts.value;
+   applySortingToResults(currentPosts);
+   currentPage.value = 1;
+   updatePagination();
+};
+
+onMounted(() => { loadPosts().then(loadPopularTags); });
 </script>
 
 <style scoped>
-/* Modal 动画 */
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-
-.modal-enter-active .relative,
-.modal-leave-active .relative {
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.modal-enter-from .relative,
-.modal-leave-to .relative {
-  transform: scale(0.95) translateY(10px);
-}
-
-/* 文本截断样式 */
-.line-clamp-1 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-}
-
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+:deep(.bg-green-100) { background-color: #f0fdf4 !important; color: #166534 !important; border-color: #166534 !important; }
+:deep(.bg-red-100) { background-color: #fef2f2 !important; color: #991b1b !important; border-color: #991b1b !important; }
 </style>
