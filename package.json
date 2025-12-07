@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host --port 3007",
     "build": "vite build --outDir dist",
+    "build:netlify": "npm run build && xcopy /E /I /Y \"netlify\\functions\" \"dist\\functions\"",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -631,11 +631,25 @@ const fetchPostDetail = async () => {
       }
     }
     
-    // 检查用户是否已收藏该帖子
+    // 检查用户是否已点赞该帖子
+    let isLiked = false
     let isFavorited = false
     if (currentUserId) {
       try {
         const { supabaseService } = await import('@/services/supabase')
+        
+        // 检查点赞状态
+        const { data: likeData } = await supabaseService.getClient()
+          .from('post_likes')
+          .select('id')
+          .eq('user_id', currentUserId)
+          .eq('post_id', postId)
+          
+        if (likeData && likeData.length > 0) {
+          isLiked = true
+        }
+        
+        // 检查收藏状态
         const { data: favoriteData } = await supabaseService.getClient()
           .from('post_favorites')
           .select('id')
@@ -646,7 +660,7 @@ const fetchPostDetail = async () => {
           isFavorited = true
         }
       } catch (error) {
-        console.error('检查收藏状态失败:', error)
+        console.error('检查点赞/收藏状态失败:', error)
       }
     }
     
@@ -655,7 +669,9 @@ const fetchPostDetail = async () => {
       ...postData,
       author_name: userInfo?.nickname || userInfo?.username || '匿名用户',
       user: userInfo,
+      is_liked: isLiked,
       is_favorited: isFavorited,
+      like_count: postData.like_count || 0,
       favorite_count: postData.favorite_count || 0,
       resource: postData.resource || null
     }
