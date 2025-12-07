@@ -272,12 +272,64 @@ router.beforeEach((to, _from, next) => {
 })
 
 // 路由切换后确保侧边栏可见
-router.afterEach((to) => {
+router.afterEach((to, from) => {
   // 如果是管理员路由，确保侧边栏可见
   if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
-    // 对于系统维护页面，使用更频繁的检查
+    // 特别处理从用户详情页返回的情况
+    const isReturningFromUserDetail = from.path.startsWith('/admin/user/')
     const isMaintenancePage = to.path.startsWith('/admin/maintenance')
     const checkInterval = isMaintenancePage ? 50 : 0
+    
+    // 如果是从用户详情页返回，立即强制恢复侧边栏
+    if (isReturningFromUserDetail) {
+      console.log('🔄 从用户详情页返回，立即强制恢复侧边栏按钮')
+      // 立即执行一次强制恢复
+      const immediateFix = () => {
+        const sidebar = document.querySelector('.admin-sidebar') as HTMLElement
+        if (sidebar) {
+          // 强制恢复侧边栏
+          sidebar.style.setProperty('display', 'block', 'important')
+          sidebar.style.setProperty('visibility', 'visible', 'important')
+          sidebar.style.setProperty('opacity', '1', 'important')
+          
+          // 强制恢复导航容器
+          const nav = sidebar.querySelector('nav.sidebar-nav') as HTMLElement
+          if (nav) {
+            nav.style.setProperty('display', 'flex', 'important')
+            nav.style.setProperty('visibility', 'visible', 'important')
+            nav.style.setProperty('opacity', '1', 'important')
+          }
+          
+          // 强制恢复所有按钮
+          const buttons = sidebar.querySelectorAll('nav.sidebar-nav a, .sidebar-button') as NodeListOf<HTMLElement>
+          buttons.forEach((btn) => {
+            btn.style.setProperty('display', 'flex', 'important')
+            btn.style.setProperty('visibility', 'visible', 'important')
+            btn.style.setProperty('opacity', '1', 'important')
+            
+            // 恢复按钮内的所有元素
+            const spans = btn.querySelectorAll('span')
+            spans.forEach((span) => {
+              const spanEl = span as HTMLElement
+              spanEl.style.setProperty('display', 'inline-block', 'important')
+              spanEl.style.setProperty('visibility', 'visible', 'important')
+              spanEl.style.setProperty('opacity', '1', 'important')
+            })
+          })
+          
+          console.log(`✅ 立即修复完成，找到 ${buttons.length} 个按钮`)
+        }
+      }
+      
+      // 立即执行
+      immediateFix()
+      
+      // 使用 requestAnimationFrame 确保在下一帧执行
+      requestAnimationFrame(() => {
+        immediateFix()
+      })
+    }
+    
     // 使用 setTimeout 确保 DOM 已更新
     setTimeout(() => {
       const sidebar = document.querySelector('.admin-sidebar') as HTMLElement
@@ -310,19 +362,26 @@ router.afterEach((to) => {
           nav.style.setProperty('opacity', '1', 'important')
         }
         
-        // 确保所有按钮可见
-        const buttons = sidebar.querySelectorAll('nav.sidebar-nav a')
+        // 确保所有按钮可见 - 使用更全面的选择器
+        const buttons = sidebar.querySelectorAll('nav.sidebar-nav a, .sidebar-button, nav.sidebar-nav router-link')
         buttons.forEach((button) => {
           const btn = button as HTMLElement
+          // 清除所有可能隐藏的样式
           btn.style.removeProperty('display')
           btn.style.removeProperty('visibility')
           btn.style.removeProperty('opacity')
+          btn.style.removeProperty('width')
+          btn.style.removeProperty('height')
+          btn.style.removeProperty('position')
+          btn.style.removeProperty('left')
+          btn.style.removeProperty('top')
           btn.classList.remove('hidden', 'invisible', 'opacity-0')
           
+          // 强制设置可见样式
           btn.style.setProperty('display', 'flex', 'important')
           btn.style.setProperty('visibility', 'visible', 'important')
           btn.style.setProperty('opacity', '1', 'important')
-          btn.style.setProperty('min-height', '2.75rem', 'important')
+          btn.style.setProperty('min-height', '2.25rem', 'important')
           btn.style.setProperty('width', '100%', 'important')
           
           // 确保按钮内的图标和文字可见
@@ -332,6 +391,11 @@ router.afterEach((to) => {
             spanEl.style.removeProperty('display')
             spanEl.style.removeProperty('visibility')
             spanEl.style.removeProperty('opacity')
+            spanEl.style.removeProperty('width')
+            spanEl.style.removeProperty('height')
+            spanEl.style.removeProperty('position')
+            spanEl.style.removeProperty('left')
+            spanEl.style.removeProperty('top')
             spanEl.classList.remove('hidden', 'invisible', 'opacity-0')
             
             spanEl.style.setProperty('display', 'inline-block', 'important')
@@ -355,7 +419,11 @@ router.afterEach((to) => {
           sidebarBottom.style.setProperty('opacity', '1', 'important')
         }
         
-        console.log('✅ 路由切换后已确保侧边栏可见，找到', buttons.length, '个按钮', isMaintenancePage ? '(系统维护页面)' : '')
+        console.log('✅ 路由切换后已确保侧边栏可见，找到', buttons.length, '个按钮', 
+          isMaintenancePage ? '(系统维护页面)' : '', 
+          isReturningFromUserDetail ? '(从用户详情页返回)' : '')
+      } else {
+        console.warn('⚠️ 路由切换后未找到侧边栏元素')
       }
     }, checkInterval)
     
