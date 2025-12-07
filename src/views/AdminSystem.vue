@@ -1686,7 +1686,7 @@ onMounted(async () => {
   updateTime()
   loadStats()
   loadMaintenanceLogs() // 加载维护日志
-  timeInterval = setInterval(updateTime, 5000) // 改为5秒更新一次
+  timeInterval = setInterval(updateTime, 1000) // 每秒更新一次
   
   // 等待DOM更新后再加载图表
   await nextTick()
