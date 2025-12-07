@@ -20,26 +20,75 @@
           </div>
           
           <!-- 搜索框 -->
-          <div class="relative w-full md:w-96">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search class="h-5 w-5 text-slate-400" />
+          <div class="w-full md:w-96">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search class="h-5 w-5 text-slate-400" />
+              </div>
+              <input 
+                v-model="searchKeyword"
+                @input="handleSearchInput"
+                @keyup.enter="performSearch"
+                @keyup.escape="clearSearch"
+                type="text" 
+                class="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all sm:text-sm shadow-sm"
+                placeholder="搜索帖子、话题或关键词..."
+              />
+              <button 
+                v-if="searchKeyword"
+                @click="clearSearch"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X class="w-4 h-4" />
+              </button>
             </div>
-            <input 
-              v-model="searchKeyword"
-              @input="handleSearchInput"
-              @keyup.enter="performSearch"
-              @keyup.escape="clearSearch"
-              type="text" 
-              class="block w-full pl-10 pr-10 py-3 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all sm:text-sm shadow-sm"
-              placeholder="搜索帖子、话题或关键词..."
-            />
-            <button 
-              v-if="searchKeyword"
-              @click="clearSearch"
-              class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer"
-            >
-              <X class="w-4 h-4" />
-            </button>
+            
+            <!-- 筛选框 -->
+            <div class="mt-3 flex items-center gap-3 flex-nowrap justify-end">
+              <span class="text-sm font-medium text-slate-700 whitespace-nowrap">排序方式：</span>
+              <div class="flex gap-2 flex-nowrap">
+                <button
+                  @click="setSortBy('latest')"
+                  :class="sortBy === 'latest' 
+                    ? 'bg-indigo-600 text-white border-indigo-600' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                  class="px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
+                >
+                  <Clock class="w-4 h-4" />
+                  最新发布
+                </button>
+                <button
+                  @click="setSortBy('likes')"
+                  :class="sortBy === 'likes' 
+                    ? 'bg-indigo-600 text-white border-indigo-600' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                  class="px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
+                >
+                  <Heart class="w-4 h-4" />
+                  最多点赞
+                </button>
+                <button
+                  @click="setSortBy('favorites')"
+                  :class="sortBy === 'favorites' 
+                    ? 'bg-indigo-600 text-white border-indigo-600' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                  class="px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
+                >
+                  <Tag class="w-4 h-4" />
+                  最多收藏
+                </button>
+                <button
+                  @click="setSortBy('comments')"
+                  :class="sortBy === 'comments' 
+                    ? 'bg-indigo-600 text-white border-indigo-600' 
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:text-indigo-600'"
+                  class="px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap"
+                >
+                  <MessageSquare class="w-4 h-4" />
+                  最多评论
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -421,6 +470,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDatabaseStore } from '@/stores/database';
+import { supabaseService } from '@/services/supabase';
 import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message';
 import { 
   Search, 
@@ -477,6 +527,7 @@ const errorMessage = ref('');
 const searchKeyword = ref('');
 const showSearchResults = ref(false);
 const showModal = ref(false);
+const sortBy = ref<'latest' | 'likes' | 'favorites' | 'comments'>('latest');
 const isSubmitting = ref(false);
 const isLiking = ref(false);
 const isFavoriting = ref(false);
@@ -511,10 +562,29 @@ const selectedResource = computed(() => {
 
 // --- 计算属性 ---
 const displayedPosts = computed(() => {
-  const currentPosts = showSearchResults.value ? filteredPosts.value : posts.value;
+  let currentPosts = showSearchResults.value ? filteredPosts.value : posts.value;
+  
+  // 根据筛选条件排序
+  const sortedPosts = [...currentPosts].sort((a, b) => {
+    switch (sortBy.value) {
+      case 'likes':
+        return (b.like_count || 0) - (a.like_count || 0);
+      case 'favorites':
+        return (b.favorite_count || 0) - (a.favorite_count || 0);
+      case 'comments':
+        return (b.comment_count || 0) - (a.comment_count || 0);
+      case 'latest':
+      default:
+        // 按创建时间降序（最新的在前）
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA;
+    }
+  });
+  
   const startIndex = (currentPage.value - 1) * pageSize.value;
   const endIndex = startIndex + pageSize.value;
-  return currentPosts.slice(startIndex, endIndex);
+  return sortedPosts.slice(startIndex, endIndex);
 });
 
 // --- 方法 ---
@@ -524,6 +594,13 @@ const handleSearchInput = () => {
   if (!searchKeyword.value.trim()) {
     clearSearch();
   }
+};
+
+// 设置排序方式
+const setSortBy = (sort: 'latest' | 'likes' | 'favorites' | 'comments') => {
+  sortBy.value = sort;
+  currentPage.value = 1; // 重置到第一页
+  updatePagination();
 };
 
 // 清除搜索
@@ -579,6 +656,7 @@ const performSearch = async () => {
 // 更新分页
 const updatePagination = () => {
   const currentPosts = showSearchResults.value ? filteredPosts.value : posts.value;
+  // 注意：这里不排序，因为排序在 displayedPosts 计算属性中处理
   totalPages.value = Math.ceil(currentPosts.length / pageSize.value);
 };
 
@@ -718,18 +796,10 @@ const toggleLike = async (post: any) => {
       return;
     }
     
-    // 确保数据库连接
+    // 使用统一的 Supabase 客户端获取方式
     let client = null;
     try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (supabaseUrl && supabaseKey) {
-        client = createClient(supabaseUrl, supabaseKey);
-      } else {
-        throw new Error('Supabase环境变量未配置');
-      }
+      client = await supabaseService.getClient();
     } catch (error: any) {
       console.error('❌ 数据库连接失败:', error.message);
       showToast('数据库连接失败，请稍后重试', 'error');
@@ -816,18 +886,10 @@ const toggleFavorite = async (post: any) => {
       return;
     }
     
-    // 确保数据库连接
+    // 使用统一的 Supabase 客户端获取方式
     let client = null;
     try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      
-      if (supabaseUrl && supabaseKey) {
-        client = createClient(supabaseUrl, supabaseKey);
-      } else {
-        throw new Error('Supabase环境变量未配置');
-      }
+      client = await supabaseService.getClient();
     } catch (error: any) {
       console.error('❌ 数据库连接失败:', error.message);
       showToast('数据库连接失败，请稍后重试', 'error');
@@ -1033,24 +1095,18 @@ const loadPosts = async () => {
 
 const loadLikesStatus = async (userId: string) => {
   try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const client = await supabaseService.getClient();
     
-    if (supabaseUrl && supabaseKey) {
-      const client = createClient(supabaseUrl, supabaseKey);
-      
-      const { data, error } = await client
-        .from('post_likes')
-        .select('post_id')
-        .eq('user_id', userId);
-      
-      if (!error && data) {
-        const likedPostIds = new Set(data.map((like: any) => like.post_id));
-        posts.value.forEach(post => {
-          post.is_liked = likedPostIds.has(post.id);
-        });
-      }
+    const { data, error } = await client
+      .from('post_likes')
+      .select('post_id')
+      .eq('user_id', userId);
+    
+    if (!error && data) {
+      const likedPostIds = new Set(data.map((like: any) => like.post_id));
+      posts.value.forEach(post => {
+        post.is_liked = likedPostIds.has(post.id);
+      });
     }
   } catch (error) {
     console.error('❌ 加载点赞状态失败:', error);
@@ -1059,24 +1115,18 @@ const loadLikesStatus = async (userId: string) => {
 
 const loadFavoritesStatus = async (userId: string) => {
   try {
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const client = await supabaseService.getClient();
     
-    if (supabaseUrl && supabaseKey) {
-      const client = createClient(supabaseUrl, supabaseKey);
-      
-      const { data, error } = await client
-        .from('post_favorites')
-        .select('post_id')
-        .eq('user_id', userId);
-      
-      if (!error && data) {
-        const favoritedPostIds = new Set(data.map((fav: any) => fav.post_id));
-        posts.value.forEach(post => {
-          post.is_favorited = favoritedPostIds.has(post.id);
-        });
-      }
+    const { data, error } = await client
+      .from('post_favorites')
+      .select('post_id')
+      .eq('user_id', userId);
+    
+    if (!error && data) {
+      const favoritedPostIds = new Set(data.map((fav: any) => fav.post_id));
+      posts.value.forEach(post => {
+        post.is_favorited = favoritedPostIds.has(post.id);
+      });
     }
   } catch (error) {
     console.error('❌ 加载收藏状态失败:', error);

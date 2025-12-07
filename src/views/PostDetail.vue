@@ -186,6 +186,7 @@
           <div 
             v-for="comment in displayedComments" 
             :key="comment.id"
+            :data-comment-id="comment.id"
             class="flex gap-4 p-6 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors"
           >
             <div class="flex-shrink-0">
@@ -209,8 +210,190 @@
                   {{ comment.author_name || '匿名用户' }}
                 </button>
                 <span class="text-sm text-slate-500">{{ formatDate(comment.created_at) }}</span>
+                <!-- 信息图标按钮（时间后面） -->
+                <button
+                  @click="toggleReply(comment.id)"
+                  class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                  title="回复评论"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                </button>
               </div>
               <div class="text-slate-700 leading-relaxed whitespace-pre-wrap">{{ comment.content }}</div>
+              
+              <!-- 显示回复列表（递归显示） -->
+              <div v-if="comment.replies && comment.replies.length > 0" class="mt-4 space-y-3">
+                <template v-for="reply in comment.replies" :key="reply.id">
+                  <div 
+                    :data-reply-id="reply.id"
+                    class="ml-6 pl-4 border-l-2 border-indigo-200 bg-white rounded-lg p-3"
+                  >
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                      <button 
+                        @click="navigateToUserProfile(reply.user_id)"
+                        class="font-medium text-sm text-slate-900 hover:text-indigo-600 transition-colors"
+                      >
+                        {{ reply.author_name || '匿名用户' }}
+                      </button>
+                      <span class="text-xs text-slate-500">回复</span>
+                      <button 
+                        @click="navigateToUserProfile(comment.user_id)"
+                        class="font-medium text-xs text-indigo-600 hover:text-indigo-700 transition-colors"
+                      >
+                        {{ comment.author_name || '匿名用户' }}
+                      </button>
+                      <span class="text-xs text-slate-500">{{ formatDate(reply.created_at) }}</span>
+                      <!-- 信息图标按钮（回复的时间后面） -->
+                      <button
+                        @click="toggleReply(reply.id)"
+                        class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                        title="回复评论"
+                      >
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{{ reply.content }}</div>
+                    
+                    <!-- 递归显示回复的回复 -->
+                    <div v-if="reply.replies && reply.replies.length > 0" class="mt-3 space-y-2">
+                      <div 
+                        v-for="subReply in reply.replies" 
+                        :key="subReply.id"
+                        :data-reply-id="subReply.id"
+                        class="ml-4 pl-3 border-l-2 border-indigo-100 bg-slate-50 rounded-lg p-2"
+                      >
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                          <button 
+                            @click="navigateToUserProfile(subReply.user_id)"
+                            class="font-medium text-xs text-slate-900 hover:text-indigo-600 transition-colors"
+                          >
+                            {{ subReply.author_name || '匿名用户' }}
+                          </button>
+                          <span class="text-xs text-slate-400">回复</span>
+                          <button 
+                            @click="navigateToUserProfile(reply.user_id)"
+                            class="font-medium text-xs text-indigo-600 hover:text-indigo-700 transition-colors"
+                          >
+                            {{ reply.author_name || '匿名用户' }}
+                          </button>
+                          <span class="text-xs text-slate-400">{{ formatDate(subReply.created_at) }}</span>
+                          <!-- 信息图标按钮 -->
+                          <button
+                            @click="toggleReply(subReply.id)"
+                            class="p-0.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                            title="回复评论"
+                          >
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                          </button>
+                        </div>
+                        <div class="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">{{ subReply.content }}</div>
+                        
+                        <!-- 回复的回复输入框 -->
+                        <div v-if="replyingToCommentId === subReply.id" class="mt-2 pt-2 border-t border-slate-200">
+                          <div class="flex items-start gap-2 mb-1">
+                            <span class="text-xs text-slate-600">回复 <span class="font-medium text-indigo-600">{{ subReply.author_name || '匿名用户' }}</span>：</span>
+                          </div>
+                          <textarea
+                            v-model="replyContent"
+                            placeholder="输入回复内容..."
+                            rows="2"
+                            class="w-full px-2 py-1.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition-all text-xs"
+                          ></textarea>
+                          <div class="flex justify-end gap-2 mt-1.5">
+                            <button
+                              @click="cancelReply"
+                              class="px-2 py-1 text-xs text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded transition-colors"
+                            >
+                              取消
+                            </button>
+                            <button
+                              @click="submitReply(subReply.id)"
+                              :disabled="!replyContent.trim() || isSubmittingReply"
+                              class="px-2 py-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                            >
+                              <svg v-if="isSubmittingReply" class="animate-spin w-2.5 h-2.5" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              {{ isSubmittingReply ? '发布中...' : '回复' }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- 回复的回复输入框 -->
+                    <div v-if="replyingToCommentId === reply.id" class="mt-3 pt-3 border-t border-slate-200">
+                      <div class="flex items-start gap-2 mb-2">
+                        <span class="text-xs text-slate-600">回复 <span class="font-medium text-indigo-600">{{ reply.author_name || '匿名用户' }}</span>：</span>
+                      </div>
+                      <textarea
+                        v-model="replyContent"
+                        placeholder="输入回复内容..."
+                        rows="2"
+                        class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition-all text-sm"
+                      ></textarea>
+                      <div class="flex justify-end gap-2 mt-2">
+                        <button
+                          @click="cancelReply"
+                          class="px-3 py-1 text-xs text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                        >
+                          取消
+                        </button>
+                        <button
+                          @click="submitReply(reply.id)"
+                          :disabled="!replyContent.trim() || isSubmittingReply"
+                          class="px-3 py-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                          <svg v-if="isSubmittingReply" class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          {{ isSubmittingReply ? '发布中...' : '回复' }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+              
+              <!-- 顶级评论的回复输入框 -->
+              <div v-if="replyingToCommentId === comment.id" class="mt-4 pt-4 border-t border-slate-200">
+                <div class="flex items-start gap-2 mb-2">
+                  <span class="text-sm text-slate-600">回复 <span class="font-medium text-indigo-600">{{ comment.author_name || '匿名用户' }}</span>：</span>
+                </div>
+                <textarea
+                  v-model="replyContent"
+                  placeholder="输入回复内容..."
+                  rows="2"
+                  class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none transition-all text-sm"
+                ></textarea>
+                <div class="flex justify-end gap-2 mt-2">
+                  <button
+                    @click="cancelReply"
+                    class="px-4 py-1.5 text-sm text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                  >
+                    取消
+                  </button>
+                  <button
+                    @click="submitReply(comment.id)"
+                    :disabled="!replyContent.trim() || isSubmittingReply"
+                    class="px-4 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    <svg v-if="isSubmittingReply" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    {{ isSubmittingReply ? '发布中...' : '回复' }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -284,6 +467,11 @@ const newComment = ref('')
 const isLiking = ref(false)
 const isFavoriting = ref(false)
 const isSubmittingComment = ref(false)
+
+// 回复相关状态
+const replyingToCommentId = ref<string | null>(null)
+const replyContent = ref('')
+const isSubmittingReply = ref(false)
 
 // 分页状态
 const currentPage = ref(1)
@@ -704,11 +892,12 @@ const loadComments = async () => {
     
     console.log('💬 开始加载评论，帖子ID:', postId)
     
-    // 先获取总数
+    // 先获取总数（只统计顶级评论）
     const { count, error: countError } = await client
       .from('post_comments')
       .select('*', { count: 'exact', head: true })
       .eq('post_id', postId)
+      .is('parent_id', null) // 只统计顶级评论
     
     if (countError) {
       console.error('❌ 获取评论总数失败:', countError)
@@ -716,8 +905,8 @@ const loadComments = async () => {
       totalComments.value = count || 0
     }
     
-    // 分页获取评论数据
-    const { data: commentsData, error: commentsError } = await client
+    // 分页获取顶级评论数据（parent_id 为 null）
+    const { data: topLevelComments, error: topLevelError } = await client
       .from('post_comments')
       .select(`
         *,
@@ -728,21 +917,67 @@ const loadComments = async () => {
         )
       `)
       .eq('post_id', postId)
+      .is('parent_id', null) // 只获取顶级评论
       .order('created_at', { ascending: false }) // 最新评论在前
       .range((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value - 1)
     
-    if (commentsError) {
-      console.error('❌ 加载评论失败:', commentsError)
+    if (topLevelError) {
+      console.error('❌ 加载顶级评论失败:', topLevelError)
       return
     }
     
-    // 处理评论数据
-    allComments.value = (commentsData || []).map(comment => ({
-      ...comment,
-      author_name: comment.user?.nickname || comment.user?.username || '匿名用户'
-    }))
+    // 获取所有回复（包括所有层级的回复）
+    const topLevelCommentIds = (topLevelComments || []).map((c: any) => c.id)
+    let allReplies: any[] = []
     
-    console.log('✅ 评论加载完成，总数:', totalComments.value, '当前页显示:', allComments.value.length)
+    if (topLevelCommentIds.length > 0) {
+      // 加载所有回复（parent_id 不为 null 的所有评论）
+      const { data: repliesData, error: repliesError } = await client
+        .from('post_comments')
+        .select(`
+          *,
+          user:user_id (
+            id,
+            username,
+            nickname
+          )
+        `)
+        .eq('post_id', postId)
+        .not('parent_id', 'is', null) // 获取所有回复（包括对回复的回复）
+        .order('created_at', { ascending: true }) // 回复按时间正序排列
+    
+      if (repliesError) {
+        console.error('❌ 加载回复失败:', repliesError)
+      } else {
+        allReplies = repliesData || []
+      }
+    }
+    
+    // 构建回复的层级结构
+    const buildReplyTree = (parentId: string): any[] => {
+      return allReplies
+        .filter(reply => reply.parent_id === parentId)
+        .map(reply => ({
+          ...reply,
+          author_name: reply.user?.nickname || reply.user?.username || '匿名用户',
+          replies: buildReplyTree(reply.id) // 递归构建子回复
+        }))
+    }
+    
+    // 处理评论数据，将回复嵌套到父评论中
+    const processedComments = (topLevelComments || []).map((comment: any) => {
+      const commentReplies = buildReplyTree(comment.id)
+      
+      return {
+        ...comment,
+        author_name: comment.user?.nickname || comment.user?.username || '匿名用户',
+        replies: commentReplies
+      }
+    })
+    
+    allComments.value = processedComments
+    
+    console.log('✅ 评论加载完成，总数:', totalComments.value, '当前页显示:', allComments.value.length, '包含回复:', allReplies.length)
     
   } catch (error) {
     console.error('❌ 加载评论失败:', error)
@@ -849,6 +1084,136 @@ const addComment = async () => {
     console.error('❌ 发表评论失败:', error)
   } finally {
     isSubmittingComment.value = false
+  }
+}
+
+// 切换回复状态
+const toggleReply = (commentId: string) => {
+  // 检查用户是否登录
+  const currentUserStr = localStorage.getItem('currentUser')
+  if (!currentUserStr) {
+    router.push('/login')
+    return
+  }
+  
+  // 如果点击的是当前正在回复的评论，则取消回复
+  if (replyingToCommentId.value === commentId) {
+    cancelReply()
+  } else {
+    replyingToCommentId.value = commentId
+    replyContent.value = ''
+  }
+}
+
+// 取消回复
+const cancelReply = () => {
+  replyingToCommentId.value = null
+  replyContent.value = ''
+}
+
+// 提交回复
+const submitReply = async (parentCommentId: string) => {
+  if (!replyContent.value.trim()) {
+    return
+  }
+  
+  isSubmittingReply.value = true
+  
+  try {
+    // 获取当前用户信息
+    let currentUser = null
+    let currentUserId = null
+    
+    const currentUserStr = localStorage.getItem('currentUser')
+    if (currentUserStr) {
+      try {
+        currentUser = JSON.parse(currentUserStr)
+        if (currentUser.id) {
+          currentUserId = currentUser.id
+        }
+      } catch (error) {
+        console.error('解析用户信息失败:', error)
+      }
+    }
+    
+    if (!currentUserId) {
+      router.push('/login')
+      return
+    }
+    
+    console.log('💬 开始发表回复，父评论ID:', parentCommentId, '用户ID:', currentUserId)
+    
+    // 确保数据库已初始化
+    let client = await dbStore.getClient()
+    if (!client) {
+      console.log('发表回复：数据库客户端未初始化，尝试重新连接...')
+      await dbStore.reconnect()
+      client = await dbStore.getClient()
+    }
+    
+    if (!client) {
+      console.error('发表回复：数据库客户端初始化失败')
+      return
+    }
+    
+    // 插入回复，设置 parent_id 为父评论的 ID
+    const { data: replyData, error } = await client
+      .from('post_comments')
+      .insert([{
+        post_id: postId,
+        user_id: currentUserId,
+        content: replyContent.value.trim(),
+        parent_id: parentCommentId // 设置父评论ID
+      }])
+      .select(`
+        *,
+        user:user_id (
+          id,
+          username,
+          nickname
+        )
+      `)
+    
+    if (error) {
+      console.error('❌ 发表回复失败:', error)
+      showToast('回复失败，请稍后重试', 'error')
+      return
+    }
+    
+    // 重新加载评论列表以显示最新回复
+    await loadComments()
+    
+    // 确保被回复的评论在当前页显示
+    // 查找被回复的评论所在的页码
+    const parentComment = allComments.value.find(c => c.id === parentCommentId)
+    if (!parentComment) {
+      // 如果父评论不在当前页，需要找到它所在的页
+      // 这里我们暂时先刷新当前页，如果父评论在其他页，用户需要手动翻页
+      // 更好的做法是找到父评论所在的页并跳转，但为了简化，我们先刷新当前页
+      console.log('⚠️ 父评论不在当前页，回复已保存但需要刷新查看')
+    }
+    
+    // 更新帖子评论数（注意：回复不应该增加顶级评论数，但会增加总评论数）
+    // 这里我们不增加 comment_count，因为回复是嵌套在评论下的
+    
+    // 清空回复状态
+    cancelReply()
+    console.log('✅ 回复发表成功，回复数据:', replyData)
+    showToast('回复成功', 'success')
+    
+    // 滚动到被回复的评论位置，确保用户能看到新回复
+    setTimeout(() => {
+      const commentElement = document.querySelector(`[data-comment-id="${parentCommentId}"]`)
+      if (commentElement) {
+        commentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    }, 100)
+    
+  } catch (error) {
+    console.error('❌ 发表回复失败:', error)
+    showToast('回复失败，请稍后重试', 'error')
+  } finally {
+    isSubmittingReply.value = false
   }
 }
 
