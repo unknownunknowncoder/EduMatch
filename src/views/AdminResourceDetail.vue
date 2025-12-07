@@ -271,14 +271,21 @@ const loadResource = async () => {
   try {
     console.log('🔄 加载管理员资源详情，ID:', resourceId)
     
+    // 确保数据库连接已初始化
+    const { useDatabaseStore } = await import('@/stores/database')
+    const dbStore = useDatabaseStore()
+    await dbStore.reconnect()
+    
     const { supabaseService } = await import('@/services/supabase')
+    console.log('✅ Supabase服务获取成功')
     
     // 获取资源基本信息
+    console.log('📋 获取资源基本信息...')
     const resourceData = await supabaseService.getResourceById(resourceId)
-    
-    console.log('🔍 原始资源数据:', resourceData)
+    console.log('📋 资源基本信息:', resourceData)
     
     if (!resourceData) {
+      console.error('❌ 资源不存在或已被删除')
       error.value = '资源不存在或已被删除'
       return
     }
@@ -286,10 +293,13 @@ const loadResource = async () => {
     // 获取用户信息
     let userInfo = null
     if (resourceData.created_by) {
+      console.log('👤 获取用户信息，用户ID:', resourceData.created_by)
       try {
         userInfo = await supabaseService.getUserById(resourceData.created_by)
+        console.log('✅ 用户信息获取成功:', userInfo)
       } catch (userError) {
-        console.error('获取用户信息失败:', userError)
+        console.error('❌ 获取用户信息失败:', userError)
+        // 用户信息获取失败不应该阻止资源显示
       }
     }
     
@@ -301,11 +311,16 @@ const loadResource = async () => {
     resource.value = finalResource
     
     console.log('✅ 资源详情加载成功:', resource.value)
-    console.log('✅ 用户ID确认:', resource.value.user_id)
     
   } catch (err) {
     console.error('❌ 加载资源详情失败:', err)
-    error.value = '加载资源详情失败，请稍后重试'
+    console.error('❌ 错误详情:', {
+      message: err.message,
+      code: err.code,
+      details: err.details,
+      hint: err.hint
+    })
+    error.value = `加载资源详情失败: ${err.message || '未知错误'}`
   } finally {
     loading.value = false
   }

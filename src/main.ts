@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import './index.css'
+import './styles/admin.css'
 import { dbService } from './services/database'
 
 // 全局路由加载状态

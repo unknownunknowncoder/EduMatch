@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户详情页返回测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* 模拟 UserDetailAdmin 的样式 */
+        div[class*="sidebar"]:not(.admin-sidebar):not([class*="admin"]),
+        div[class*="navigation"]:not(.admin-sidebar):not([class*="admin"]),
+        aside:not(.admin-sidebar):not([class*="admin"]) {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        
+        /* 管理后台侧边栏样式 */
+        .admin-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 16rem;
+            height: 100vh;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            padding: 1rem;
+            z-index: 50;
+            display: block;
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .sidebar-button {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .sidebar-button:hover {
+            background: #f3f4f6;
+        }
+        
+        .main-content {
+            margin-left: 16rem;
+            padding: 2rem;
+        }
+        
+        .test-section {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .user-detail-page {
+            display: none;
+        }
+        
+        .user-list-page {
+            display: block;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            margin: 0.5rem 0;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .user-table th,
+        .user-table td {
+            border: 1px solid #e2e8f0;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        
+        .user-table th {
+            background: #f9fafb;
+        }
+        
+        .user-table tr:hover {
+            background: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理后台侧边栏 -->
+    <aside class="admin-sidebar">
+        <h3>管理后台导航</h3>
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-button" data-page="dashboard">📊 仪表板</a>
+            <a href="#" class="sidebar-button" data-page="users">👥 用户管理</a>
+            <a href="#" class="sidebar-button" data-page="settings">⚙️ 系统设置</a>
+            <a href="#" class="sidebar-button" data-page="maintenance">🔧 系统维护</a>
+        </nav>
+    </aside>
+    
+    <main class="main-content">
+        <!-- 用户管理页面 -->
+        <div class="user-list-page" id="userListPage">
+            <div class="test-section">
+                <h1>👥 用户管理页面</h1>
+                <p>这个页面模拟用户管理页面，点击"查看详情"按钮会跳转到用户详情页面。</p>
+                <button onclick="goToUserDetail()">查看用户详情 (模拟)</button>
+            </div>
+            
+            <h2>用户列表</h2>
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>用户名</th>
+                        <th>邮箱</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>testuser1</td>
+                        <td>test1@example.com</td>
+                        <td>正常</td>
+                        <td><button onclick="goToUserDetail()">查看详情</button></td>
+                    </tr>
+                    <tr>
+                        <td>testuser2</td>
+                        <td>test2@example.com</td>
+                        <td>正常</td>
+                        <td><button onclick="goToUserDetail()">查看详情</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 用户详情页面 -->
+        <div class="user-detail-page" id="userDetailPage">
+            <div class="test-section">
+                <h1>👤 用户详情页面</h1>
+                <p>这个页面模拟用户详情页面，包含 UserDetailAdmin.vue 中的 CSS 隐藏规则。</p>
+                <button onclick="goBackToUserList()">返回用户管理</button>
+            </div>
+            
+            <h2>用户详细信息</h2>
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1rem;">
+                <p><strong>用户名：</strong> testuser1</p>
+                <p><strong>邮箱：</strong> test1@example.com</p>
+                <p><strong>注册时间：</strong> 2025-01-01</p>
+                <p><strong>状态：</strong> 正常</p>
+            </div>
+        </div>
+        
+        <!-- 测试状态 -->
+        <div class="test-section" id="testStatus">
+            <h2>🔍 测试状态</h2>
+            <p>侧边栏状态检查：</p>
+            <ul>
+                <li>侧边栏元素存在：<span id="sidebarExists">检查中...</span></li>
+                <li>侧边栏可见性：<span id="sidebarVisible">检查中...</span></li>
+                <li>按钮数量：<span id="buttonCount">检查中...</span></li>
+                <li>所有按钮可见：<span id="buttonsVisible">检查中...</span></li>
+            </ul>
+            <button onclick="checkSidebarStatus()">重新检查</button>
+        </div>
+    </main>
+    
+    <script>
+        // 切换到用户详情页面
+        function goToUserDetail() {
+            document.getElementById('userListPage').style.display = 'none';
+            document.getElementById('userDetailPage').style.display = 'block';
+            
+            // 模拟应用 UserDetailAdmin 的样式
+            applyUserDetailStyles();
+            
+            // 延迟检查侧边栏状态
+            setTimeout(checkSidebarStatus, 100);
+            
+            console.log('🔄 跳转到用户详情页面');
+        }
+        
+        // 返回用户管理页面
+        function goBackToUserList() {
+            document.getElementById('userDetailPage').style.display = 'none';
+            document.getElementById('userListPage').style.display = 'block';
+            
+            // 清除可能的影响样式（模拟路由守卫的操作）
+            clearUserDetailStyles();
+            
+            // 模拟路由守卫的侧边栏修复逻辑
+            setTimeout(() => {
+                fixSidebarAfterRouteChange();
+                checkSidebarStatus();
+            }, 50);
+            
+            console.log('🔄 返回用户管理页面');
+        }
+        
+        // 应用 UserDetailAdmin 的隐藏样式
+        function applyUserDetailStyles() {
+            const style = document.createElement('style');
+            style.id = 'userDetailStyles';
+            style.textContent = `
+                div[class*="sidebar"]:not(.admin-sidebar):not([class*="admin"]),
+                div[class*="navigation"]:not(.admin-sidebar):not([class*="admin"]),
+                aside:not(.admin-sidebar):not([class*="admin"]) {
+                    display: none !important;
+                    visibility: hidden !important;
+                }
+            `;
+            document.head.appendChild(style);
+            console.log('🎨 已应用 UserDetailAdmin 隐藏样式');
+        }
+        
+        // 清除 UserDetailAdmin 的隐藏样式
+        function clearUserDetailStyles() {
+            const style = document.getElementById('userDetailStyles');
+            if (style) {
+                style.remove();
+                console.log('🧹 已清除 UserDetailAdmin 隐藏样式');
+            }
+        }
+        
+        // 模拟路由守卫的侧边栏修复逻辑
+        function fixSidebarAfterRouteChange() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            if (sidebar) {
+                // 清除所有可能的隐藏样式
+                sidebar.style.removeProperty('display');
+                sidebar.style.removeProperty('visibility');
+                sidebar.style.removeProperty('opacity');
+                sidebar.classList.remove('hidden', 'invisible', 'opacity-0');
+                
+                // 强制设置样式
+                sidebar.style.setProperty('display', 'block', 'important');
+                sidebar.style.setProperty('visibility', 'visible', 'important');
+                sidebar.style.setProperty('opacity', '1', 'important');
+                
+                // 修复导航容器
+                const nav = sidebar.querySelector('nav.sidebar-nav');
+                if (nav) {
+                    nav.style.removeProperty('display');
+                    nav.style.removeProperty('visibility');
+                    nav.style.removeProperty('opacity');
+                    nav.classList.remove('hidden', 'invisible', 'opacity-0');
+                    nav.style.setProperty('display', 'flex', 'important');
+                    nav.style.setProperty('visibility', 'visible', 'important');
+                    nav.style.setProperty('opacity', '1', 'important');
+                }
+                
+                // 修复所有按钮
+                const buttons = sidebar.querySelectorAll('.sidebar-button');
+                buttons.forEach((button) => {
+                    button.style.removeProperty('display');
+                    button.style.removeProperty('visibility');
+                    button.style.removeProperty('opacity');
+                    button.classList.remove('hidden', 'invisible', 'opacity-0');
+                    button.style.setProperty('display', 'flex', 'important');
+                    button.style.setProperty('visibility', 'visible', 'important');
+                    button.style.setProperty('opacity', '1', 'important');
+                });
+                
+                console.log('🔧 已执行侧边栏修复逻辑');
+            }
+        }
+        
+        // 检查侧边栏状态
+        function checkSidebarStatus() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const buttons = document.querySelectorAll('.sidebar-button');
+            
+            // 检查侧边栏是否存在
+            document.getElementById('sidebarExists').textContent = sidebar ? '✅ 是' : '❌ 否';
+            
+            // 检查侧边栏是否可见
+            if (sidebar) {
+                const computedStyle = window.getComputedStyle(sidebar);
+                const isVisible = computedStyle.display !== 'none' && 
+                                computedStyle.visibility !== 'hidden' && 
+                                parseFloat(computedStyle.opacity) > 0;
+                document.getElementById('sidebarVisible').textContent = isVisible ? '✅ 是' : '❌ 否';
+            } else {
+                document.getElementById('sidebarVisible').textContent = '❌ 否';
+            }
+            
+            // 检查按钮数量
+            document.getElementById('buttonCount').textContent = buttons.length;
+            
+            // 检查所有按钮是否可见
+            let allVisible = true;
+            buttons.forEach((button) => {
+                const computedStyle = window.getComputedStyle(button);
+                if (computedStyle.display === 'none' || 
+                    computedStyle.visibility === 'hidden' || 
+                    parseFloat(computedStyle.opacity) < 0.1) {
+                    allVisible = false;
+                }
+            });
+            document.getElementById('buttonsVisible').textContent = allVisible ? '✅ 是' : '❌ 否';
+            
+            console.log('🔍 侧边栏状态检查完成');
+        }
+        
+        // 页面加载时检查侧边栏状态
+        setTimeout(checkSidebarStatus, 100);
+        
+        // 添加侧边栏按钮点击事件
+        document.querySelectorAll('.sidebar-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = this.getAttribute('data-page');
+                console.log('🔗 点击了侧边栏按钮:', page);
+                
+                // 返回用户管理页面
+                if (page === 'users') {
+                    goBackToUserList();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导出功能修复测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        .log-container {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-gray-900">Excel导出功能修复测试</h1>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">修复说明</h2>
+            <div class="space-y-2 text-sm text-gray-600">
+                <div>✅ <strong>问题修复:</strong> 解决了showMessage未定义的错误</div>
+                <div>✅ <strong>函数导入:</strong> 正确导入showToast函数替代showMessage</div>
+                <div>✅ <strong>参数优化:</strong> 简化了downloadExcel函数参数</div>
+                <div>✅ <strong>错误处理:</strong> 改进了错误处理和日志记录</div>
+                <div>✅ <strong>数据完整:</strong> 确保所有数据类型都能正确导出</div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">导出测试</h2>
+            
+            <div class="space-y-4">
+                <button id="testExport" class="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-medium">
+                    🧪 测试完整Excel导出功能
+                </button>
+                
+                <div id="testResult" class="hidden p-4 rounded-lg">
+                    <!-- 测试结果 -->
+                </div>
+            </div>
+            
+            <!-- 测试日志 -->
+            <div class="mt-6">
+                <h3 class="font-semibold mb-2">测试日志</h3>
+                <div id="logOutput" class="log-container bg-gray-900 text-green-400 p-4 rounded text-sm">
+                    等待测试开始...
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-blue-50 rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">预期结果</h2>
+            <div class="space-y-2 text-sm">
+                <div>📁 Excel文件名: <code>EduMatch_完整数据导出_[时间戳].xlsx</code></div>
+                <div>📊 包含工作表:</div>
+                <ul class="list-disc list-inside ml-4 space-y-1">
+                    <li>用户数据 - 包含用户基本信息</li>
+                    <li>文章内容 - 包含社区帖子数据</li>
+                    <li>学习计划 - 包含学习计划信息</li>
+                    <li>资源数据 - 包含学习资源信息</li>
+                    <li>系统信息 - 包含导出统计</li>
+                </ul>
+                <div>✨ 数据格式: 列宽自动调整，中文显示正常</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 模拟导出数据
+        const mockExportData = {
+            users: [
+                {
+                    id: '1',
+                    username: 'testuser',
+                    nickname: '测试用户',
+                    email: 'test@example.com',
+                    avatar_url: 'https://example.com/avatar.jpg',
+                    is_banned: false,
+                    created_at: '2024-01-01T00:00:00Z',
+                    last_login_at: '2024-12-06T10:00:00Z'
+                }
+            ],
+            posts: [
+                {
+                    id: '1',
+                    title: 'Vue.js学习心得',
+                    content: 'Vue.js是一个优秀的前端框架，具有响应式、组件化等特性...',
+                    user_id: '1',
+                    category: '技术分享',
+                    tags: ['Vue', '前端'],
+                    created_at: '2024-03-01T10:00:00Z',
+                    updated_at: '2024-03-01T10:00:00Z',
+                    status: 'published',
+                    views: 100,
+                    likes: 20,
+                    comments_count: 5
+                }
+            ],
+            plans: [
+                {
+                    id: '1',
+                    title: 'Vue.js学习计划',
+                    description: '系统学习Vue.js框架，包括基础语法、组件开发、状态管理等内容',
+                    user_id: '1',
+                    user: { username: 'testuser', nickname: '测试用户' },
+                    created_at: '2024-01-15T00:00:00Z',
+                    updated_at: '2024-02-01T00:00:00Z',
+                    difficulty: '进阶',
+                    target_hours: 40,
+                    progress: 60,
+                    participants_count: 10,
+                    status: '进行中'
+                }
+            ],
+            resources: [
+                {
+                    id: '1',
+                    title: 'Vue.js官方文档',
+                    description: 'Vue.js官方文档中文版，包含完整的API参考和教程',
+                    file_type: 'PDF',
+                    file_size: 5242880,
+                    created_by: '1',
+                    created_at: '2024-01-10T00:00:00Z',
+                    updated_at: '2024-01-10T00:00:00Z',
+                    tags: ['Vue', '文档'],
+                    difficulty: '基础',
+                    view_count: 150,
+                    download_count: 30,
+                    favorite_count: 15,
+                    status: '正常'
+                }
+            ],
+            systemConfig: {
+                exportTime: new Date().toLocaleString('zh-CN'),
+                systemVersion: 'EduMatch v1.0.0',
+                exportBy: '测试管理员'
+            }
+        }
+        
+        let logElement = document.getElementById('logOutput')
+        let testResultElement = document.getElementById('testResult')
+        
+        // 日志函数
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString()
+            const colors = {
+                info: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                success: '#22c55e'
+            }
+            
+            const logEntry = `[${timestamp}] ${message}\n`
+            logElement.innerHTML += logEntry
+            logElement.scrollTop = logElement.scrollHeight
+            console.log(message)
+        }
+        
+        // 显示测试结果
+        function showResult(success, message) {
+            testResultElement.classList.remove('hidden')
+            if (success) {
+                testResultElement.className = 'p-4 rounded-lg bg-green-50 border border-green-200 text-green-800'
+                testResultElement.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="font-medium">测试成功</span>
+                    </div>
+                    <div class="mt-2 text-sm">${message}</div>
+                `
+            } else {
+                testResultElement.className = 'p-4 rounded-lg bg-red-50 border border-red-200 text-red-800'
+                testResultElement.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="font-medium">测试失败</span>
+                    </div>
+                    <div class="mt-2 text-sm">${message}</div>
+                `
+            }
+        }
+        
+        // 模拟showToast函数
+        function showToast(options) {
+            log(`📢 显示消息: ${options.text} (${options.type})`)
+        }
+        
+        // 修复后的导出函数
+        function downloadExcel(allData) {
+            log('🔄 开始生成包含多个工作表的 Excel 文件...')
+            
+            try {
+                // 创建工作簿
+                const wb = XLSX.utils.book_new()
+                
+                // 添加系统信息工作表
+                const systemInfoData = [
+                    { 项目: '导出时间', 值: allData.systemConfig.exportTime },
+                    { 项目: '系统版本', 值: allData.systemConfig.systemVersion },
+                    { 项目: '导出人', 值: allData.systemConfig.exportBy },
+                    { 项目: '用户总数', 值: allData.users.length },
+                    { 项目: '文章总数', 值: allData.posts.length },
+                    { 项目: '计划总数', 值: allData.plans.length },
+                    { 项目: '资源总数', 值: allData.resources.length }
+                ]
+                
+                // 准备工作表数据
+                const sheets = {
+                    '用户数据': allData.users.map((user, index) => ({
+                        序号: index + 1,
+                        用户ID: user.id,
+                        用户名: user.username || '未知',
+                        昵称: user.nickname || '未设置',
+                        邮箱: user.email || '未设置',
+                        头像地址: user.avatar_url || '未设置',
+                        用户状态: user.is_banned ? '已禁用' : '正常',
+                        注册时间: user.created_at || '未知',
+                        最后登录: user.last_login_at || '从未登录'
+                    })),
+                    '文章内容': allData.posts.map((post, index) => ({
+                        序号: index + 1,
+                        帖子ID: post.id,
+                        标题: post.title || '无标题',
+                        内容: post.content ? (post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content) : '无内容',
+                        作者ID: post.user_id || '未知',
+                        分类: post.category || '未分类',
+                        标签: post.tags ? (Array.isArray(post.tags) ? post.tags.join(', ') : post.tags) : '无标签',
+                        发布时间: post.created_at || '未知',
+                        更新时间: post.updated_at || '未知',
+                        状态: post.status || '草稿',
+                        浏览量: post.views || 0,
+                        点赞数: post.likes || 0,
+                        评论数: post.comments_count || 0
+                    })),
+                    '学习计划': allData.plans.map((plan, index) => ({
+                        序号: index + 1,
+                        计划ID: plan.id,
+                        计划名称: plan.title || '未命名',
+                        计划描述: plan.description ? (plan.description.length > 100 ? plan.description.substring(0, 100) + '...' : plan.description) : '无描述',
+                        创建者ID: plan.user_id || '未知',
+                        创建者用户名: plan.user?.username || '未知',
+                        创建者昵称: plan.user?.nickname || '未设置',
+                        创建时间: plan.created_at || '未知',
+                        更新时间: plan.updated_at || '未知',
+                        难度等级: plan.difficulty || '中等',
+                        目标时长: plan.target_hours || '未知',
+                        完成进度: `${plan.progress || 0}%`,
+                        参与人数: plan.participants_count || 0,
+                        状态: plan.status || '进行中'
+                    })),
+                    '资源数据': allData.resources.map((resource, index) => ({
+                        序号: index + 1,
+                        资源ID: resource.id,
+                        资源标题: resource.title || '未命名',
+                        资源描述: resource.description ? (resource.description.length > 100 ? resource.description.substring(0, 100) + '...' : resource.description) : '无描述',
+                        资源类型: resource.file_type || '未知',
+                        文件大小: resource.file_size ? `${(resource.file_size / 1024 / 1024).toFixed(2)} MB` : '未知',
+                        创建者ID: resource.created_by || '未知',
+                        创建时间: resource.created_at || '未知',
+                        更新时间: resource.updated_at || '未知',
+                        分类标签: resource.tags ? (Array.isArray(resource.tags) ? resource.tags.join(', ') : resource.tags) : '无标签',
+                        难度等级: resource.difficulty || '中等',
+                        浏览次数: resource.view_count || 0,
+                        下载次数: resource.download_count || 0,
+                        收藏次数: resource.favorite_count || 0,
+                        状态: resource.status || '正常'
+                    })),
+                    '系统信息': systemInfoData
+                }
+                
+                // 为每个工作表创建工作表并添加到工作簿
+                Object.entries(sheets).forEach(([sheetName, data]) => {
+                    if (!data || data.length === 0) {
+                        log(`⚠️ ${sheetName} 暂无数据，创建空工作表`, 'warning')
+                        const emptySheet = XLSX.utils.aoa_to_sheet([[`${sheetName} (暂无数据)`]])
+                        XLSX.utils.book_append_sheet(wb, emptySheet, sheetName)
+                        return
+                    }
+                    
+                    log(`📊 正在处理 ${sheetName}: ${data.length} 条记录`)
+                    
+                    const ws = XLSX.utils.json_to_sheet(data, {
+                        header: Object.keys(data[0]),
+                        skipHeader: false
+                    })
+                    
+                    // 设置列宽以优化显示
+                    const colWidths = Object.keys(data[0]).map(key => {
+                        let maxWidth = key.length
+                        data.forEach(row => {
+                            const value = String(row[key] || '')
+                            maxWidth = Math.max(maxWidth, value.length)
+                        })
+                        return { width: Math.min(maxWidth + 2, 50) }
+                    })
+                    ws['!cols'] = colWidths
+                    
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName)
+                })
+                
+                // 生成 Excel 文件
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
+                const excelFilename = `EduMatch_完整数据导出_${timestamp}.xlsx`
+                
+                XLSX.writeFile(wb, excelFilename, {
+                    bookType: 'xlsx',
+                    type: 'binary'
+                })
+                
+                log(`✅ Excel 文件已生成: ${excelFilename}`, 'success')
+                log(`📊 导出统计: 用户${allData.users.length}人、帖子${allData.posts.length}篇、计划${allData.plans.length}个、资源${allData.resources.length}个`)
+                
+                // 模拟成功消息
+                showToast({
+                    text: `成功导出完整的 Excel 文件！包含 ${Object.keys(sheets).length} 个工作表，数据排版整齐美观。`,
+                    type: 'success',
+                    duration: 5000
+                })
+                
+                log(`🎉 Excel 文件导出成功！包含 ${Object.keys(sheets).length} 个工作表，数据排版整齐美观。`, 'success')
+                
+                return { success: true, filename: excelFilename }
+                
+            } catch (error) {
+                log(`❌ Excel 文件生成失败: ${error.message}`, 'error')
+                throw new Error(`Excel 文件生成失败: ${error.message}`)
+            }
+        }
+        
+        // 测试按钮事件
+        document.getElementById('testExport').addEventListener('click', () => {
+            log('🧪 开始测试修复后的导出功能...')
+            
+            try {
+                // 数据汇总统计
+                log('📊 数据汇总统计:')
+                log(`  👥 用户数据: ${mockExportData.users.length} 条`)
+                log(`  📝 帖子数据: ${mockExportData.posts.length} 条`)
+                log(`  📚 学习计划: ${mockExportData.plans.length} 条`)
+                log(`  📁 学习资源: ${mockExportData.resources.length} 条`)
+                
+                // 执行导出
+                const result = downloadExcel(mockExportData)
+                
+                if (result.success) {
+                    showResult(true, `Excel文件 ${result.filename} 已成功生成！包含所有5个工作表的数据。`)
+                } else {
+                    showResult(false, '导出过程中发生未知错误')
+                }
+                
+            } catch (error) {
+                log(`❌ 测试失败: ${error.message}`, 'error')
+                showResult(false, `测试失败: ${error.message}`)
+            }
+        })
+        
+        // 初始化
+        log('🚀 导出功能修复测试页面已加载')
+        log('💡 点击"测试完整Excel导出功能"按钮开始测试')
+    </script>
+</body>
+</html>

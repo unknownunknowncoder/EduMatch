@@ -1,20 +1,30 @@
 import { dbService } from './database'
 import { dbConfig } from '@/config/database'
 
-// Supabase 数据库操作的专用服务
+// Supabase 数据库操作的专用服务（单例模式）
 export class SupabaseService {
   private static instance: SupabaseService
+  private client: any = null
 
   constructor() {
     if (SupabaseService.instance) {
+      console.log('📋 复用现有 SupabaseService 实例')
       return SupabaseService.instance
     }
     SupabaseService.instance = this
+    console.log('🆕 创建新的 SupabaseService 实例')
   }
 
-  // 获取 Supabase 客户端
-  getClient() {
-    return dbService.getClient()
+  // 获取 Supabase 客户端（使用全局单例）
+  async getClient() {
+    if (!this.client) {
+      const SupabaseSingleton = (await import('./supabase-singleton')).default
+      this.client = await SupabaseSingleton.getInstance()
+      console.log('🔗 获取 Supabase 客户端（通过单例）')
+    } else {
+      console.log('📋 复用缓存的 Supabase 客户端')
+    }
+    return this.client
   }
 
   // 用户相关操作
@@ -25,7 +35,7 @@ export class SupabaseService {
     password_hash: string
     avatar_url?: string
   }) {
-    const client = this.getClient()
+    const client = await this.getClient()
     
     // 过滤掉 undefined 的字段，避免传递到数据库
     const filteredData = Object.fromEntries(
@@ -42,7 +52,7 @@ export class SupabaseService {
   }
 
   async getUserById(id: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('users')
       .select('*')
@@ -54,7 +64,7 @@ export class SupabaseService {
   }
 
   async getUserByEmail(email: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('users')
       .select('*')
@@ -66,7 +76,7 @@ export class SupabaseService {
   }
 
   async getUserByUsername(username: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('users')
       .select('*')
@@ -78,7 +88,7 @@ export class SupabaseService {
   }
 
   async getUserByNickname(nickname: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('users')
       .select('*')
@@ -90,7 +100,7 @@ export class SupabaseService {
   }
 
   async updateUserNickname(userId: string, nickname: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('users')
       .update({ nickname })
@@ -102,7 +112,7 @@ export class SupabaseService {
   }
 
   async updateUserPassword(userId: string, newPassword: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     
     // 生成密码哈希（实际项目中应该使用更安全的哈希方法）
     const password_hash = await this.hashPassword(newPassword)
@@ -141,7 +151,7 @@ export class SupabaseService {
     difficulty?: string
     search?: string
   } = {}) {
-    const client = this.getClient()
+    const client = await this.getClient()
     let query = client.from('resources').select('*')
 
     // 添加筛选条件
@@ -174,7 +184,7 @@ export class SupabaseService {
   }
 
   async getResourceById(id: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('resources')
       .select('*')
@@ -196,7 +206,7 @@ export class SupabaseService {
     url?: string
     created_by?: string
   }) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('resources')
       .insert([resourceData])
@@ -215,7 +225,7 @@ export class SupabaseService {
     author?: string
   }) {
     console.log('🔄 Supabase服务：准备创建社区帖子，数据:', postData)
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('community_posts')
       .insert([postData])
@@ -234,7 +244,7 @@ export class SupabaseService {
   // 获取用户发布的社区帖子
   async getCommunityPostsByUserId(userId: string) {
     console.log('🔄 获取用户发布的社区帖子，用户ID:', userId)
-    const client = this.getClient()
+    const client = await this.getClient()
     
     const { data, error } = await client
       .from('community_posts')
@@ -253,7 +263,7 @@ export class SupabaseService {
 
   // 获取社区帖子详情
   async getPostById(id: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('community_posts')
       .select('*')
@@ -281,7 +291,7 @@ export class SupabaseService {
   // 删除社区帖子
   async deleteCommunityPost(postId: string) {
     console.log('🔄 删除社区帖子，帖子ID:', postId)
-    const client = this.getClient()
+    const client = await this.getClient()
     
     const { error } = await client
       .from('community_posts')
@@ -299,7 +309,7 @@ export class SupabaseService {
   // 获取帖子评论数
   async getPostCommentsCount(postId: string) {
     console.log('🔄 获取帖子评论数，帖子ID:', postId)
-    const client = this.getClient()
+    const client = await this.getClient()
     
     const { data, error } = await client
       .from('post_comments')
@@ -322,7 +332,7 @@ export class SupabaseService {
     resource_id: string
     progress?: number
   }) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('learning_records')
       .insert([recordData])
@@ -336,7 +346,7 @@ export class SupabaseService {
     limit?: number
     offset?: number
   } = {}) {
-    const client = this.getClient()
+    const client = await this.getClient()
     let query = client
       .from('learning_records')
       .select(`
@@ -369,7 +379,7 @@ export class SupabaseService {
   }
 
   async updateLearningProgress(recordId: string, progress: number) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('learning_records')
       .update({ progress, completed_at: progress >= 100 ? new Date().toISOString() : null })
@@ -382,7 +392,7 @@ export class SupabaseService {
 
   // 收藏相关操作
   async addToFavorites(userId: string, resourceId: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('favorites')
       .insert([{ user_id: userId, resource_id: resourceId }])
@@ -393,7 +403,7 @@ export class SupabaseService {
   }
 
   async removeFromFavorites(userId: string, resourceId: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { error } = await client
       .from('favorites')
       .delete()
@@ -407,7 +417,7 @@ export class SupabaseService {
     limit?: number
     offset?: number
   } = {}) {
-    const client = this.getClient()
+    const client = await this.getClient()
     let query = client
       .from('favorites')
       .select(`
@@ -442,7 +452,7 @@ export class SupabaseService {
 
   // 学习计划相关操作
   async getStudyPlanById(id: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('study_plans')
       .select(`
@@ -461,7 +471,7 @@ export class SupabaseService {
   }
 
   async deleteStudyPlan(id: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { error } = await client
       .from('study_plans')
       .delete()
@@ -472,7 +482,7 @@ export class SupabaseService {
   }
 
   async deleteResource(id: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { error } = await client
       .from('resources')
       .delete()
@@ -483,7 +493,7 @@ export class SupabaseService {
   }
 
   async updateStudyPlan(id: string, updates: any) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('study_plans')
       .update(updates)
@@ -495,7 +505,7 @@ export class SupabaseService {
   }
 
   async getStudyPlanCheckins(planId: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('study_plan_checkins')
       .select('*')
@@ -511,7 +521,7 @@ export class SupabaseService {
     notes?: string
     date?: string
   }) {
-    const client = this.getClient()
+    const client = await this.getClient()
     
     // 获取当前用户ID
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}')
@@ -540,7 +550,7 @@ export class SupabaseService {
 
   // 关注功能相关操作
   async followUser(followerId: string, followingId: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('user_follows')
       .insert([{
@@ -554,7 +564,7 @@ export class SupabaseService {
   }
 
   async unfollowUser(followerId: string, followingId: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { error } = await client
       .from('user_follows')
       .delete()
@@ -566,7 +576,7 @@ export class SupabaseService {
   }
 
   async isFollowing(followerId: string, followingId: string): Promise<boolean> {
-    const client = this.getClient()
+    const client = await this.getClient()
     const { data, error } = await client
       .from('user_follows')
       .select('id')
@@ -579,7 +589,7 @@ export class SupabaseService {
   }
 
   async getFollowStats(userId: string) {
-    const client = this.getClient()
+    const client = await this.getClient()
     
     // 使用统计视图获取关注和粉丝数
     const { data, error } = await client
@@ -614,7 +624,7 @@ export class SupabaseService {
   }
 
   async getFollowingList(userId: string, options: { limit?: number; offset?: number } = {}) {
-    const client = this.getClient()
+    const client = await this.getClient()
     let query = client
       .from('user_follows')
       .select(`
@@ -645,7 +655,7 @@ export class SupabaseService {
   }
 
   async getFollowersList(userId: string, options: { limit?: number; offset?: number } = {}) {
-    const client = this.getClient()
+    const client = await this.getClient()
     let query = client
       .from('user_follows')
       .select(`
@@ -724,7 +734,26 @@ export class SupabaseService {
 
   // 通用查询方法
   async customQuery<T = any>(table: string, options: any = {}) {
-    return dbService.query(table, options) as Promise<T[]>
+    const client = await this.getClient()
+    let query = client.from(table).select('*')
+
+    if (options.where) {
+      Object.entries(options.where).forEach(([key, value]) => {
+        query = query.eq(key, value)
+      })
+    }
+
+    if (options.orderBy) {
+      query = query.order(options.orderBy, { ascending: options.ascending !== false })
+    }
+
+    if (options.limit) {
+      query = query.limit(options.limit)
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    return data as T[]
   }
 }
 

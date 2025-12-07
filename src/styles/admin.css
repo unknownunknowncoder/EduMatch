@@ -1,0 +1,31 @@
+/* 全局管理后台样式 - 隐藏前端导航元素 */
+
+/* 当访问管理页面时，隐藏所有前端导航元素 */
+body:has([class*="admin"]) .bottom-navigation,
+body:has([href*="/admin"]) .bottom-navigation,
+body.admin-page .bottom-navigation {
+  display: none !important;
+}
+
+/* 隐藏侧边导航栏 */
+body:has([class*="admin"]) .sidebar-navigation,
+body:has([href*="/admin"]) .sidebar-navigation,
+body.admin-page .sidebar-navigation {
+  display: none !important;
+}
+
+/* 强制隐藏任何可能的底部固定导航 */
+body:has([class*="admin"]) nav.fixed.bottom-0,
+body:has([href*="/admin"]) nav.fixed.bottom-0,
+body.admin-page nav.fixed.bottom-0 {
+  display: none !important;
+}
+
+/* 通过URL路径检测管理页面 */
+@media (url-prefix("/admin/")) {
+  .bottom-navigation,
+  .sidebar-navigation,
+  nav.fixed.bottom-0 {
+    display: none !important;
+  }
+}

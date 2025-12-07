@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侧边栏底部样式修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+        }
+        
+        /* 模拟可能影响侧边栏的样式 */
+        .hidden { display: none !important; }
+        .invisible { visibility: hidden !important; }
+        .opacity-0 { opacity: 0 !important; }
+        
+        /* 管理后台侧边栏样式 - 包含底部保护 */
+        .admin-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 16rem;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .sidebar-button {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-button:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateX(2px);
+        }
+        
+        .sidebar-button span:first-child {
+            margin-right: 0.75rem;
+            font-size: 1.125rem;
+        }
+        
+        .sidebar-bottom {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, #4ade80, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .user-avatar span {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .user-details {
+            margin-left: 0.5rem;
+        }
+        
+        .username {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #111827;
+            display: block;
+            line-height: 1.25;
+        }
+        
+        .current-time {
+            font-size: 0.75rem;
+            color: #6b7280;
+            display: block;
+            line-height: 1;
+        }
+        
+        .logout-btn {
+            padding: 0.5rem;
+            color: #6b7280;
+            background: none;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logout-btn:hover {
+            color: #dc2626;
+        }
+        
+        .logout-btn svg {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .main-content {
+            margin-left: 16rem;
+            padding: 2rem;
+        }
+        
+        .test-section {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .status-item {
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .status-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .status-value {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            margin: 0.25rem;
+        }
+        
+        button:hover {
+            background: #2563eb;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        /* CSS保护规则 */
+        .admin-sidebar > div > div:last-child {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding: 1rem !important;
+            border-top: 1px solid #e5e7eb !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .admin-sidebar .h-8.w-8.rounded-full {
+            height: 2rem !important;
+            width: 2rem !important;
+            border-radius: 50% !important;
+            background: linear-gradient(to bottom right, #4ade80, #3b82f6) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .admin-sidebar .h-8.w-8.rounded-full span {
+            font-size: 0.75rem !important;
+            font-weight: 700 !important;
+            color: white !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理后台侧边栏 -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <h2 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #111827;">
+                管理后台
+            </h2>
+            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: #6b7280;">
+                系统管理中心
+            </p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-button">
+                <span>📊</span>
+                <span>仪表板</span>
+            </a>
+            <a href="#" class="sidebar-button">
+                <span>👥</span>
+                <span>用户管理</span>
+            </a>
+            <a href="#" class="sidebar-button">
+                <span>⚙️</span>
+                <span>系统设置</span>
+            </a>
+            <a href="#" class="sidebar-button">
+                <span>🔧</span>
+                <span>系统维护</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-bottom" id="sidebarBottom">
+            <div class="user-info">
+                <div class="h-8 w-8 rounded-full">
+                    <span>A</span>
+                </div>
+                <div class="user-details">
+                    <p class="username">Admin</p>
+                    <p class="current-time" id="currentTime">加载中...</p>
+                </div>
+            </div>
+            <button class="logout-btn" title="退出登录">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </button>
+        </div>
+    </aside>
+    
+    <main class="main-content">
+        <div class="test-section">
+            <h1>🎨 侧边栏底部样式修复测试</h1>
+            <p>这个页面测试侧边栏底部（管理员头像、用户名、时间、退出按钮）的样式保护和修复效果。</p>
+            
+            <h2>测试按钮</h2>
+            <button onclick="applyDestroyStyles()">应用破坏样式</button>
+            <button onclick="applyHiddenClasses()">应用隐藏类</button>
+            <button onclick="applyMixedProblems()">应用混合问题</button>
+            <button onclick="restoreStyles()">恢复样式</button>
+            <button class="btn-danger" onclick="forceRerender()">强制重新渲染</button>
+            
+            <h2>当前状态</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">侧边栏底部可见性</div>
+                    <div class="status-value" id="bottomVisible">检查中...</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">头像显示正常</div>
+                    <div class="status-value" id="avatarOk">检查中...</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">用户名显示正常</div>
+                    <div class="status-value" id="usernameOk">检查中...</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">时间显示正常</div>
+                    <div class="status-value" id="timeOk">检查中...</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">退出按钮正常</div>
+                    <div class="status-value" id="logoutOk">检查中...</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">总体状态</div>
+                    <div class="status-value" id="overallStatus">检查中...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        let timeInterval;
+        
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+        
+        // 检查侧边栏底部状态
+        function checkStatus() {
+            const sidebarBottom = document.getElementById('sidebarBottom');
+            const avatar = sidebarBottom?.querySelector('.h-8.w-8.rounded-full');
+            const username = sidebarBottom?.querySelector('.username');
+            const time = sidebarBottom?.querySelector('.current-time');
+            const logoutBtn = sidebarBottom?.querySelector('.logout-btn');
+            
+            let allOk = true;
+            
+            // 检查侧边栏底部
+            if (sidebarBottom) {
+                const style = window.getComputedStyle(sidebarBottom);
+                const bottomVisible = style.display !== 'none' && 
+                                    style.visibility !== 'hidden' && 
+                                    parseFloat(style.opacity) > 0;
+                document.getElementById('bottomVisible').textContent = bottomVisible ? '✅ 正常' : '❌ 隐藏';
+                if (!bottomVisible) allOk = false;
+            }
+            
+            // 检查头像
+            if (avatar) {
+                const style = window.getComputedStyle(avatar);
+                const avatarOk = style.display !== 'none' && 
+                               style.visibility !== 'hidden' && 
+                               parseFloat(style.opacity) > 0;
+                document.getElementById('avatarOk').textContent = avatarOk ? '✅ 正常' : '❌ 隐藏';
+                if (!avatarOk) allOk = false;
+            }
+            
+            // 检查用户名
+            if (username) {
+                const style = window.getComputedStyle(username);
+                const usernameOk = style.display !== 'none' && 
+                                 style.visibility !== 'hidden' && 
+                                 parseFloat(style.opacity) > 0;
+                document.getElementById('usernameOk').textContent = usernameOk ? '✅ 正常' : '❌ 隐藏';
+                if (!usernameOk) allOk = false;
+            }
+            
+            // 检查时间
+            if (time) {
+                const style = window.getComputedStyle(time);
+                const timeOk = style.display !== 'none' && 
+                              style.visibility !== 'hidden' && 
+                              parseFloat(style.opacity) > 0;
+                document.getElementById('timeOk').textContent = timeOk ? '✅ 正常' : '❌ 隐藏';
+                if (!timeOk) allOk = false;
+            }
+            
+            // 检查退出按钮
+            if (logoutBtn) {
+                const style = window.getComputedStyle(logoutBtn);
+                const logoutOk = style.display !== 'none' && 
+                                style.visibility !== 'hidden' && 
+                                parseFloat(style.opacity) > 0;
+                document.getElementById('logoutOk').textContent = logoutOk ? '✅ 正常' : '❌ 隐藏';
+                if (!logoutOk) allOk = false;
+            }
+            
+            // 总体状态
+            document.getElementById('overallStatus').textContent = allOk ? '✅ 全部正常' : '❌ 有问题';
+        }
+        
+        // 应用破坏样式
+        function applyDestroyStyles() {
+            const sidebarBottom = document.getElementById('sidebarBottom');
+            if (sidebarBottom) {
+                sidebarBottom.style.display = 'none';
+                sidebarBottom.style.visibility = 'hidden';
+                sidebarBottom.style.opacity = '0';
+            }
+            checkStatus();
+            console.log('🔨 已应用破坏样式');
+        }
+        
+        // 应用隐藏类
+        function applyHiddenClasses() {
+            const sidebarBottom = document.getElementById('sidebarBottom');
+            if (sidebarBottom) {
+                sidebarBottom.classList.add('hidden', 'invisible', 'opacity-0');
+            }
+            checkStatus();
+            console.log('🔨 已应用隐藏类');
+        }
+        
+        // 应用混合问题
+        function applyMixedProblems() {
+            const sidebarBottom = document.getElementById('sidebarBottom');
+            const avatar = sidebarBottom?.querySelector('.h-8.w-8.rounded-full');
+            const username = sidebarBottom?.querySelector('.username');
+            const time = sidebarBottom?.querySelector('.current-time');
+            const logoutBtn = sidebarBottom?.querySelector('.logout-btn');
+            
+            if (avatar) avatar.style.display = 'none';
+            if (username) username.style.visibility = 'hidden';
+            if (time) time.style.opacity = '0';
+            if (logoutBtn) logoutBtn.classList.add('invisible');
+            
+            checkStatus();
+            console.log('🔨 已应用混合问题');
+        }
+        
+        // 恢复样式
+        function restoreStyles() {
+            const sidebarBottom = document.getElementById('sidebarBottom');
+            const avatar = sidebarBottom?.querySelector('.h-8.w-8.rounded-full');
+            const username = sidebarBottom?.querySelector('.username');
+            const time = sidebarBottom?.querySelector('.current-time');
+            const logoutBtn = sidebarBottom?.querySelector('.logout-btn');
+            
+            // 清除所有样式和类
+            if (sidebarBottom) {
+                sidebarBottom.style.removeProperty('display');
+                sidebarBottom.style.removeProperty('visibility');
+                sidebarBottom.style.removeProperty('opacity');
+                sidebarBottom.classList.remove('hidden', 'invisible', 'opacity-0');
+            }
+            
+            if (avatar) {
+                avatar.style.removeProperty('display');
+                avatar.style.removeProperty('visibility');
+                avatar.style.removeProperty('opacity');
+                avatar.classList.remove('hidden', 'invisible', 'opacity-0');
+            }
+            
+            if (username) {
+                username.style.removeProperty('display');
+                username.style.removeProperty('visibility');
+                username.style.removeProperty('opacity');
+                username.classList.remove('hidden', 'invisible', 'opacity-0');
+            }
+            
+            if (time) {
+                time.style.removeProperty('display');
+                time.style.removeProperty('visibility');
+                time.style.removeProperty('opacity');
+                time.classList.remove('hidden', 'invisible', 'opacity-0');
+            }
+            
+            if (logoutBtn) {
+                logoutBtn.style.removeProperty('display');
+                logoutBtn.style.removeProperty('visibility');
+                logoutBtn.style.removeProperty('opacity');
+                logoutBtn.classList.remove('hidden', 'invisible', 'opacity-0');
+            }
+            
+            checkStatus();
+            console.log('✅ 已恢复样式');
+        }
+        
+        // 强制重新渲染（模拟 ultimateForceRerenderSidebar）
+        function forceRerender() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const sidebarBottom = sidebar?.querySelector('#sidebarBottom');
+            
+            if (sidebarBottom) {
+                // 模拟强制重新渲染逻辑
+                sidebarBottom.setAttribute('style', `
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: space-between !important;
+                    padding: 1rem !important;
+                    border-top: 1px solid #e5e7eb !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                `);
+                
+                // 修复头像
+                const avatar = sidebarBottom.querySelector('.h-8.w-8.rounded-full');
+                if (avatar) {
+                    avatar.setAttribute('style', `
+                        height: 2rem !important;
+                        width: 2rem !important;
+                        border-radius: 50% !important;
+                        background: linear-gradient(to bottom right, #4ade80, #3b82f6) !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                    `);
+                }
+                
+                // 修复用户信息
+                const userInfo = sidebarBottom.querySelector('.user-info');
+                if (userInfo) {
+                    userInfo.setAttribute('style', `
+                        display: flex !important;
+                        align-items: center !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                    `);
+                }
+                
+                // 修复退出按钮
+                const logoutBtn = sidebarBottom.querySelector('.logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.setAttribute('style', `
+                        padding: 0.5rem !important;
+                        color: #6b7280 !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
+                    `);
+                }
+                
+                console.log('🔨 已执行强制重新渲染');
+            }
+            
+            setTimeout(checkStatus, 100);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTime();
+            timeInterval = setInterval(updateTime, 1000);
+            checkStatus();
+            
+            // 定期检查状态
+            setInterval(checkStatus, 2000);
+        });
+        
+        // 清理
+        window.addEventListener('beforeunload', () => {
+            if (timeInterval) {
+                clearInterval(timeInterval);
+            }
+        });
+    </script>
+</body>
+</html>
