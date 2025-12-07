@@ -28,12 +28,28 @@
         <!-- 计划头部 -->
         <div class="p-6 border-b border-gray-100 dark:border-gray-700">
           <div class="flex justify-between items-start mb-4">
-            <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ plan.title }}</h1>
+            <div class="flex-1">
+              <div v-if="isEditing" class="mb-4">
+                <input
+                  v-model="editForm.title"
+                  type="text"
+                  class="w-full px-4 py-2 text-2xl font-bold border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="请输入计划标题..."
+                />
+              </div>
+              <h1 v-else class="text-2xl font-bold text-gray-900 dark:text-white mb-2">{{ plan.title }}</h1>
               <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
                 <span>创建时间：{{ formatDate(plan.created_at) }}</span>
                 <span class="mx-2">•</span>
-                <span>目标时间：{{ formatDate(plan.target_date) }}</span>
+                <span v-if="isEditing">
+                  目标时间：
+                  <input
+                    v-model="editForm.target_date"
+                    type="date"
+                    class="ml-2 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                  />
+                </span>
+                <span v-else>目标时间：{{ formatDate(plan.target_date) }}</span>
               </div>
             </div>
             <div class="flex items-center space-x-2">
@@ -98,7 +114,15 @@
           <!-- 描述 -->
           <div class="mb-6">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">计划描述</h3>
-            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ plan.description }}</p>
+            <div v-if="isEditing">
+              <textarea
+                v-model="editForm.description"
+                rows="3"
+                class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="请输入计划描述..."
+              ></textarea>
+            </div>
+            <p v-else class="text-gray-700 dark:text-gray-300 leading-relaxed">{{ plan.description }}</p>
           </div>
 
           <!-- 学习目标 -->
@@ -154,7 +178,28 @@
               完成计划
             </button>
             
+            <div v-if="isEditing" class="flex gap-2">
+              <button
+                @click="savePlan"
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                保存修改
+              </button>
+              <button
+                @click="cancelEdit"
+                class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center justify-center"
+              >
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                取消编辑
+              </button>
+            </div>
             <button
+              v-else
               @click="editPlan"
               class="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center justify-center"
             >
@@ -186,6 +231,15 @@ import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+
+// 编辑模式状态
+const isEditing = ref(false)
+const editForm = ref({
+  title: '',
+  description: '',
+  target_date: '',
+  total_hours: 0
+})
 
 interface StudyPlan {
   id: string
@@ -252,6 +306,51 @@ const formatDate = (dateString: string) => {
   return date.toLocaleDateString('zh-CN')
 }
 
+// 保存计划修改
+const savePlan = async () => {
+  if (!plan.value || !editForm.value.title.trim()) {
+    showNotification('请输入计划标题', 'error')
+    return
+  }
+
+  try {
+    const { supabaseService } = await import('@/services/supabase')
+    
+    const updatedPlan = {
+      title: editForm.value.title.trim(),
+      description: editForm.value.description.trim(),
+      target_date: editForm.value.target_date,
+      total_hours: editForm.value.total_hours
+    }
+
+    await supabaseService.updateStudyPlan(plan.value.id, updatedPlan)
+    
+    // 更新本地数据
+    plan.value = {
+      ...plan.value,
+      ...updatedPlan
+    }
+    
+    isEditing.value = false
+    showNotification('计划修改成功', 'success')
+  } catch (error) {
+    console.error('保存计划失败:', error)
+    showNotification('保存失败，请重试', 'error')
+  }
+}
+
+// 取消编辑
+const cancelEdit = () => {
+  isEditing.value = false
+  // 重置编辑表单
+  editForm.value = {
+    title: plan.value?.title || '',
+    description: plan.value?.description || '',
+    target_date: plan.value?.target_date || '',
+    total_hours: plan.value?.total_hours || 0
+  }
+}
+
 // 从数据库加载计划数据
 const loadPlan = async (id: string) => {
   try {
@@ -301,7 +400,15 @@ const completePlan = async () => {
 }
 
 const editPlan = () => {
-  router.push(`/study-plan/${plan.value?.id}/edit`)
+  // 切换到编辑模式
+  isEditing.value = true
+  // 复制当前计划数据到编辑表单
+  editForm.value = {
+    title: plan.value?.title || '',
+    description: plan.value?.description || '',
+    target_date: plan.value?.target_date || '',
+    total_hours: plan.value?.total_hours || 0
+  }
 }
 
 onMounted(() => {

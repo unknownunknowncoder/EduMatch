@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据导出测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        .log-container {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-gray-900">数据库导出测试</h1>
+        
+        <div class="grid grid-cols-2 gap-6">
+            <!-- 测试控制 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">测试控制</h2>
+                
+                <div class="space-y-4">
+                    <button id="testConnection" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        测试数据库连接
+                    </button>
+                    
+                    <button id="testUsers" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        测试获取用户数据
+                    </button>
+                    
+                    <button id="testPosts" class="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        测试获取帖子数据
+                    </button>
+                    
+                    <button id="testPlans" class="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                        测试获取学习计划
+                    </button>
+                    
+                    <button id="testResources" class="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
+                        测试获取学习资源
+                    </button>
+                    
+                    <button id="exportAll" class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-bold">
+                        导出完整数据到Excel
+                    </button>
+                </div>
+                
+                <!-- 数据统计 -->
+                <div class="mt-6 p-4 bg-gray-50 rounded">
+                    <h3 class="font-semibold mb-2">数据统计</h3>
+                    <div class="space-y-1 text-sm">
+                        <div>用户数量: <span id="userCount" class="font-bold">-</span></div>
+                        <div>帖子数量: <span id="postCount" class="font-bold">-</span></div>
+                        <div>计划数量: <span id="planCount" class="font-bold">-</span></div>
+                        <div>资源数量: <span id="resourceCount" class="font-bold">-</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 日志输出 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">测试日志</h2>
+                <div id="logOutput" class="log-container bg-gray-900 text-green-400 p-4 rounded text-sm">
+                    等待测试开始...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 模拟 Supabase 客户端
+        const SUPABASE_URL = 'https://your-supabase-url.supabase.co'
+        const SUPABASE_ANON_KEY = 'your-anon-key'
+        
+        let logElement = document.getElementById('logOutput')
+        let exportData = {
+            users: [],
+            posts: [],
+            plans: [],
+            resources: []
+        }
+        
+        // 日志函数
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString()
+            const colors = {
+                info: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                success: '#22c55e'
+            }
+            
+            const logEntry = `[${timestamp}] ${message}\n`
+            logElement.innerHTML += logEntry
+            logElement.scrollTop = logElement.scrollHeight
+            console.log(message)
+        }
+        
+        // 更新统计
+        function updateStats() {
+            document.getElementById('userCount').textContent = exportData.users.length
+            document.getElementById('postCount').textContent = exportData.posts.length  
+            document.getElementById('planCount').textContent = exportData.plans.length
+            document.getElementById('resourceCount').textContent = exportData.resources.length
+        }
+        
+        // 测试数据库连接
+        document.getElementById('testConnection').addEventListener('click', async () => {
+            log('🔄 测试数据库连接...')
+            try {
+                // 这里应该连接真实的Supabase
+                // 为了演示，我们创建模拟数据
+                log('✅ 数据库连接成功 (模拟)', 'success')
+            } catch (error) {
+                log(`❌ 数据库连接失败: ${error.message}`, 'error')
+            }
+        })
+        
+        // 获取用户数据
+        document.getElementById('testUsers').addEventListener('click', async () => {
+            log('📥 正在获取用户数据...')
+            try {
+                // 模拟用户数据
+                exportData.users = [
+                    {
+                        id: '1',
+                        username: 'admin',
+                        nickname: '管理员',
+                        email: 'admin@example.com',
+                        avatar_url: 'https://example.com/avatar.jpg',
+                        is_banned: false,
+                        created_at: '2024-01-01T00:00:00Z',
+                        last_login_at: '2024-12-06T10:00:00Z'
+                    },
+                    {
+                        id: '2', 
+                        username: 'user1',
+                        nickname: '用户1',
+                        email: 'user1@example.com',
+                        avatar_url: '',
+                        is_banned: false,
+                        created_at: '2024-02-01T00:00:00Z',
+                        last_login_at: '2024-12-05T15:30:00Z'
+                    }
+                ]
+                log(`✅ 用户数据获取完成: ${exportData.users.length} 条`, 'success')
+                updateStats()
+            } catch (error) {
+                log(`❌ 获取用户数据失败: ${error.message}`, 'error')
+            }
+        })
+        
+        // 获取帖子数据
+        document.getElementById('testPosts').addEventListener('click', async () => {
+            log('📥 正在获取帖子数据...')
+            try {
+                // 模拟帖子数据
+                exportData.posts = [
+                    {
+                        id: '1',
+                        title: '如何高效学习Vue.js',
+                        content: 'Vue.js是一个渐进式JavaScript框架，适合构建用户界面...',
+                        user_id: '1',
+                        category: '技术分享',
+                        tags: ['Vue', '前端', '框架'],
+                        created_at: '2024-03-01T10:00:00Z',
+                        updated_at: '2024-03-01T10:00:00Z',
+                        status: 'published',
+                        views: 150,
+                        likes: 25,
+                        comments_count: 8
+                    },
+                    {
+                        id: '2',
+                        title: '学习计划制定技巧',
+                        content: '制定一个好的学习计划需要考虑多个因素...',
+                        user_id: '2',
+                        category: '学习方法',
+                        tags: ['学习', '计划', '效率'],
+                        created_at: '2024-03-02T14:00:00Z',
+                        updated_at: '2024-03-02T14:00:00Z',
+                        status: 'published',
+                        views: 89,
+                        likes: 12,
+                        comments_count: 3
+                    }
+                ]
+                log(`✅ 帖子数据获取完成: ${exportData.posts.length} 条`, 'success')
+                updateStats()
+            } catch (error) {
+                log(`❌ 获取帖子数据失败: ${error.message}`, 'error')
+            }
+        })
+        
+        // 获取学习计划数据
+        document.getElementById('testPlans').addEventListener('click', async () => {
+            log('📥 正在获取学习计划数据...')
+            try {
+                // 模拟学习计划数据
+                exportData.plans = [
+                    {
+                        id: '1',
+                        title: 'Vue.js进阶学习计划',
+                        description: '深入学习Vue.js的高级特性和最佳实践，包括组件通信、状态管理、路由等核心概念...',
+                        user_id: '1',
+                        user: {
+                            id: '1',
+                            username: 'admin',
+                            nickname: '管理员'
+                        },
+                        created_at: '2024-01-15T00:00:00Z',
+                        updated_at: '2024-02-01T00:00:00Z',
+                        difficulty: '进阶',
+                        target_hours: 40,
+                        progress: 65,
+                        participants_count: 12,
+                        status: '进行中'
+                    },
+                    {
+                        id: '2',
+                        title: 'JavaScript基础强化',
+                        description: '从零开始学习JavaScript编程语言的基础知识和语法...',
+                        user_id: '2',
+                        user: {
+                            id: '2',
+                            username: 'user1',
+                            nickname: '用户1'
+                        },
+                        created_at: '2024-02-01T00:00:00Z',
+                        updated_at: '2024-02-15T00:00:00Z',
+                        difficulty: '基础',
+                        target_hours: 20,
+                        progress: 80,
+                        participants_count: 8,
+                        status: '进行中'
+                    }
+                ]
+                log(`✅ 学习计划数据获取完成: ${exportData.plans.length} 条`, 'success')
+                updateStats()
+            } catch (error) {
+                log(`❌ 获取学习计划数据失败: ${error.message}`, 'error')
+            }
+        })
+        
+        // 获取学习资源数据
+        document.getElementById('testResources').addEventListener('click', async () => {
+            log('📥 正在获取学习资源数据...')
+            try {
+                // 模拟学习资源数据
+                exportData.resources = [
+                    {
+                        id: '1',
+                        title: 'Vue.js官方文档中文版',
+                        description: 'Vue.js官方文档的中文翻译版本，包含了完整的API参考和教程...',
+                        file_type: 'PDF',
+                        file_size: 5242880, // 5MB
+                        created_by: '1',
+                        created_at: '2024-01-10T00:00:00Z',
+                        updated_at: '2024-01-10T00:00:00Z',
+                        tags: ['Vue', '文档', '官方'],
+                        difficulty: '基础',
+                        view_count: 200,
+                        download_count: 45,
+                        favorite_count: 23,
+                        status: '正常'
+                    },
+                    {
+                        id: '2',
+                        title: 'JavaScript高级编程视频教程',
+                        description: '深入讲解JavaScript高级特性的视频教程系列...',
+                        file_type: 'MP4',
+                        file_size: 104857600, // 100MB
+                        created_by: '2',
+                        created_at: '2024-02-05T00:00:00Z',
+                        updated_at: '2024-02-05T00:00:00Z',
+                        tags: ['JavaScript', '视频', '高级'],
+                        difficulty: '高级',
+                        view_count: 150,
+                        download_count: 30,
+                        favorite_count: 18,
+                        status: '正常'
+                    }
+                ]
+                log(`✅ 学习资源数据获取完成: ${exportData.resources.length} 条`, 'success')
+                updateStats()
+            } catch (error) {
+                log(`❌ 获取学习资源数据失败: ${error.message}`, 'error')
+            }
+        })
+        
+        // 导出Excel
+        document.getElementById('exportAll').addEventListener('click', () => {
+            log('🔄 开始生成包含多个工作表的 Excel 文件...')
+            
+            try {
+                // 创建工作簿
+                const wb = XLSX.utils.book_new()
+                
+                // 准备工作表数据
+                const sheets = {
+                    '用户数据': exportData.users.map((user, index) => ({
+                        序号: index + 1,
+                        用户ID: user.id,
+                        用户名: user.username || '未知',
+                        昵称: user.nickname || '未设置',
+                        邮箱: user.email || '未设置',
+                        头像地址: user.avatar_url || '未设置',
+                        用户状态: user.is_banned ? '已禁用' : '正常',
+                        注册时间: user.created_at || '未知',
+                        最后登录: user.last_login_at || '从未登录'
+                    })),
+                    '文章内容': exportData.posts.map((post, index) => ({
+                        序号: index + 1,
+                        帖子ID: post.id,
+                        标题: post.title || '无标题',
+                        内容: post.content ? (post.content.length > 100 ? post.content.substring(0, 100) + '...' : post.content) : '无内容',
+                        作者ID: post.user_id || '未知',
+                        分类: post.category || '未分类',
+                        标签: post.tags ? post.tags.join(', ') : '无标签',
+                        发布时间: post.created_at || '未知',
+                        更新时间: post.updated_at || '未知',
+                        状态: post.status || '草稿',
+                        浏览量: post.views || 0,
+                        点赞数: post.likes || 0,
+                        评论数: post.comments_count || 0
+                    })),
+                    '学习计划': exportData.plans.map((plan, index) => ({
+                        序号: index + 1,
+                        计划ID: plan.id,
+                        计划名称: plan.title || '未命名',
+                        计划描述: plan.description ? (plan.description.length > 100 ? plan.description.substring(0, 100) + '...' : plan.description) : '无描述',
+                        创建者ID: plan.user_id || '未知',
+                        创建者用户名: plan.user?.username || '未知',
+                        创建者昵称: plan.user?.nickname || '未设置',
+                        创建时间: plan.created_at || '未知',
+                        更新时间: plan.updated_at || '未知',
+                        难度等级: plan.difficulty || '中等',
+                        目标时长: plan.target_hours || '未知',
+                        完成进度: `${plan.progress || 0}%`,
+                        参与人数: plan.participants_count || 0,
+                        状态: plan.status || '进行中'
+                    })),
+                    '资源数据': exportData.resources.map((resource, index) => ({
+                        序号: index + 1,
+                        资源ID: resource.id,
+                        资源标题: resource.title || '未命名',
+                        资源描述: resource.description ? (resource.description.length > 100 ? resource.description.substring(0, 100) + '...' : resource.description) : '无描述',
+                        资源类型: resource.file_type || '未知',
+                        文件大小: resource.file_size ? `${(resource.file_size / 1024 / 1024).toFixed(2)} MB` : '未知',
+                        创建者ID: resource.created_by || '未知',
+                        创建时间: resource.created_at || '未知',
+                        更新时间: resource.updated_at || '未知',
+                        分类标签: resource.tags ? resource.tags.join(', ') : '无标签',
+                        难度等级: resource.difficulty || '中等',
+                        浏览次数: resource.view_count || 0,
+                        下载次数: resource.download_count || 0,
+                        收藏次数: resource.favorite_count || 0,
+                        状态: resource.status || '正常'
+                    }))
+                }
+                
+                // 添加系统信息工作表
+                const systemInfoData = [
+                    { 项目: '导出时间', 值: new Date().toLocaleString('zh-CN') },
+                    { 项目: '系统版本', 值: 'EduMatch v1.0.0' },
+                    { 项目: '导出人', 值: '管理员' },
+                    { 项目: '用户总数', 值: exportData.users.length },
+                    { 项目: '文章总数', 值: exportData.posts.length },
+                    { 项目: '计划总数', 值: exportData.plans.length },
+                    { 项目: '资源总数', 值: exportData.resources.length }
+                ]
+                sheets['系统信息'] = systemInfoData
+                
+                // 为每个工作表创建工作表并添加到工作簿
+                Object.entries(sheets).forEach(([sheetName, data]) => {
+                    if (!data || data.length === 0) {
+                        log(`⚠️ ${sheetName} 暂无数据，创建空工作表`, 'warning')
+                        const emptySheet = XLSX.utils.aoa_to_sheet([[`${sheetName} (暂无数据)`]])
+                        XLSX.utils.book_append_sheet(wb, emptySheet, sheetName)
+                        return
+                    }
+                    
+                    log(`📊 正在处理 ${sheetName}: ${data.length} 条记录`)
+                    
+                    const ws = XLSX.utils.json_to_sheet(data, {
+                        header: Object.keys(data[0]),
+                        skipHeader: false
+                    })
+                    
+                    // 设置列宽以优化显示
+                    const colWidths = Object.keys(data[0]).map(key => {
+                        let maxWidth = key.length
+                        data.forEach(row => {
+                            const value = String(row[key] || '')
+                            maxWidth = Math.max(maxWidth, value.length)
+                        })
+                        return { width: Math.min(maxWidth + 2, 50) }
+                    })
+                    ws['!cols'] = colWidths
+                    
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName)
+                })
+                
+                // 生成 Excel 文件
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
+                const excelFilename = `EduMatch_完整数据导出_${timestamp}.xlsx`
+                
+                XLSX.writeFile(wb, excelFilename, {
+                    bookType: 'xlsx',
+                    type: 'binary'
+                })
+                
+                log(`✅ Excel 文件已生成: ${excelFilename}`, 'success')
+                log(`📊 导出统计: 用户${exportData.users.length}人、帖子${exportData.posts.length}篇、计划${exportData.plans.length}个、资源${exportData.resources.length}个`)
+                log(`🎉 Excel 文件导出成功！包含 ${Object.keys(sheets).length} 个工作表，数据排版整齐美观。`, 'success')
+                
+            } catch (error) {
+                log(`❌ Excel 文件生成失败: ${error.message}`, 'error')
+            }
+        })
+        
+        // 初始化
+        log('🚀 数据导出测试页面已加载')
+        log('💡 点击上方按钮测试各项功能')
+    </script>
+</body>
+</html>

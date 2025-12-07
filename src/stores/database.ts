@@ -37,12 +37,51 @@ export const useDatabaseStore = defineStore('database', () => {
   // 获取用户数据
   async function getUsers() {
     try {
-      const client = supabaseService.getClient()
+      const client = await supabaseService.getClient()
       const { data, error } = await client.from('users').select('*')
       if (error) throw error
       return data
     } catch (error) {
       console.error('获取用户数据失败:', error)
+      return []
+    }
+  }
+
+  // 获取所有帖子数据
+  async function getAllPosts() {
+    try {
+      const client = await supabaseService.getClient()
+      const { data, error } = await client
+        .from('community_posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('获取帖子数据失败:', error)
+      return []
+    }
+  }
+
+  // 获取所有学习计划数据
+  async function getAllStudyPlans() {
+    try {
+      const client = await supabaseService.getClient()
+      const { data, error } = await client
+        .from('study_plans')
+        .select(`
+          *,
+          user:user_id (
+            id,
+            username,
+            nickname
+          )
+        `)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      return data
+    } catch (error) {
+      console.error('获取学习计划数据失败:', error)
       return []
     }
   }
@@ -328,6 +367,8 @@ export const useDatabaseStore = defineStore('database', () => {
     getUserByEmail,
     getUserByNickname,
     updateUserNickname,
+    getAllPosts,
+    getAllStudyPlans,
     getResources,
     searchResources,
     addLearningRecord,

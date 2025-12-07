@@ -3,384 +3,404 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>管理员详情功能完整测试</title>
+    <title>后台管理详情页面功能测试</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 1000px;
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            background-color: #f5f5f5;
         }
-        .main-container {
+        .container {
             background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .header h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-        }
-        .header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-        .test-section {
-            border: 2px solid #f0f0f0;
             border-radius: 8px;
             padding: 20px;
-            margin-bottom: 25px;
-            background: #fafafa;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .test-section h3 {
-            color: #333;
-            margin-top: 0;
-            border-bottom: 2px solid #007bff;
-            padding-bottom: 10px;
-        }
-        .test-button {
-            background: linear-gradient(45deg, #007bff, #0056b3);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 5px 10px 5px 0;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,123,255,0.3);
-        }
-        .test-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,123,255,0.4);
-        }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
-        .warning { color: #ffc107; }
-        .info { color: #17a2b8; }
-        
-        .status-indicator {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-            margin: 5px;
-            display: inline-block;
-        }
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .status-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .status-warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-        
-        .checklist {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 15px;
+        .status {
+            padding: 10px;
             margin: 10px 0;
+            border-radius: 5px;
         }
-        .checklist li {
-            margin: 8px 0;
-            padding: 5px 0;
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
         }
-        .checklist li::before {
-            content: "✓ ";
-            color: #28a745;
-            font-weight: bold;
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
         }
-        
-        #test-results {
-            margin-top: 20px;
-            padding: 20px;
+        .button {
+            padding: 10px 15px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:hover { background: #0056b3; }
+        .button.success { background: #28a745; }
+        .button.success:hover { background: #1e7e34; }
+        .button.danger { background: #dc3545; }
+        .button.danger:hover { background: #c82333; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 200px;
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
             background: white;
-            border-radius: 8px;
-            border: 1px solid #dee2e6;
         }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .url-list {
+            list-style: none;
+            padding: 0;
         }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .url-list li {
+            margin: 5px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 3px;
+            font-family: monospace;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="header">
-            <h1>🔍 管理员查看详情功能测试</h1>
-            <p>全面测试后台管理系统中的查看详情按钮功能</p>
-        </div>
+    <h1>🔍 EduMatch 后台管理详情页面功能测试</h1>
+    
+    <div id="connection-status" class="status info">正在测试数据库连接...</div>
+    
+    <div class="container">
+        <h2>📊 数据概览</h2>
+        <div id="overview" class="status info">正在加载数据概览...</div>
+    </div>
 
+    <div class="container">
+        <h2>👥 用户列表测试</h2>
         <div class="test-section">
-            <h3>🎯 核心功能测试</h3>
-            <p><strong>测试目标：</strong>验证所有查看详情按钮都能正确工作，包括：</p>
-            <ul class="checklist">
-                <li>帖子详情查看功能</li>
-                <li>学习计划详情查看功能</li>
-                <li>资源详情查看功能</li>
-                <li>用户详情查看功能</li>
-            </ul>
-            
-            <div style="margin-top: 20px;">
-                <a href="http://localhost:3010/admin" target="_blank" class="test-button">
-                    🚀 打开后台管理系统
-                </a>
-                <button onclick="startDetailedTest()" class="test-button">
-                    🔧 运行自动化测试
-                </button>
-                <button onclick="clearResults()" class="test-button">
-                    🗑️ 清除测试结果
-                </button>
-            </div>
+            <div id="users-status" class="status info">正在加载用户列表...</div>
+            <div id="users-list"></div>
         </div>
+    </div>
 
+    <div class="container">
+        <h2>📝 帖子详情测试</h2>
         <div class="test-section">
-            <h3>📋 测试步骤说明</h3>
-            <div style="background: #e9ecef; padding: 15px; border-radius: 6px; margin: 10px 0;">
-                <h4>手动测试步骤：</h4>
-                <ol style="line-height: 1.8;">
-                    <li>点击上方"打开后台管理系统"按钮</li>
-                    <li>确保已登录（如果未登录，会自动跳转到登录页）</li>
-                    <li>在后台管理页面中，依次测试以下功能：</li>
-                    <ul>
-                        <li><strong>内容管理</strong>标签页 → 点击任一帖子的眼睛图标</li>
-                        <li><strong>学习计划</strong>标签页 → 点击任一计划的眼睛图标</li>
-                        <li><strong>资源管理</strong>标签页 → 点击任一资源的眼睛图标</li>
-                        <li><strong>用户管理</strong>标签页 → 点击任一用户行</li>
-                    </ul>
-                    <li>验证每个详情页面都能在新窗口中正确打开</li>
-                    <li>确认详情页面能正确显示数据或适当的加载/错误状态</li>
-                </ol>
-            </div>
+            <div id="posts-status" class="status info">正在加载帖子列表...</div>
+            <div id="posts-list"></div>
         </div>
+    </div>
 
+    <div class="container">
+        <h2>📚 学习计划测试</h2>
         <div class="test-section">
-            <h3>⚙️ 技术实现验证</h3>
-            <p>检查以下技术实现是否正确：</p>
-            <div id="tech-checks">
-                <div class="status-indicator status-warning">
-                    等待测试...
-                </div>
-            </div>
-            
-            <div style="margin-top: 15px;">
-                <button onclick="checkTechnicalImplementation()" class="test-button">
-                    🔍 检查技术实现
-                </button>
-            </div>
+            <div id="plans-status" class="status info">正在加载学习计划列表...</div>
+            <div id="plans-list"></div>
         </div>
+    </div>
 
-        <div id="test-results"></div>
+    <div class="container">
+        <h2>📖 资源测试</h2>
+        <div class="test-section">
+            <div id="resources-status" class="status info">正在加载资源列表...</div>
+            <div id="resources-list"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔗 生成的管理页面链接</h2>
+        <div id="generated-urls" class="status info">正在生成管理页面链接...</div>
+        <ul id="url-list" class="url-list"></ul>
     </div>
 
     <script>
-        // 测试结果存储
-        let testResults = [];
-        
-        // 添加测试结果
-        function addTestResult(testName, status, message, details = null) {
-            testResults.push({
-                test: testName,
-                status: status,
-                message: message,
-                details: details,
-                timestamp: new Date().toLocaleTimeString()
-            });
-            updateResultsDisplay();
+        // 从 .env 文件中提取的配置
+        const SUPABASE_URL = 'https://aonlahundnkxuyxfsmcy.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmxhaHVuZG5reHV5eGZzbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjYwNTUsImV4cCI6MjA3ODY0MjA1NX0.IQswPG1NkJKht83isjWJk5nzuhymzETAf81_71kXaVE';
+
+        let supabase;
+        let users = [];
+        let posts = [];
+        let plans = [];
+        let resources = [];
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
         }
-        
-        // 更新结果显示
-        function updateResultsDisplay() {
-            const resultsDiv = document.getElementById('test-results');
-            if (testResults.length === 0) {
-                resultsDiv.innerHTML = '<p class="info">暂无测试结果</p>';
-                return;
-            }
+
+        function addResult(containerId, title, content, type = 'success') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result-item';
+            resultDiv.innerHTML = `
+                <h4>${title}</h4>
+                <pre>${JSON.stringify(content, null, 2)}</pre>
+            `;
+            container.appendChild(resultDiv);
+        }
+
+        function createActionButton(text, url, type = 'primary') {
+            const button = document.createElement('button');
+            button.textContent = text;
+            button.className = `button ${type}`;
+            button.onclick = () => window.open(url, '_blank');
+            return button;
+        }
+
+        function addTestItem(containerId, title, id, data, urlPrefix) {
+            const container = document.getElementById(containerId);
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'test-item';
             
-            let html = '<h4>📊 测试结果汇总</h4>';
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.marginTop = '10px';
             
-            // 统计
-            const passed = testResults.filter(r => r.status === 'success').length;
-            const failed = testResults.filter(r => r.status === 'error').length;
-            const warnings = testResults.filter(r => r.status === 'warning').length;
+            // 详情按钮
+            const detailButton = createActionButton('查看详情', `${urlPrefix}/${id}`, 'success');
+            buttonsContainer.appendChild(detailButton);
             
-            html += `<div style="margin-bottom: 20px;">
-                <span class="status-indicator status-success">✅ 通过: ${passed}</span>
-                <span class="status-indicator status-error">❌ 失败: ${failed}</span>
-                <span class="status-indicator status-warning">⚠️ 警告: ${warnings}</span>
-            </div>`;
+            itemDiv.innerHTML = `
+                <strong>${title}</strong> (ID: ${id})
+                <div style="font-size: 0.9em; color: #666; margin-top: 5px;">
+                    ${data.created_at ? `创建时间: ${new Date(data.created_at).toLocaleString('zh-CN')}` : ''}
+                    ${data.user_id ? ` | 用户ID: ${data.user_id}` : ''}
+                    ${data.created_by ? ` | 创建者: ${data.created_by}` : ''}
+                </div>
+            `;
+            itemDiv.appendChild(buttonsContainer);
             
-            // 详细结果
-            testResults.forEach(result => {
-                const statusClass = result.status === 'success' ? 'success' : 
-                                   result.status === 'error' ? 'error' : 'warning';
-                const icon = result.status === 'success' ? '✅' : 
-                            result.status === 'error' ? '❌' : '⚠️';
+            container.appendChild(itemDiv);
+        }
+
+        function generateManagementUrls() {
+            const urlList = document.getElementById('url-list');
+            urlList.innerHTML = '';
+            
+            // 用户管理链接
+            if (users.length > 0) {
+                const usersLi = document.createElement('li');
+                usersLi.innerHTML = `👥 <strong>用户管理</strong>: <a href="/admin" target="_blank">/admin</a>`;
+                urlList.appendChild(usersLi);
                 
-                html += `<div style="margin: 10px 0; padding: 10px; border-left: 4px solid ${
-                    result.status === 'success' ? '#28a745' : 
-                    result.status === 'error' ? '#dc3545' : '#ffc107'
-                }; background: #f8f9fa;">
-                    <strong>${icon} ${result.test}</strong> 
-                    <span class="${statusClass}">${result.message}</span>
-                    <small style="color: #666;">(${result.timestamp})</small>
-                    ${result.details ? `<div style="margin-top: 5px; font-size: 0.9em; color: #666;">${result.details}</div>` : ''}
-                </div>`;
-            });
-            
-            resultsDiv.innerHTML = html;
-        }
-        
-        // 清除结果
-        function clearResults() {
-            testResults = [];
-            updateResultsDisplay();
-        }
-        
-        // 检查技术实现
-        async function checkTechnicalImplementation() {
-            const checksDiv = document.getElementById('tech-checks');
-            checksDiv.innerHTML = '<div class="loading"></div> 正在检查技术实现...';
-            
-            let checks = [];
-            
-            // 检查路由配置
-            try {
-                const response = await fetch('http://localhost:3010/post/test-id', { method: 'HEAD' });
-                checks.push({
-                    name: '帖子详情路由',
-                    status: response.status !== 404 ? 'success' : 'error',
-                    message: response.status !== 404 ? '正常' : '路由未配置'
-                });
-            } catch (error) {
-                checks.push({
-                    name: '帖子详情路由',
-                    status: 'error',
-                    message: '网络错误'
+                users.forEach(user => {
+                    const userLi = document.createElement('li');
+                    userLi.innerHTML = `👤 <strong>${user.nickname || user.username}</strong>: <a href="/admin/user/${user.id}" target="_blank">/admin/user/${user.id}</a>`;
+                    urlList.appendChild(userLi);
                 });
             }
             
-            try {
-                const response = await fetch('http://localhost:3010/study-plan/test-id', { method: 'HEAD' });
-                checks.push({
-                    name: '学习计划详情路由',
-                    status: response.status !== 404 ? 'success' : 'error',
-                    message: response.status !== 404 ? '正常' : '路由未配置'
-                });
-            } catch (error) {
-                checks.push({
-                    name: '学习计划详情路由',
-                    status: 'error',
-                    message: '网络错误'
+            // 帖子详情链接
+            if (posts.length > 0) {
+                posts.slice(0, 5).forEach(post => {
+                    const postLi = document.createElement('li');
+                    postLi.innerHTML = `📝 <strong>${post.title}</strong>: <a href="/admin/post/${post.id}" target="_blank">/admin/post/${post.id}</a>`;
+                    urlList.appendChild(postLi);
                 });
             }
             
-            try {
-                const response = await fetch('http://localhost:3010/resource/test-id', { method: 'HEAD' });
-                checks.push({
-                    name: '资源详情路由',
-                    status: response.status !== 404 ? 'success' : 'error',
-                    message: response.status !== 404 ? '正常' : '路由未配置'
-                });
-            } catch (error) {
-                checks.push({
-                    name: '资源详情路由',
-                    status: 'error',
-                    message: '网络错误'
+            // 学习计划详情链接
+            if (plans.length > 0) {
+                plans.slice(0, 5).forEach(plan => {
+                    const planLi = document.createElement('li');
+                    planLi.innerHTML = `📚 <strong>${plan.title}</strong>: <a href="/admin/plan/${plan.id}" target="_blank">/admin/plan/${plan.id}</a>`;
+                    urlList.appendChild(planLi);
                 });
             }
             
-            try {
-                const response = await fetch('http://localhost:3010/admin', { method: 'HEAD' });
-                checks.push({
-                    name: '后台管理页面',
-                    status: response.ok ? 'success' : 'error',
-                    message: response.ok ? '正常' : `错误: ${response.status}`
-                });
-            } catch (error) {
-                checks.push({
-                    name: '后台管理页面',
-                    status: 'error',
-                    message: '网络错误'
+            // 资源详情链接
+            if (resources.length > 0) {
+                resources.slice(0, 5).forEach(resource => {
+                    const resourceLi = document.createElement('li');
+                    resourceLi.innerHTML = `📖 <strong>${resource.title}</strong>: <a href="/admin/resource/${resource.id}" target="_blank">/admin/resource/${resource.id}</a>`;
+                    urlList.appendChild(resourceLi);
                 });
             }
             
-            // 显示检查结果
-            let html = '';
-            checks.forEach(check => {
-                const statusClass = check.status === 'success' ? 'status-success' : 
-                                   check.status === 'error' ? 'status-error' : 'status-warning';
-                html += `<div class="status-indicator ${statusClass}">
-                    ${check.name}: ${check.message}
-                </div>`;
-            });
-            
-            checksDiv.innerHTML = html;
-            
-            // 添加到测试结果
-            checks.forEach(check => {
-                addTestResult(check.name, check.status, check.message);
-            });
+            updateStatus('generated-urls', `✅ 已生成 ${urlList.children.length} 个管理页面链接`, 'success');
         }
-        
-        // 开始详细测试
-        function startDetailedTest() {
-            addTestResult('自动化测试启动', 'success', '开始运行详细测试套件');
-            checkTechnicalImplementation();
-            
-            // 模拟检查按钮点击事件
-            setTimeout(() => {
-                addTestResult('按钮点击事件', 'warning', '需要手动验证', '请在后台管理页面实际测试按钮功能');
-            }, 1000);
-            
-            setTimeout(() => {
-                addTestResult('页面跳转功能', 'warning', '需要手动验证', '请确认详情页面能在新窗口中正确打开');
-            }, 1500);
-            
-            setTimeout(() => {
-                addTestResult('数据加载', 'warning', '需要手动验证', '请确认详情页面能正确显示数据');
-            }, 2000);
+
+        async function testConnection() {
+            try {
+                console.log('🔄 初始化 Supabase 客户端...');
+                supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                updateStatus('connection-status', '✅ Supabase 客户端初始化成功', 'success');
+
+                // 测试连接
+                const { data, error } = await supabase.from('users').select('id').limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+
+                updateStatus('connection-status', '✅ 数据库连接测试成功', 'success');
+                await loadOverview();
+                await loadUsers();
+                await loadPosts();
+                await loadPlans();
+                await loadResources();
+                generateManagementUrls();
+
+            } catch (error) {
+                console.error('❌ 数据库连接失败:', error);
+                updateStatus('connection-status', `❌ 数据库连接失败: ${error.message}`, 'error');
+            }
         }
-        
-        // 页面加载完成后的初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔍 管理员查看详情功能测试页面已加载');
-            addTestResult('页面加载', 'success', '测试页面已正确加载');
-            
-            // 自动运行基础检查
-            setTimeout(() => {
-                checkTechnicalImplementation();
-            }, 500);
+
+        async function loadOverview() {
+            try {
+                const [userCount, postCount, planCount, resourceCount] = await Promise.all([
+                    supabase.from('users').select('*', { count: 'exact', head: true }),
+                    supabase.from('community_posts').select('*', { count: 'exact', head: true }),
+                    supabase.from('study_plans').select('*', { count: 'exact', head: true }),
+                    supabase.from('resources').select('*', { count: 'exact', head: true })
+                ]);
+
+                const overview = {
+                    users: userCount.count || 0,
+                    posts: postCount.count || 0,
+                    plans: planCount.count || 0,
+                    resources: resourceCount.count || 0
+                };
+
+                updateStatus('overview', `✅ 数据概览: 用户 ${overview.users}, 帖子 ${overview.posts}, 学习计划 ${overview.plans}, 资源 ${overview.resources}`, 'success');
+                addResult('overview', '数据统计概览', overview, 'success');
+
+            } catch (error) {
+                updateStatus('overview', `❌ 加载数据概览失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .limit(10);
+
+                if (error) throw error;
+
+                users = data || [];
+                updateStatus('users-status', `✅ 成功加载 ${users.length} 个用户`, 'success');
+
+                if (users.length > 0) {
+                    users.forEach(user => {
+                        addTestItem('users-list', user.nickname || user.username, user.id, user, '/admin/user');
+                    });
+                } else {
+                    document.getElementById('users-list').innerHTML = '<p>暂无用户数据</p>';
+                }
+
+            } catch (error) {
+                updateStatus('users-status', `❌ 加载用户失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadPosts() {
+            try {
+                const { data, error } = await supabase
+                    .from('community_posts')
+                    .select('*')
+                    .limit(10);
+
+                if (error) throw error;
+
+                posts = data || [];
+                updateStatus('posts-status', `✅ 成功加载 ${posts.length} 个帖子`, 'success');
+
+                if (posts.length > 0) {
+                    posts.forEach(post => {
+                        addTestItem('posts-list', post.title, post, '/admin/post');
+                    });
+                } else {
+                    document.getElementById('posts-list').innerHTML = '<p>暂无帖子数据</p>';
+                }
+
+            } catch (error) {
+                updateStatus('posts-status', `❌ 加载帖子失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadPlans() {
+            try {
+                const { data, error } = await supabase
+                    .from('study_plans')
+                    .select('*')
+                    .limit(10);
+
+                if (error) throw error;
+
+                plans = data || [];
+                updateStatus('plans-status', `✅ 成功加载 ${plans.length} 个学习计划`, 'success');
+
+                if (plans.length > 0) {
+                    plans.forEach(plan => {
+                        addTestItem('plans-list', plan.title, plan, '/admin/plan');
+                    });
+                } else {
+                    document.getElementById('plans-list').innerHTML = '<p>暂无学习计划数据</p>';
+                }
+
+            } catch (error) {
+                updateStatus('plans-status', `❌ 加载学习计划失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadResources() {
+            try {
+                const { data, error } = await supabase
+                    .from('resources')
+                    .select('*')
+                    .limit(10);
+
+                if (error) throw error;
+
+                resources = data || [];
+                updateStatus('resources-status', `✅ 成功加载 ${resources.length} 个资源`, 'success');
+
+                if (resources.length > 0) {
+                    resources.forEach(resource => {
+                        addTestItem('resources-list', resource.title, resource, '/admin/resource');
+                    });
+                } else {
+                    document.getElementById('resources-list').innerHTML = '<p>暂无资源数据</p>';
+                }
+
+            } catch (error) {
+                updateStatus('resources-status', `❌ 加载资源失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 添加重新测试按钮
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.createElement('button');
+            button.textContent = '🔄 重新测试所有功能';
+            button.onclick = () => {
+                location.reload();
+            };
+            button.style.cssText = 'padding: 15px 30px; margin: 20px 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;';
+            document.body.insertBefore(button, document.body.firstChild.nextSibling);
+
+            // 自动运行测试
+            testConnection();
         });
     </script>
 </body>

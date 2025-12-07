@@ -134,9 +134,9 @@ export class DatabaseService {
     // this.client = getFirestore(app)
   }
 
-  // Supabase 连接初始化
+  // Supabase 连接初始化（使用单例）
   private async initSupabase() {
-    console.log('🔄 初始化 Supabase 连接...')
+    console.log('🔄 初始化 Supabase 连接（单例模式）...')
     
     if (!dbConfig.connectionString || !dbConfig.apiKey) {
       console.warn('⚠️ Supabase URL 或 API Key 未配置，跳过数据库连接')
@@ -149,15 +149,11 @@ export class DatabaseService {
     }
 
     try {
-      // 动态导入 Supabase 客户端
-      const { createClient } = await import('@supabase/supabase-js')
+      // 使用单例管理器获取客户端
+      const SupabaseSingleton = (await import('./supabase-singleton')).default
+      this.client = await SupabaseSingleton.getInstance()
       
-      this.client = createClient(
-        dbConfig.connectionString,
-        dbConfig.apiKey
-      )
-      
-      console.log('✅ Supabase 客户端初始化成功')
+      console.log('✅ Supabase 客户端获取成功（单例模式）')
       
       // 测试连接 - 使用实际存在的表
       const { data, error } = await this.client.from('users').select('id').limit(1)

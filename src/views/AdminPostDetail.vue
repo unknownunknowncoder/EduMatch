@@ -266,12 +266,21 @@ const loadPost = async () => {
   try {
     console.log('🔄 加载管理员帖子详情，ID:', postId)
     
+    // 确保数据库连接已初始化
+    const { useDatabaseStore } = await import('@/stores/database')
+    const dbStore = useDatabaseStore()
+    await dbStore.reconnect()
+    
     const { supabaseService } = await import('@/services/supabase')
+    console.log('✅ Supabase服务获取成功')
     
     // 获取帖子基本信息
+    console.log('📋 获取帖子基本信息...')
     const postData = await supabaseService.getPostById(postId)
+    console.log('📋 帖子基本信息:', postData)
     
     if (!postData) {
+      console.error('❌ 帖子不存在或已被删除')
       error.value = '帖子不存在或已被删除'
       return
     }
@@ -279,43 +288,74 @@ const loadPost = async () => {
     // 获取用户信息
     let userInfo = null
     if (postData.user_id) {
+      console.log('👤 获取用户信息，用户ID:', postData.user_id)
       try {
         userInfo = await supabaseService.getUserById(postData.user_id)
+        console.log('✅ 用户信息获取成功:', userInfo)
       } catch (userError) {
-        console.error('获取用户信息失败:', userError)
+        console.error('❌ 获取用户信息失败:', userError)
+        // 用户信息获取失败不应该阻止帖子显示
       }
     }
     
     // 获取统计信息
-    const { data: likesData } = await supabaseService.getClient()
-      .from('post_likes')
-      .select('id')
-      .eq('post_id', postId)
-      
-    const { data: commentsData } = await supabaseService.getClient()
-      .from('post_comments')
-      .select('id')
-      .eq('post_id', postId)
-      
-    const { data: favoritesData } = await supabaseService.getClient()
-      .from('post_favorites')
-      .select('id')
-      .eq('post_id', postId)
+    console.log('📊 获取统计信息...')
+    const client = supabaseService.getClient()
     
-    post.value = {
-      ...postData,
-      user: userInfo,
-      likes_count: likesData?.length || 0,
-      comments_count: commentsData?.length || 0,
-      favorites_count: favoritesData?.length || 0,
-      views_count: postData.views_count || 0
+    try {
+      const { data: likesData } = await client
+        .from('post_likes')
+        .select('id')
+        .eq('post_id', postId)
+        
+      const { data: commentsData } = await client
+        .from('post_comments')
+        .select('id')
+        .eq('post_id', postId)
+        
+      const { data: favoritesData } = await client
+        .from('post_favorites')
+        .select('id')
+        .eq('post_id', postId)
+      
+      console.log('📊 统计信息:', {
+        likes: likesData?.length || 0,
+        comments: commentsData?.length || 0,
+        favorites: favoritesData?.length || 0
+      })
+    
+      post.value = {
+        ...postData,
+        user: userInfo,
+        likes_count: likesData?.length || 0,
+        comments_count: commentsData?.length || 0,
+        favorites_count: favoritesData?.length || 0,
+        views_count: postData.views_count || 0
+      }
+    } catch (statsError) {
+      console.error('❌ 获取统计信息失败:', statsError)
+      // 统计信息获取失败也应该显示帖子
+      post.value = {
+        ...postData,
+        user: userInfo,
+        likes_count: 0,
+        comments_count: 0,
+        favorites_count: 0,
+        views_count: postData.views_count || 0
+      }
     }
     
     console.log('✅ 帖子详情加载成功:', post.value)
     
   } catch (err) {
     console.error('❌ 加载帖子详情失败:', err)
-    error.value = '加载帖子详情失败，请稍后重试'
+    console.error('❌ 错误详情:', {
+      message: err.message,
+      code: err.code,
+      details: err.details,
+      hint: err.hint
+    })
+    error.value = `加载帖子详情失败: ${err.message || '未知错误'}`
   } finally {
     loading.value = false
   }

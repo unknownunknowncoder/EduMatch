@@ -1,84 +1,141 @@
-// 管理员认证工具类
+// 管理员认证相关工具函数
 
-export interface AdminUserInfo {
+interface AdminUserInfo {
+  id: string
   username: string
-  loginTime: string
+  nickname?: string
+  role: string
+  loginTime: number
+  expiresAt: number
 }
 
-// 检查是否已登录
-export const isAdminLoggedIn = (): boolean => {
-  const token = localStorage.getItem('adminToken')
-  const userInfo = localStorage.getItem('adminUserInfo')
-  return !!(token && userInfo)
-}
+const ADMIN_TOKEN_KEY = 'adminToken'
+const ADMIN_USER_KEY = 'adminUserInfo'
+const TOKEN_DURATION = 24 * 60 * 60 * 1000 // 24小时
 
-// 获取管理员用户信息
-export const getAdminUserInfo = (): AdminUserInfo | null => {
+// 检查管理员是否已登录
+export function isAdminLoggedIn(): boolean {
   try {
-    const userInfoStr = localStorage.getItem('adminUserInfo')
-    if (!userInfoStr) return null
+    const token = localStorage.getItem(ADMIN_TOKEN_KEY)
+    const userInfo = localStorage.getItem(ADMIN_USER_KEY)
     
-    return JSON.parse(userInfoStr) as AdminUserInfo
+    if (!token || !userInfo) {
+      return false
+    }
+    
+    const user: AdminUserInfo = JSON.parse(userInfo)
+    
+    // 检查是否过期
+    if (Date.now() > user.expiresAt) {
+      clearAdminAuth()
+      return false
+    }
+    
+    return true
   } catch (error) {
-    console.error('Error parsing admin user info:', error)
-    return null
+    console.error('检查管理员登录状态失败:', error)
+    return false
   }
 }
 
-// 验证管理员token（这里可以扩展为更复杂的验证逻辑）
-export const validateAdminToken = (): boolean => {
-  const token = localStorage.getItem('adminToken')
-  if (!token) return false
-  
-  // 简单的token格式验证
-  return token.startsWith('admin-token-')
-}
-
-// 管理员登出
-export const adminLogout = (): void => {
-  localStorage.removeItem('adminToken')
-  localStorage.removeItem('adminUserInfo')
-  // 注意：保留 adminUsername 用于"记住我"功能
-}
-
-// 检查登录状态是否过期（可选功能）
-export const isLoginExpired = (): boolean => {
-  const userInfo = getAdminUserInfo()
-  if (!userInfo) return true
-  
-  const loginTime = new Date(userInfo.loginTime)
-  const now = new Date()
-  
-  // 设置登录过期时间为24小时
-  const expiryTime = 24 * 60 * 60 * 1000 // 24小时
-  
-  return (now.getTime() - loginTime.getTime()) > expiryTime
-}
-
-// 强制登出（如果过期）
-export const autoLogoutIfExpired = (): boolean => {
-  if (isLoginExpired()) {
-    adminLogout()
+// 自动退出如果已过期
+export function autoLogoutIfExpired(): boolean {
+  if (!isAdminLoggedIn()) {
+    clearAdminAuth()
     return true
   }
   return false
 }
 
-// 获取登录持续时间
-export const getLoginDuration = (): string => {
-  const userInfo = getAdminUserInfo()
-  if (!userInfo) return '未登录'
-  
-  const loginTime = new Date(userInfo.loginTime)
-  const now = new Date()
-  const duration = now.getTime() - loginTime.getTime()
-  
-  const hours = Math.floor(duration / (1000 * 60 * 60))
-  const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60))
-  
-  if (hours > 0) {
-    return `${hours}小时${minutes}分钟`
-  } else {
-    return `${minutes}分钟`
+// 设置管理员认证信息
+export function setAdminAuth(token: string, userInfo: Omit<AdminUserInfo, 'loginTime' | 'expiresAt'>): void {
+  try {
+    const now = Date.now()
+    const fullUserInfo: AdminUserInfo = {
+      ...userInfo,
+      loginTime: now,
+      expiresAt: now + TOKEN_DURATION
+    }
+    
+    localStorage.setItem(ADMIN_TOKEN_KEY, token)
+    localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(fullUserInfo))
+  } catch (error) {
+    console.error('设置管理员认证信息失败:', error)
   }
+}
+
+// 清除管理员认证信息
+export function clearAdminAuth(): void {
+  try {
+    localStorage.removeItem(ADMIN_TOKEN_KEY)
+    localStorage.removeItem(ADMIN_USER_KEY)
+  } catch (error) {
+    console.error('清除管理员认证信息失败:', error)
+  }
+}
+
+// 获取当前管理员用户信息
+export function getCurrentAdmin(): AdminUserInfo | null {
+  try {
+    const userInfo = localStorage.getItem(ADMIN_USER_KEY)
+    if (!userInfo) {
+      return null
+    }
+    
+    const user: AdminUserInfo = JSON.parse(userInfo)
+    
+    // 检查是否过期
+    if (Date.now() > user.expiresAt) {
+      clearAdminAuth()
+      return null
+    }
+    
+    return user
+  } catch (error) {
+    console.error('获取当前管理员信息失败:', error)
+    return null
+  }
+}
+
+// 验证管理员权限
+export function hasAdminPermission(requiredRole?: string): boolean {
+  const admin = getCurrentAdmin()
+  if (!admin) {
+    return false
+  }
+  
+  // 如果指定了角色要求，检查角色
+  if (requiredRole && admin.role !== requiredRole) {
+    return false
+  }
+  
+  return true
+}
+
+// 更新管理员信息
+export function updateAdminInfo(updates: Partial<AdminUserInfo>): boolean {
+  try {
+    const admin = getCurrentAdmin()
+    if (!admin) {
+      return false
+    }
+    
+    const updatedAdmin = { ...admin, ...updates }
+    localStorage.setItem(ADMIN_USER_KEY, JSON.stringify(updatedAdmin))
+    return true
+  } catch (error) {
+    console.error('更新管理员信息失败:', error)
+    return false
+  }
+}
+
+// 检查token是否即将过期（1小时内）
+export function isTokenExpiringSoon(): boolean {
+  const admin = getCurrentAdmin()
+  if (!admin) {
+    return false
+  }
+  
+  const oneHour = 60 * 60 * 1000
+  return (admin.expiresAt - Date.now()) < oneHour
 }

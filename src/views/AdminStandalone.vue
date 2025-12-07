@@ -47,7 +47,7 @@
           <div class="flex items-center">
             <div class="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
               <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v-1m0 0a6 6 0 00-12 0v1m0 0V9a4 4 0 1112 0v-1m6 0a3 3 0 100-6 0v1m0 0a3 3 0 10-6 0v1"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v-1m0 0a6 6 0 00-12 0v1m0 0V9a4 4 0 1112 0v-1m6 0a3 3 0 100-6 0v1m0 0a3 3 0 01-6 0v1"></path>
               </svg>
             </div>
             <div class="ml-4">

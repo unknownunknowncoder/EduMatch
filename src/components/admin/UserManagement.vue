@@ -18,10 +18,26 @@
         </div>
         <button
           @click="loadUsers"
-          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+          :disabled="isLoading"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2"
         >
-          刷新
+          <svg v-if="isLoading" class="animate-spin h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          {{ isLoading ? '加载中...' : '刷新' }}
         </button>
+      </div>
+      
+      <!-- 调试信息 -->
+      <div v-if="isLoading || users.length === 0" class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm text-blue-700 dark:text-blue-300">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>
+            {{ isLoading ? '正在从数据库加载用户数据...' : `当前已加载 ${users.length} 个用户` }}
+          </span>
+        </div>
       </div>
     </div>
 
@@ -114,15 +130,9 @@
                 </button>
                 <button
                   @click="suspendUser(user)"
-                  class="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 mr-4"
+                  class="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300"
                 >
                   {{ user.status === 'suspended' ? '激活' : '注销' }}
-                </button>
-                <button
-                  @click="deleteUser(user)"
-                  class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
-                >
-                  删除
                 </button>
               </td>
             </tr>
@@ -151,6 +161,28 @@
             >
               上一页
             </button>
+            
+            <!-- 页数跳转 -->
+            <div class="flex items-center space-x-1">
+              <span class="text-sm text-gray-700 dark:text-gray-300">跳转到</span>
+              <input
+                v-model.number="jumpPage"
+                type="number"
+                :min="1"
+                :max="totalPages"
+                class="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                @input="validateJumpPage"
+              />
+              <span class="text-sm text-gray-700 dark:text-gray-300">页</span>
+              <button
+                @click="jumpToPage"
+                :disabled="!isValidJumpPage || jumpPage === currentPage"
+                class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                跳转
+              </button>
+            </div>
+            
             <span class="px-3 py-1 text-sm dark:text-white">
               {{ currentPage }} / {{ totalPages }}
             </span>
@@ -239,10 +271,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { supabaseService } from '@/services/supabase'
 import { useDatabaseStore } from '@/stores/database'
 import { showToast } from '@/utils/message'
+
+const router = useRouter()
 
 interface User {
   id: string
@@ -262,8 +297,12 @@ const users = ref<User[]>([])
 const isLoading = ref(false)
 const searchQuery = ref('')
 const currentPage = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(8)
+const jumpPage = ref(1)
 const selectedUser = ref<User | null>(null)
+
+// 定义 emits
+const emit = defineEmits(['showConfirm', 'refresh'])
 
 // 计算过滤后的用户列表
 const filteredUsers = computed(() => {
@@ -289,6 +328,12 @@ const paginatedUsers = computed(() => {
 // 计算总页数
 const totalPages = computed(() => {
   return Math.ceil(filteredUsers.value.length / pageSize.value)
+})
+
+// 验证跳转页数是否有效
+const isValidJumpPage = computed(() => {
+  const page = jumpPage.value
+  return Number.isInteger(page) && page >= 1 && page <= totalPages.value && page !== currentPage.value
 })
 
 // 获取用户状态样式
@@ -332,25 +377,39 @@ const formatDate = (dateString: string) => {
 const loadUsers = async () => {
   isLoading.value = true
   try {
+    console.log('🔄 开始加载用户列表...')
+    
+    // 首先确保数据库连接已初始化
+    await dbStore.reconnect()
+    
     const client = await dbStore.getClient()
     if (!client) {
+      console.error('❌ 数据库客户端获取失败')
       showToast('数据库连接失败', 'error')
       return
     }
 
+    console.log('✅ 数据库客户端获取成功，开始查询用户数据')
+    
     const { data, error } = await client
       .from('users')
       .select('*')
       .order('created_at', { ascending: false })
 
     if (error) {
+      console.error('❌ 查询用户数据失败:', error)
       throw error
     }
 
+    console.log('✅ 用户数据加载成功，共', data?.length || 0, '个用户')
     users.value = data || []
+    
+    if (users.value.length === 0) {
+      console.warn('⚠️ 用户列表为空，可能数据库中没有用户数据')
+    }
   } catch (error) {
-    console.error('加载用户列表失败:', error)
-    showToast('加载用户列表失败', 'error')
+    console.error('❌ 加载用户列表失败:', error)
+    showToast('加载用户列表失败: ' + (error.message || '未知错误'), 'error')
   } finally {
     isLoading.value = false
   }
@@ -358,107 +417,220 @@ const loadUsers = async () => {
 
 // 查看用户详情
 const viewUserDetail = (user: User) => {
-  selectedUser.value = user
+  // 跳转到用户详情页面
+  router.push(`/admin/user/${user.id}`)
 }
 
 // 注销用户
 const suspendUser = async (user: User) => {
-  const newStatus = user.status === 'suspended' ? 'active' : 'suspended'
-  const action = user.status === 'suspended' ? '激活' : '注销'
+  // 如果用户已经是注销状态，则执行激活操作
+  if (user.status === 'suspended') {
+    emit('showConfirm', {
+      title: '激活用户',
+      message: `确定要激活用户 "${user.nickname || user.username}" 吗？`,
+      confirmText: '确认激活',
+      cancelText: '取消',
+      type: 'info',
+      callback: async () => {
+        try {
+          const client = await dbStore.getClient()
+          if (!client) {
+            showToast('数据库连接失败', 'error')
+            return
+          }
 
-  // 使用父组件提供的确认对话框
-  const emit = defineEmits(['showConfirm'])
-  emit('showConfirm', {
-    title: `${action}用户`,
-    message: `确定要${action}用户 "${user.nickname || user.username}" 吗？`,
-    confirmText: `确认${action}`,
-    cancelText: '取消',
-    type: newStatus === 'suspended' ? 'warning' : 'info',
-    callback: async () => {
-      try {
-        const client = await dbStore.getClient()
-        if (!client) {
-          showToast('数据库连接失败', 'error')
-          return
+          const { error } = await client
+            .from('users')
+            .update({ 
+              status: 'active',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id)
+
+          if (error) {
+            throw error
+          }
+
+          // 更新本地状态
+          const index = users.value.findIndex(u => u.id === user.id)
+          if (index > -1) {
+            users.value[index].status = 'active'
+          }
+
+          showToast('用户激活成功', 'success')
+        } catch (error) {
+          console.error('激活用户失败:', error)
+          showToast('激活用户失败', 'error')
         }
-
-        const { error } = await client
-          .from('users')
-          .update({ 
-            status: newStatus,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id)
-
-        if (error) {
-          throw error
-        }
-
-        // 更新本地状态
-        const index = users.value.findIndex(u => u.id === user.id)
-        if (index > -1) {
-          users.value[index].status = newStatus
-        }
-
-        showToast(`用户${action}成功`, 'success')
-      } catch (error) {
-        console.error(`${action}用户失败:`, error)
-        showToast(`${action}用户失败`, 'error')
       }
-    }
-  })
+    })
+  } else {
+    // 注销用户 - 删除用户数据
+    emit('showConfirm', {
+      title: '注销用户',
+      message: `确认要注销用户 "${user.nickname || user.username}" 吗？`,
+      confirmText: '确认注销',
+      cancelText: '取消',
+      type: 'warning',
+      callback: async () => {
+        try {
+          const client = await dbStore.getClient()
+          if (!client) {
+            showToast('数据库连接失败', 'error')
+            return
+          }
+
+          // 级联删除用户相关数据
+          console.log('🔄 开始级联删除用户数据，用户ID:', user.id)
+          
+          // 1. 删除用户创建的资源
+          const { error: resourcesError } = await client
+            .from('resources')
+            .delete()
+            .eq('created_by', user.id)
+          
+          if (resourcesError) {
+            console.error('❌ 删除用户资源失败:', resourcesError)
+          } else {
+            console.log('✅ 用户资源删除成功')
+          }
+          
+          // 2. 删除用户的帖子
+          const { error: postsError } = await client
+            .from('community_posts')
+            .delete()
+            .eq('user_id', user.id)
+          
+          if (postsError) {
+            console.error('❌ 删除用户帖子失败:', postsError)
+          } else {
+            console.log('✅ 用户帖子删除成功')
+          }
+          
+          // 3. 删除用户的学习计划
+          const { error: plansError } = await client
+            .from('study_plans')
+            .delete()
+            .eq('user_id', user.id)
+          
+          if (plansError) {
+            console.error('❌ 删除用户学习计划失败:', plansError)
+          } else {
+            console.log('✅ 用户学习计划删除成功')
+          }
+          
+          // 4. 删除学习计划打卡记录
+          const { error: checkinsError } = await client
+            .from('study_plan_checkins')
+            .delete()
+            .eq('user_id', user.id)
+          
+          if (checkinsError) {
+            console.error('❌ 删除用户打卡记录失败:', checkinsError)
+          } else {
+            console.log('✅ 用户打卡记录删除成功')
+          }
+          
+          // 5. 删除用户的评论
+          const { error: commentsError } = await client
+            .from('post_comments')
+            .delete()
+            .eq('user_id', user.id)
+          
+          if (commentsError) {
+            console.error('❌ 删除用户评论失败:', commentsError)
+          } else {
+            console.log('✅ 用户评论删除成功')
+          }
+          
+          // 6. 删除用户的点赞记录
+          const { error: likesError } = await client
+            .from('post_likes')
+            .delete()
+            .eq('user_id', user.id)
+          
+          if (likesError) {
+            console.error('❌ 删除用户点赞记录失败:', likesError)
+          } else {
+            console.log('✅ 用户点赞记录删除成功')
+          }
+          
+          // 7. 删除用户的收藏记录
+          const { error: favoritesError } = await client
+            .from('post_favorites')
+            .delete()
+            .eq('user_id', user.id)
+          
+          if (favoritesError) {
+            console.error('❌ 删除用户收藏记录失败:', favoritesError)
+          } else {
+            console.log('✅ 用户收藏记录删除成功')
+          }
+          
+          // 8. 最后删除用户
+          console.log('🗑️ 删除用户记录...')
+          const { error } = await client
+            .from('users')
+            .delete()
+            .eq('id', user.id)
+
+          if (error) {
+            throw error
+          }
+          
+          console.log('✅ 用户删除成功')
+
+          // 从本地列表中移除
+          const index = users.value.findIndex(u => u.id === user.id)
+          if (index > -1) {
+            users.value.splice(index, 1)
+          }
+
+          // 如果删除的是当前查看的用户，关闭详情弹窗
+          if (selectedUser.value?.id === user.id) {
+            selectedUser.value = null
+          }
+
+          showToast('用户注销成功', 'success')
+        } catch (error) {
+          console.error('注销用户失败:', error)
+          showToast('注销用户失败', 'error')
+        }
+      }
+    })
+  }
 }
 
-// 删除用户
-const deleteUser = async (user: User) => {
-  const emit = defineEmits(['showConfirm'])
-  emit('showConfirm', {
-    title: '删除用户',
-    message: `确定要删除用户 "${user.nickname || user.username}" 吗？此操作不可恢复！`,
-    confirmText: '确认删除',
-    cancelText: '取消',
-    type: 'danger',
-    callback: async () => {
-      try {
-        const client = await dbStore.getClient()
-        if (!client) {
-          showToast('数据库连接失败', 'error')
-          return
-        }
 
-        const { error } = await client
-          .from('users')
-          .delete()
-          .eq('id', user.id)
-
-        if (error) {
-          throw error
-        }
-
-        // 从本地列表中移除
-        const index = users.value.findIndex(u => u.id === user.id)
-        if (index > -1) {
-          users.value.splice(index, 1)
-        }
-
-        // 如果删除的是当前查看的用户，关闭详情弹窗
-        if (selectedUser.value?.id === user.id) {
-          selectedUser.value = null
-        }
-
-        showToast('用户删除成功', 'success')
-      } catch (error) {
-        console.error('删除用户失败:', error)
-        showToast('删除用户失败', 'error')
-      }
-    }
-  })
-}
 
 // 监听搜索变化，重置页码
 watch(searchQuery, () => {
   currentPage.value = 1
 })
 
-defineEmits(['refresh'])
+// 验证跳转页数
+const validateJumpPage = () => {
+  const page = jumpPage.value
+  if (page < 1) {
+    jumpPage.value = 1
+  } else if (page > totalPages.value) {
+    jumpPage.value = totalPages.value
+  }
+  // 限制为整数
+  if (!Number.isInteger(page)) {
+    jumpPage.value = Math.floor(page)
+  }
+}
+
+// 跳转到指定页面
+const jumpToPage = () => {
+  if (isValidJumpPage.value) {
+    currentPage.value = jumpPage.value
+  }
+}
+
+// 组件挂载时加载用户列表
+onMounted(() => {
+  loadUsers()
+})
 </script>

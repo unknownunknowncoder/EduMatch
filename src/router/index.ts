@@ -95,8 +95,36 @@ const routes = [
   
   {
     path: '/admin',
-    name: 'AdminDatabase',
-    component: () => import('@/views/AdminDatabase.vue'),
+    redirect: '/admin/dashboard'
+  },
+  {
+    path: '/admin/dashboard',
+    name: 'AdminDashboard',
+    component: () => import('@/views/AdminSystem.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/test',
+    name: 'AdminTest',
+    component: () => import('@/views/AdminTest.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/users',
+    name: 'AdminUsers',
+    component: () => import('@/views/AdminSystem.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/settings',
+    name: 'AdminSettings',
+    component: () => import('@/views/AdminSystem.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/admin/maintenance',
+    name: 'AdminMaintenance',
+    component: () => import('@/views/AdminSystem.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -170,20 +198,31 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   // 检查是否是管理员路由
   if (to.path.startsWith('/admin')) {
-    // 检查登录状态是否过期
-    if (autoLogoutIfExpired()) {
-      next('/admin/login')
-      return
-    }
+    console.log('🔍 Admin route accessed:', to.path)
     
     // 管理员登录页面不需要认证
     if (to.path === '/admin/login') {
+      console.log('✅ Admin login page, allowing access')
       next()
       return
     }
     
+    // 检查登录状态是否过期
+    const isExpired = autoLogoutIfExpired()
+    console.log('🕐 Login expired?', isExpired)
+    
+    if (isExpired) {
+      console.log('🔄 Redirecting to admin login due to expiration')
+      next('/admin/login')
+      return
+    }
+    
     // 其他管理员页面需要管理员认证
-    if (!isAdminLoggedIn()) {
+    const isLoggedIn = isAdminLoggedIn()
+    console.log('🔐 Is admin logged in?', isLoggedIn)
+    
+    if (!isLoggedIn) {
+      console.log('🔄 Redirecting to admin login, not authenticated')
       next({
         path: '/admin/login',
         query: { redirect: to.fullPath }
@@ -191,6 +230,7 @@ router.beforeEach((to, _from, next) => {
       return
     }
     
+    console.log('✅ Admin authenticated, allowing access')
     next()
     return
   }
@@ -228,6 +268,173 @@ router.beforeEach((to, _from, next) => {
   } else {
     // 不需要认证的路由，直接允许访问
     next()
+  }
+})
+
+// 路由切换后确保侧边栏可见
+router.afterEach((to) => {
+  // 如果是管理员路由，确保侧边栏可见
+  if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
+    // 对于系统维护页面，使用更频繁的检查
+    const isMaintenancePage = to.path.startsWith('/admin/maintenance')
+    const checkInterval = isMaintenancePage ? 50 : 0
+    // 使用 setTimeout 确保 DOM 已更新
+    setTimeout(() => {
+      const sidebar = document.querySelector('.admin-sidebar') as HTMLElement
+      if (sidebar) {
+        // 强制清除任何可能的 display:none 样式
+        sidebar.style.removeProperty('display')
+        sidebar.style.removeProperty('visibility')
+        sidebar.style.removeProperty('opacity')
+        
+        // 强制设置侧边栏样式
+        sidebar.style.setProperty('display', 'block', 'important')
+        sidebar.style.setProperty('visibility', 'visible', 'important')
+        sidebar.style.setProperty('opacity', '1', 'important')
+        sidebar.style.setProperty('position', 'fixed', 'important')
+        sidebar.style.setProperty('z-index', '50', 'important')
+        
+        // 强制清除所有可能的隐藏类
+        sidebar.classList.remove('hidden', 'invisible', 'opacity-0')
+        
+        // 确保导航容器可见
+        const nav = sidebar.querySelector('nav.sidebar-nav') as HTMLElement
+        if (nav) {
+          nav.style.removeProperty('display')
+          nav.style.removeProperty('visibility')
+          nav.style.removeProperty('opacity')
+          nav.classList.remove('hidden', 'invisible', 'opacity-0')
+          
+          nav.style.setProperty('display', 'flex', 'important')
+          nav.style.setProperty('visibility', 'visible', 'important')
+          nav.style.setProperty('opacity', '1', 'important')
+        }
+        
+        // 确保所有按钮可见
+        const buttons = sidebar.querySelectorAll('nav.sidebar-nav a')
+        buttons.forEach((button) => {
+          const btn = button as HTMLElement
+          btn.style.removeProperty('display')
+          btn.style.removeProperty('visibility')
+          btn.style.removeProperty('opacity')
+          btn.classList.remove('hidden', 'invisible', 'opacity-0')
+          
+          btn.style.setProperty('display', 'flex', 'important')
+          btn.style.setProperty('visibility', 'visible', 'important')
+          btn.style.setProperty('opacity', '1', 'important')
+          btn.style.setProperty('min-height', '2.75rem', 'important')
+          btn.style.setProperty('width', '100%', 'important')
+          
+          // 确保按钮内的图标和文字可见
+          const spans = btn.querySelectorAll('span')
+          spans.forEach(span => {
+            const spanEl = span as HTMLElement
+            spanEl.style.removeProperty('display')
+            spanEl.style.removeProperty('visibility')
+            spanEl.style.removeProperty('opacity')
+            spanEl.classList.remove('hidden', 'invisible', 'opacity-0')
+            
+            spanEl.style.setProperty('display', 'inline-block', 'important')
+            spanEl.style.setProperty('visibility', 'visible', 'important')
+            spanEl.style.setProperty('opacity', '1', 'important')
+          })
+        })
+        
+        // 确保侧边栏底部正常显示 - 同一行布局
+        const sidebarBottom = sidebar.querySelector('div[class*="border-t"]') as HTMLElement
+        if (sidebarBottom) {
+          sidebarBottom.style.removeProperty('display')
+          sidebarBottom.style.removeProperty('visibility')
+          sidebarBottom.style.removeProperty('opacity')
+          sidebarBottom.classList.remove('hidden', 'invisible', 'opacity-0')
+          sidebarBottom.style.setProperty('display', 'flex', 'important')
+          sidebarBottom.style.setProperty('align-items', 'center', 'important')
+          sidebarBottom.style.setProperty('justify-content', 'space-between', 'important')
+          sidebarBottom.style.setProperty('width', '100%', 'important')
+          sidebarBottom.style.setProperty('visibility', 'visible', 'important')
+          sidebarBottom.style.setProperty('opacity', '1', 'important')
+        }
+        
+        console.log('✅ 路由切换后已确保侧边栏可见，找到', buttons.length, '个按钮', isMaintenancePage ? '(系统维护页面)' : '')
+      }
+    }, checkInterval)
+    
+    // 再次检查，确保在 DOM 完全更新后（系统维护页面使用更短的延迟）
+    setTimeout(() => {
+      const sidebar = document.querySelector('.admin-sidebar') as HTMLElement
+      if (sidebar) {
+        const buttons = sidebar.querySelectorAll('nav.sidebar-nav a')
+        if (buttons.length < 3) {
+          console.log('⚠️ 按钮数量不足，再次修复...', isMaintenancePage ? '(系统维护页面)' : '')
+          const nav = sidebar.querySelector('nav.sidebar-nav') as HTMLElement
+          if (nav) {
+            nav.style.removeProperty('display')
+            nav.style.removeProperty('visibility')
+            nav.style.removeProperty('opacity')
+            nav.classList.remove('hidden', 'invisible', 'opacity-0')
+            nav.style.setProperty('display', 'flex', 'important')
+            nav.style.setProperty('visibility', 'visible', 'important')
+            nav.style.setProperty('opacity', '1', 'important')
+          }
+          buttons.forEach((button) => {
+            const btn = button as HTMLElement
+            btn.style.removeProperty('display')
+            btn.style.removeProperty('visibility')
+            btn.style.removeProperty('opacity')
+            btn.classList.remove('hidden', 'invisible', 'opacity-0')
+            btn.style.setProperty('display', 'flex', 'important')
+            btn.style.setProperty('visibility', 'visible', 'important')
+            btn.style.setProperty('opacity', '1', 'important')
+          })
+        }
+      }
+    }, isMaintenancePage ? 50 : 100)
+    
+    // 第三次检查，确保万无一失（系统维护页面使用更频繁的检查）
+    const finalCheckDelay = isMaintenancePage ? 150 : 300
+    setTimeout(() => {
+      const sidebar = document.querySelector('.admin-sidebar') as HTMLElement
+      if (sidebar) {
+        const buttons = sidebar.querySelectorAll('nav.sidebar-nav a')
+        buttons.forEach((button) => {
+          const btn = button as HTMLElement
+          const computedStyle = window.getComputedStyle(btn)
+          if (computedStyle.display === 'none' || 
+              computedStyle.visibility === 'hidden' || 
+              parseFloat(computedStyle.opacity) < 0.1) {
+            console.log('🔧 最终检查发现按钮问题，强制修复...', isMaintenancePage ? '(系统维护页面)' : '')
+            btn.style.removeProperty('display')
+            btn.style.removeProperty('visibility')
+            btn.style.removeProperty('opacity')
+            btn.classList.remove('hidden', 'invisible', 'opacity-0')
+            btn.style.setProperty('display', 'flex', 'important')
+            btn.style.setProperty('visibility', 'visible', 'important')
+            btn.style.setProperty('opacity', '1', 'important')
+          }
+        })
+      }
+    }, finalCheckDelay)
+    
+    // 系统维护页面额外检查
+    if (isMaintenancePage) {
+      setTimeout(() => {
+        const sidebar = document.querySelector('.admin-sidebar') as HTMLElement
+        if (sidebar) {
+          const buttons = sidebar.querySelectorAll('nav.sidebar-nav a')
+          console.log('🔍 系统维护页面额外检查，找到', buttons.length, '个按钮')
+          buttons.forEach((button) => {
+            const btn = button as HTMLElement
+            btn.style.removeProperty('display')
+            btn.style.removeProperty('visibility')
+            btn.style.removeProperty('opacity')
+            btn.classList.remove('hidden', 'invisible', 'opacity-0')
+            btn.style.setProperty('display', 'flex', 'important')
+            btn.style.setProperty('visibility', 'visible', 'important')
+            btn.style.setProperty('opacity', '1', 'important')
+          })
+        }
+      }, 250)
+    }
   }
 })
 

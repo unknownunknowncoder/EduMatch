@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { toast } from 'sonner-vue'
+import { toast } from 'vue-sonner'
 import { cn } from '@/lib/utils'
 
 const handleClick = () => {

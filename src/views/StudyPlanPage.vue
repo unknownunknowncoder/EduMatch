@@ -97,13 +97,12 @@
                   {{ plan.status === 'in_progress' ? '进行中' : '已完成' }}
                 </span>
                 <button
-                  @click="viewPlanDetail(plan.id)"
+                  @click="editPlan(plan.id)"
                   class="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                  title="查看详情"
+                  title="编辑计划"
                 >
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                   </svg>
                 </button>
                 <button
@@ -170,14 +169,14 @@
                 <div class="flex-1">
                   <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                     <span class="font-medium">{{ plan.checkinCount || 0 }}</span> / 
-                    <span class="font-medium">{{ plan.totalDays || 0 }}</span> 天
+                    <span class="font-medium">{{ calculatedPlanDays(plan) }}</span> 天
                     <span class="mx-2">•</span>
-                    <span>剩余 {{ plan.remainingDays || 0 }} 天</span>
+                    <span>剩余 {{ calculateRemainingDays(plan) }} 天</span>
                   </div>
                   <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div 
                       class="bg-green-600 dark:bg-green-400 h-2 rounded-full transition-all duration-300"
-                      :style="{ width: `${plan.progress}%` }"
+                      :style="{ width: `${calculateProgress(plan)}%` }"
                     ></div>
                   </div>
                 </div>
@@ -227,7 +226,9 @@
       <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
         <!-- 弹窗头部 -->
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <h2 class="text-lg font-bold text-slate-800">创建学习计划</h2>
+          <h2 class="text-lg font-bold text-slate-800">
+            {{ editingPlanId ? '编辑学习计划' : '创建学习计划' }}
+          </h2>
           <button 
             @click="showCreatePlanModal = false"
             class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors"
@@ -409,7 +410,7 @@
               type="submit"
               class="px-5 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all"
             >
-              创建计划
+              {{ editingPlanId ? '保存修改' : '创建计划' }}
             </button>
           </div>
         </form>
@@ -518,12 +519,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { supabaseService } from '@/services/supabase'
 import { useDatabaseStore } from '@/stores/database'
 import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const dbStore = useDatabaseStore()
+const router = useRouter()
 
 // 获取统一的 Supabase 客户端
 const getSupabase = async () => {
@@ -595,6 +598,9 @@ const isCheckingIn = ref(false)
 // 删除相关状态
 const deleteConfirmDialog = ref<InstanceType<typeof ConfirmDialog>>()
 const planToDelete = ref<StudyPlan | null>(null)
+
+// 编辑相关状态
+const editingPlanId = ref<string | null>(null)
 
 const plans = ref({
   inProgress: 0,
@@ -736,33 +742,15 @@ const loadDatabasePlans = async () => {
               checkin.checkin_date === today
             ) || false
             
-            // 计算剩余天数和进度
-            const startDate = plan.startDate || plan.start_date
-            const targetDate = plan.targetDate || plan.target_date
-            const start = startDate ? new Date(startDate) : null
-            const target = targetDate ? new Date(targetDate) : null
-            const todayDate = new Date()
-            const msPerDay = 1000 * 60 * 60 * 24
-            const totalDays = (start && target && !isNaN(start.getTime()) && !isNaN(target.getTime()))
-              ? Math.max(1, Math.ceil((target.getTime() - start.getTime()) / msPerDay))
-              : 1
-            const remainingDays = (target && !isNaN(target.getTime()))
-              ? Math.max(1, Math.ceil((target.getTime() - todayDate.getTime()) / msPerDay))
-              : 1
-            const progress = totalDays > 0
-              ? Math.min(100, Math.round((checkinCount / totalDays) * 100))
-              : (plan.progress || 0)
-            
-            console.log(`📈 学习计划 "${plan.title}": ${checkinCount}次打卡，进度${progress}%`)
+            console.log(`📈 学习计划 "${plan.title}": ${checkinCount}次打卡，进度${calculateProgress({ ...plan, checkinCount })}%`)
             
             return {
               ...plan,
               checkinCount,
               checkins: checkinsData || [],
               isTodayChecked,
-              remainingDays,
-              totalDays: totalDays || plan.totalDays || 0,
-              progress,
+              // 移除手动计算的字段，改为通过计算函数动态计算
+              // remainingDays, totalDays, progress 将通过计算函数获得
               // 确保字段映射正确
               startDate: plan.startDate || plan.start_date,
               targetDate: plan.targetDate || plan.target_date,
@@ -778,8 +766,8 @@ const loadDatabasePlans = async () => {
               checkinCount: 0,
               checkins: [],
               isTodayChecked: false,
-              remainingDays: 0,
-              progress: plan.progress || 0,
+              // 移除手动计算的字段，改为通过计算函数动态计算
+              // remainingDays, progress 将通过计算函数获得
               // 确保资源字段映射正确
               resourceName: plan.resourceName || plan.resource_name,
               resourceUrl: plan.resourceUrl || plan.resource_url,
@@ -817,7 +805,7 @@ const updateStats = () => {
   }
 }
 
-// 创建学习计划
+// 创建或编辑学习计划
 const handleCreatePlan = async () => {
   // 验证表单数据
   if (!newPlan.value.title || newPlan.value.title.trim() === '') {
@@ -899,67 +887,123 @@ const handleCreatePlan = async () => {
       targetDateISO = completionDate.toISOString().split('T')[0]
     }
 
-    // 准备数据库插入数据
-    const dbPlanData = {
-      user_id: currentUser.id,
-      title: newPlan.value.title,
-      description: newPlan.value.description,
-      progress: 0,
-      status: 'in_progress',
-      start_date: newPlan.value.startDate,
-      target_date: targetDateISO,
-      daily_hours: newPlan.value.dailyHours,
-      total_hours: newPlan.value.totalHours ? parseFloat(newPlan.value.totalHours) : null,
-      resource_name: newPlan.value.resourceName,
-      resource_url: newPlan.value.resourceUrl,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
+    const isEditing = editingPlanId.value !== null
     
-    console.log('📝 插入数据:', dbPlanData)
-    
-    // 保存到数据库
-    const { data, error } = await client
-      .from('study_plans')
-      .insert([dbPlanData])
-      .select()
-    
-    if (error) {
-      console.error('❌ 数据库插入失败:', error)
-      throw new Error(`数据库保存失败: ${error.message}`)
-    }
-    
-    console.log('✅ 数据库保存成功:', data)
-    
-    // 使用数据库返回的数据
-    const createdPlan = Array.isArray(data) ? data[0] : data
-    
-    if (!createdPlan || !createdPlan.id) {
-      throw new Error('创建计划失败：返回数据无效')
-    }
+    if (isEditing) {
+      // 编辑模式：更新现有计划
+      const updateData = {
+        title: newPlan.value.title,
+        description: newPlan.value.description,
+        target_date: targetDateISO,
+        daily_hours: newPlan.value.dailyHours,
+        total_hours: newPlan.value.totalHours ? parseFloat(newPlan.value.totalHours) : null,
+        resource_name: newPlan.value.resourceName,
+        resource_url: newPlan.value.resourceUrl,
+        updated_at: new Date().toISOString()
+      }
+      
+      console.log('📝 更新数据:', updateData)
+      
+      // 更新数据库
+      const { data, error } = await client
+        .from('study_plans')
+        .update(updateData)
+        .eq('id', editingPlanId.value)
+        .eq('user_id', currentUser.id)
+        .select()
+      
+      if (error) {
+        console.error('❌ 数据库更新失败:', error)
+        throw new Error(`数据库更新失败: ${error.message}`)
+      }
+      
+      console.log('✅ 数据库更新成功:', data)
+      
+      // 更新本地数据
+      const planIndex = currentPlans.value.findIndex(p => p.id === editingPlanId.value)
+      if (planIndex > -1) {
+        currentPlans.value[planIndex] = {
+          ...currentPlans.value[planIndex],
+          title: newPlan.value.title,
+          description: newPlan.value.description,
+          targetDate: targetDateISO,
+          target_date: targetDateISO,
+          dailyHours: newPlan.value.dailyHours,
+          daily_hours: newPlan.value.dailyHours,
+          totalHours: newPlan.value.totalHours ? parseFloat(newPlan.value.totalHours) : undefined,
+          total_hours: newPlan.value.totalHours ? parseFloat(newPlan.value.totalHours) : undefined,
+          resourceName: newPlan.value.resourceName,
+          resource_name: newPlan.value.resourceName,
+          resourceUrl: newPlan.value.resourceUrl,
+          resource_url: newPlan.value.resourceUrl
+        }
+      }
+      
+      showToast('学习计划修改成功！', 'success')
+    } else {
+      // 创建模式：创建新计划
+      const dbPlanData = {
+        user_id: currentUser.id,
+        title: newPlan.value.title,
+        description: newPlan.value.description,
+        progress: 0,
+        status: 'in_progress',
+        start_date: newPlan.value.startDate,
+        target_date: targetDateISO,
+        daily_hours: newPlan.value.dailyHours,
+        total_hours: newPlan.value.totalHours ? parseFloat(newPlan.value.totalHours) : null,
+        resource_name: newPlan.value.resourceName,
+        resource_url: newPlan.value.resourceUrl,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+      
+      console.log('📝 插入数据:', dbPlanData)
+      
+      // 保存到数据库
+      const { data, error } = await client
+        .from('study_plans')
+        .insert([dbPlanData])
+        .select()
+      
+      if (error) {
+        console.error('❌ 数据库插入失败:', error)
+        throw new Error(`数据库保存失败: ${error.message}`)
+      }
+      
+      console.log('✅ 数据库保存成功:', data)
+      
+      // 使用数据库返回的数据
+      const createdPlan = Array.isArray(data) ? data[0] : data
+      
+      if (!createdPlan || !createdPlan.id) {
+        throw new Error('创建计划失败：返回数据无效')
+      }
 
-    // 转换为前端格式
-    const planData = {
-      id: createdPlan.id,
-      title: createdPlan.title || newPlan.value.title,
-      description: createdPlan.description || newPlan.value.description,
-      progress: createdPlan.progress || 0,
-      status: createdPlan.status || 'in_progress',
-      startDate: createdPlan.start_date || newPlan.value.startDate,
-      targetDate: createdPlan.target_date || targetDateISO,
-      dailyHours: createdPlan.daily_hours || newPlan.value.dailyHours,
-      resourceName: createdPlan.resource_name || newPlan.value.resourceName,
-      resourceUrl: createdPlan.resource_url || newPlan.value.resourceUrl,
-      // 初始化打卡相关数据
-      checkinCount: 0,
-      totalDays: calculatedStudyDays.value,
-      remainingDays: calculatedStudyDays.value,
-      isTodayChecked: false,
-      checkins: []
-    }
+      // 转换为前端格式
+      const planData = {
+        id: createdPlan.id,
+        title: createdPlan.title || newPlan.value.title,
+        description: createdPlan.description || newPlan.value.description,
+        progress: createdPlan.progress || 0,
+        status: createdPlan.status || 'in_progress',
+        startDate: createdPlan.start_date || newPlan.value.startDate,
+        targetDate: createdPlan.target_date || targetDateISO,
+        dailyHours: createdPlan.daily_hours || newPlan.value.dailyHours,
+        resourceName: createdPlan.resource_name || newPlan.value.resourceName,
+        resourceUrl: createdPlan.resource_url || newPlan.value.resourceUrl,
+        // 初始化打卡相关数据
+        checkinCount: 0,
+        // totalDays, remainingDays 将通过计算函数动态计算
+        isTodayChecked: false,
+        checkins: []
+      }
 
-    // 添加到当前计划列表
-    currentPlans.value.unshift(planData)
+      // 添加到当前计划列表
+      currentPlans.value.unshift(planData)
+      
+      showToast('学习计划创建成功！', 'success')
+    }
     
     // 更新统计
     updateStats()
@@ -967,8 +1011,8 @@ const handleCreatePlan = async () => {
     // 关闭弹窗
     showCreatePlanModal.value = false
     
-    // 显示成功提示
-    showToast('学习计划创建成功！', 'success')
+    // 重置编辑状态
+    editingPlanId.value = null
 
     // 重置表单
     newPlan.value = {
@@ -991,16 +1035,19 @@ const handleCreatePlan = async () => {
 const closeCreatePlanModal = () => {
   showCreatePlanModal.value = false
   
-    // 重置表单
-    newPlan.value = {
-      title: '',
-      description: '',
-      startDate: '',
-      dailyHours: 2, // 重置为默认值
-      totalHours: '',
-      resourceName: '',
-      resourceUrl: ''
-    }
+  // 重置编辑状态
+  editingPlanId.value = null
+  
+  // 重置表单
+  newPlan.value = {
+    title: '',
+    description: '',
+    startDate: '',
+    dailyHours: 2, // 重置为默认值
+    totalHours: '',
+    resourceName: '',
+    resourceUrl: ''
+  }
 }
 
 // 获取用户的资源列表
@@ -1096,6 +1143,67 @@ const getResourceTypeColor = (type: string) => {
     '网站': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-300'
   }
   return colorMap[type] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300'
+}
+
+// 计算计划总天数
+const calculatedPlanDays = (plan: StudyPlan) => {
+  // 如果已经有totalDays字段，直接使用
+  if (plan.totalDays && plan.totalDays > 0) {
+    return plan.totalDays
+  }
+  
+  // 否则根据开始日期和目标日期计算
+  const startDate = plan.startDate || plan.start_date
+  const targetDate = plan.targetDate || plan.target_date
+  
+  if (startDate && targetDate) {
+    const start = new Date(startDate)
+    const target = new Date(targetDate)
+    
+    if (!isNaN(start.getTime()) && !isNaN(target.getTime())) {
+      const msPerDay = 1000 * 60 * 60 * 24
+      // 计算天数差，然后加1，因为包含开始日期和目标日期
+      const dayDifference = Math.ceil((target.getTime() - start.getTime()) / msPerDay)
+      return Math.max(1, dayDifference + 1)
+    }
+  }
+  
+  // 如果没有日期信息，根据学习总时长和每日时长计算
+  const totalHours = plan.totalHours || plan.total_hours
+  const dailyHours = plan.dailyHours || plan.daily_hours
+  
+  if (totalHours && dailyHours && dailyHours > 0) {
+    return Math.ceil(totalHours / dailyHours)
+  }
+  
+  return 1 // 默认返回1天
+}
+
+// 计算剩余天数
+const calculateRemainingDays = (plan: StudyPlan) => {
+  // 始终根据总天数和已打卡天数计算剩余天数
+  const totalDays = calculatedPlanDays(plan)
+  const checkinCount = plan.checkinCount || 0
+  return Math.max(0, totalDays - checkinCount)
+}
+
+// 计算进度百分比
+const calculateProgress = (plan: StudyPlan) => {
+  // 如果已经有进度字段且大于0，直接使用
+  if (plan.progress && plan.progress > 0) {
+    return Math.min(100, plan.progress)
+  }
+  
+  // 否则根据打卡次数和总天数计算
+  const totalDays = calculatedPlanDays(plan)
+  const checkinCount = plan.checkinCount || 0
+  
+  if (totalDays > 0) {
+    const progress = Math.round((checkinCount / totalDays) * 100)
+    return Math.min(100, Math.max(0, progress))
+  }
+  
+  return 0
 }
 
 // 格式化日期
@@ -1217,7 +1325,7 @@ const handleCheckin = async (plan: StudyPlan) => {
       console.error('❌ 获取打卡记录失败:', allCheckinsError)
     } else {
       const totalCheckins = allCheckins?.length || 0
-      const totalDays = plan.totalDays || 1
+      const totalDays = calculatedPlanDays(plan)
       const progressPercentage = Math.round((totalCheckins / totalDays) * 100)
       
       console.log(`📈 打卡后进度: ${totalCheckins}/${totalDays} = ${progressPercentage}%`)
@@ -1264,9 +1372,31 @@ const handleOpenResourceModal = () => {
   fetchMyResources()
 }
 
-// 查看计划详情
-const viewPlanDetail = (planId: string) => {
-  router.push(`/study-plan/${planId}`)
+// 编辑计划
+const editPlan = (planId: string) => {
+  // 找到要编辑的计划
+  const planToEdit = currentPlans.value.find(plan => plan.id === planId)
+  if (!planToEdit) {
+    showToast('未找到要编辑的计划', 'error')
+    return
+  }
+
+  // 预填充创建计划表单数据
+  newPlan.value = {
+    title: planToEdit.title || '',
+    description: planToEdit.description || '',
+    startDate: planToEdit.startDate || planToEdit.start_date || '',
+    dailyHours: planToEdit.dailyHours || planToEdit.daily_hours || 2,
+    totalHours: planToEdit.totalHours ? planToEdit.totalHours.toString() : (planToEdit.total_hours ? planToEdit.total_hours.toString() : ''),
+    resourceName: planToEdit.resourceName || planToEdit.resource_name || '',
+    resourceUrl: planToEdit.resourceUrl || planToEdit.resource_url || ''
+  }
+
+  // 设置编辑状态（可选：可以添加一个标志来区分创建和编辑模式）
+  editingPlanId.value = planId
+
+  // 打开创建计划弹窗
+  showCreatePlanModal.value = true
 }
 
 // 显示删除确认对话框

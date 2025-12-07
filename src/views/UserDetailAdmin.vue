@@ -516,11 +516,12 @@ const getTypeText = (type?: string) => {
 
 // 返回上一页
 const goBack = () => {
-  router.push('/admin')
+  // 返回到用户管理页面
+  router.push('/admin/users')
 }
 
 // 查看帖子详情
-const viewPost = (postId: string) => {
+const viewPost = async (postId: string) => {
   console.log('🔍 查看帖子详情（后台管理），ID:', postId)
   
   if (!postId) {
@@ -529,21 +530,32 @@ const viewPost = (postId: string) => {
     return
   }
   
-  // 在当前页面跳转到后台管理的帖子详情页面，传递用户ID参数
-  const url = `/admin/post/${postId}?user_id=${userId.value}`
-  console.log('🚀 即将在当前页面跳转到后台管理详情:', url)
-  
+  // 验证帖子是否存在
   try {
+    const { supabaseService } = await import('@/services/supabase')
+    const postExists = await supabaseService.getPostById(postId)
+    
+    if (!postExists) {
+      console.error('❌ 帖子不存在，ID:', postId)
+      showNotification('帖子不存在或已被删除', 'error')
+      return
+    }
+    
+    // 在当前页面跳转到后台管理的帖子详情页面，传递用户ID参数
+    const url = `/admin/post/${postId}?user_id=${userId}`
+    console.log('🚀 即将在当前页面跳转到后台管理详情:', url)
+    
     router.push(url)
     console.log('✅ 开始跳转到后台管理帖子详情页面')
+    
   } catch (error) {
-    console.error('❌ 跳转页面时发生错误:', error)
-    showNotification('跳转页面失败，请稍后重试', 'error')
+    console.error('❌ 验证帖子或跳转页面时发生错误:', error)
+    showNotification('跳转失败：' + (error.message || '未知错误'), 'error')
   }
 }
 
 // 查看计划详情
-const viewPlan = (planId: string) => {
+const viewPlan = async (planId: string) => {
   console.log('🔍 查看学习计划详情（后台管理），ID:', planId)
   
   if (!planId) {
@@ -552,21 +564,32 @@ const viewPlan = (planId: string) => {
     return
   }
   
-  // 在当前页面跳转到后台管理的学习计划详情页面，传递用户ID参数
-  const url = `/admin/plan/${planId}?user_id=${userId.value}`
-  console.log('🚀 即将在当前页面跳转到后台管理详情:', url)
-  
+  // 验证计划是否存在
   try {
+    const { supabaseService } = await import('@/services/supabase')
+    const planExists = await supabaseService.getStudyPlanById(planId)
+    
+    if (!planExists) {
+      console.error('❌ 学习计划不存在，ID:', planId)
+      showNotification('学习计划不存在或已被删除', 'error')
+      return
+    }
+    
+    // 在当前页面跳转到后台管理的学习计划详情页面，传递用户ID参数
+    const url = `/admin/plan/${planId}?user_id=${userId}`
+    console.log('🚀 即将在当前页面跳转到后台管理详情:', url)
+    
     router.push(url)
     console.log('✅ 开始跳转到后台管理学习计划详情页面')
+    
   } catch (error) {
-    console.error('❌ 跳转页面时发生错误:', error)
-    showNotification('跳转页面失败，请稍后重试', 'error')
+    console.error('❌ 验证计划或跳转页面时发生错误:', error)
+    showNotification('跳转失败：' + (error.message || '未知错误'), 'error')
   }
 }
 
 // 查看资源详情
-const viewResource = (resourceId: string) => {
+const viewResource = async (resourceId: string) => {
   console.log('🔍 查看资源详情（后台管理），ID:', resourceId)
   
   if (!resourceId) {
@@ -575,16 +598,27 @@ const viewResource = (resourceId: string) => {
     return
   }
   
-  // 在当前页面跳转到后台管理的资源详情页面，传递用户ID参数
-  const url = `/admin/resource/${resourceId}?user_id=${userId.value}`
-  console.log('🚀 即将在当前页面跳转到后台管理详情:', url)
-  
+  // 验证资源是否存在
   try {
+    const { supabaseService } = await import('@/services/supabase')
+    const resourceExists = await supabaseService.getResourceById(resourceId)
+    
+    if (!resourceExists) {
+      console.error('❌ 资源不存在，ID:', resourceId)
+      showNotification('资源不存在或已被删除', 'error')
+      return
+    }
+    
+    // 在当前页面跳转到后台管理的资源详情页面，传递用户ID参数
+    const url = `/admin/resource/${resourceId}?user_id=${userId}`
+    console.log('🚀 即将在当前页面跳转到后台管理详情:', url)
+    
     router.push(url)
     console.log('✅ 开始跳转到后台管理资源详情页面')
+    
   } catch (error) {
-    console.error('❌ 跳转页面时发生错误:', error)
-    showNotification('跳转页面失败，请稍后重试', 'error')
+    console.error('❌ 验证资源或跳转页面时发生错误:', error)
+    showNotification('跳转失败：' + (error.message || '未知错误'), 'error')
   }
 }
 
@@ -633,10 +667,10 @@ body {
   overflow-x: hidden;
 }
 
-/* 移除所有可能的侧边栏元素 */
-div[class*="sidebar"],
-div[class*="navigation"],
-aside {
+/* 只移除非管理后台的侧边栏元素 */
+div[class*="sidebar"]:not(.admin-sidebar):not([class*="admin"]),
+div[class*="navigation"]:not(.admin-sidebar):not([class*="admin"]),
+aside:not(.admin-sidebar):not([class*="admin"]) {
   display: none !important;
   visibility: hidden !important;
 }

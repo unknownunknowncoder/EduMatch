@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Import Test</title>
+</head>
+<body>
+  <div id="app">
+    <h1>Admin System Import Test</h1>
+    <div id="status">Testing imports...</div>
+    <div id="error-log"></div>
+  </div>
+
+  <script type="module">
+    const statusEl = document.getElementById('status');
+    const errorEl = document.getElementById('error-log');
+    
+    function log(message, isError = false) {
+      const div = document.createElement('div');
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      div.style.color = isError ? 'red' : 'green';
+      div.style.margin = '5px 0';
+      div.style.padding = '5px';
+      div.style.border = isError ? '1px solid red' : '1px solid green';
+      div.style.borderRadius = '3px';
+      (isError ? errorEl : statusEl).appendChild(div);
+    }
+
+    async function testImports() {
+      log('开始测试模块导入...');
+      
+      try {
+        // 测试 Vue
+        log('测试 Vue 导入...');
+        const { createApp, ref } = await import('/node_modules/vue/dist/vue.esm-browser.js');
+        log('✅ Vue 导入成功');
+        
+        // 测试 Vue Router
+        log('测试 Vue Router 导入...');
+        const { createRouter, createWebHistory } = await import('/node_modules/vue-router/dist/vue-router.esm-browser.js');
+        log('✅ Vue Router 导入成功');
+        
+        // 测试 AdminSystem 组件
+        log('测试 AdminSystem 组件导入...');
+        
+        // 由于这是一个 .vue 文件，我们需要通过开发服务器的转换来测试
+        const response = await fetch('/src/views/AdminSystem.vue');
+        if (response.ok) {
+          const vueContent = await response.text();
+          log('✅ AdminSystem.vue 文件可访问');
+          
+          // 检查是否包含关键内容
+          if (vueContent.includes('AdminSystem') && vueContent.includes('template')) {
+            log('✅ AdminSystem.vue 内容格式正确');
+          } else {
+            log('❌ AdminSystem.vue 内容格式异常', true);
+          }
+        } else {
+          log(`❌ AdminSystem.vue 访问失败: ${response.status} ${response.statusText}`, true);
+        }
+        
+        // 测试依赖的工具文件
+        const dependencies = [
+          '/src/utils/adminAuth.ts',
+          '/src/utils/message.ts',
+          '/src/lib/utils.ts',
+          '/src/stores/database.ts'
+        ];
+        
+        for (const dep of dependencies) {
+          log(`测试 ${dep}...`);
+          try {
+            const depResponse = await fetch(dep);
+            if (depResponse.ok) {
+              log(`✅ ${dep} 可访问`);
+            } else {
+              log(`❌ ${dep} 不可访问: ${depResponse.status}`, true);
+            }
+          } catch (error) {
+            log(`❌ ${dep} 导入失败: ${error.message}`, true);
+          }
+        }
+        
+        // 测试组件文件
+        const components = [
+          '/src/components/admin/UserManagement.vue',
+          '/src/components/admin/ContentManagement.vue',
+          '/src/components/admin/PlanManagement.vue',
+          '/src/components/admin/ResourceManagement.vue'
+        ];
+        
+        for (const comp of components) {
+          log(`测试 ${comp}...`);
+          try {
+            const compResponse = await fetch(comp);
+            if (compResponse.ok) {
+              log(`✅ ${comp} 可访问`);
+            } else {
+              log(`❌ ${comp} 不可访问: ${compResponse.status}`, true);
+            }
+          } catch (error) {
+            log(`❌ ${comp} 导入失败: ${error.message}`, true);
+          }
+        }
+        
+        log('🎉 导入测试完成！');
+        
+      } catch (error) {
+        log(`❌ 测试过程中发生错误: ${error.message}`, true);
+        console.error('Test error:', error);
+      }
+    }
+
+    // 检测开发服务器端口并测试
+    async function detectAndTest() {
+      const ports = [3007, 3008, 3015];
+      
+      for (const port of ports) {
+        try {
+          const response = await fetch(`http://localhost:${port}/`, { mode: 'no-cors' });
+          log(`检测到开发服务器运行在端口 ${port}`);
+          
+          // 更新所有 fetch 请求的端口
+          const originalFetch = window.fetch;
+          window.fetch = function(url, options) {
+            if (url.startsWith('/')) {
+              url = `http://localhost:${port}${url}`;
+            }
+            return originalFetch(url, options);
+          };
+          
+          await testImports();
+          return;
+        } catch (error) {
+          log(`端口 ${port} 不可访问`);
+        }
+      }
+      
+      log('❌ 未检测到运行中的开发服务器', true);
+    }
+
+    // 运行测试
+    detectAndTest();
+  </script>
+</body>
+</html>

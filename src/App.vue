@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
     <!-- 检查是否为认证页面 -->
-    <div v-if="isAuthPage">
-      <!-- 认证页面独立布局 -->
+    <div v-if="isAuthPage || isAdminPage">
+      <!-- 认证页面/管理后台页面独立布局 -->
       <main class="min-h-screen w-full">
         <RouterView />
       </main>
@@ -53,6 +53,11 @@ const themeStore = useThemeStore()
 const isAuthPage = computed(() => {
   const authRoutes = ['/login', '/register']
   return authRoutes.includes(route.path)
+})
+
+// 检查是否为管理后台页面
+const isAdminPage = computed(() => {
+  return route.path.startsWith('/admin')
 })
 
 onMounted(() => {

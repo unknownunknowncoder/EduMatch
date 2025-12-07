@@ -336,12 +336,21 @@ const loadPlan = async () => {
   try {
     console.log('🔄 加载管理员学习计划详情，ID:', planId)
     
+    // 确保数据库连接已初始化
+    const { useDatabaseStore } = await import('@/stores/database')
+    const dbStore = useDatabaseStore()
+    await dbStore.reconnect()
+    
     const { supabaseService } = await import('@/services/supabase')
+    console.log('✅ Supabase服务获取成功')
     
     // 获取计划基本信息
+    console.log('📋 获取学习计划基本信息...')
     const planData = await supabaseService.getStudyPlanById(planId)
+    console.log('📋 学习计划基本信息:', planData)
     
     if (!planData) {
+      console.error('❌ 学习计划不存在或已被删除')
       error.value = '学习计划不存在或已被删除'
       return
     }
@@ -349,32 +358,51 @@ const loadPlan = async () => {
     // 获取用户信息
     let userInfo = null
     if (planData.user_id) {
+      console.log('👤 获取用户信息，用户ID:', planData.user_id)
       try {
         userInfo = await supabaseService.getUserById(planData.user_id)
+        console.log('✅ 用户信息获取成功:', userInfo)
       } catch (userError) {
-        console.error('获取用户信息失败:', userError)
+        console.error('❌ 获取用户信息失败:', userError)
+        // 用户信息获取失败不应该阻止学习计划显示
       }
     }
     
     // 获取签到记录
-    const { data: checkinData } = await supabaseService.getClient()
-      .from('study_plan_checkins')
-      .select('*')
-      .eq('plan_id', planId)
-      .order('created_at', { ascending: false })
+    let checkinData = []
+    try {
+      console.log('📅 获取签到记录...')
+      const { data } = await supabaseService.getClient()
+        .from('study_plan_checkins')
+        .select('*')
+        .eq('plan_id', planId)
+        .order('created_at', { ascending: false })
+      
+      checkinData = data || []
+      console.log('✅ 签到记录获取成功:', checkinData.length, '条')
+    } catch (checkinError) {
+      console.error('❌ 获取签到记录失败:', checkinError)
+      // 签到记录获取失败不应该阻止学习计划显示
+    }
     
     plan.value = {
       ...planData,
       user: userInfo
     }
     
-    checkins.value = checkinData || []
+    checkins.value = checkinData
     
     console.log('✅ 学习计划详情加载成功:', plan.value)
     
   } catch (err) {
     console.error('❌ 加载学习计划详情失败:', err)
-    error.value = '加载学习计划详情失败，请稍后重试'
+    console.error('❌ 错误详情:', {
+      message: err.message,
+      code: err.code,
+      details: err.details,
+      hint: err.hint
+    })
+    error.value = `加载学习计划详情失败: ${err.message || '未知错误'}`
   } finally {
     loading.value = false
   }

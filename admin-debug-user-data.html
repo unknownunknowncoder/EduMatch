@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户数据加载测试</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 EduMatch 用户数据加载测试</h1>
+    
+    <div id="connection-status" class="status info">正在测试数据库连接...</div>
+    <div id="users-status" class="status info" style="display: none;">正在加载用户数据...</div>
+    <div id="results"></div>
+
+    <script>
+        // 从 .env 文件中提取的配置
+        const SUPABASE_URL = 'https://aonlahundnkxuyxfsmcy.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvbmxhaHVuZG5reHV5eGZzbWN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNjYwNTUsImV4cCI6MjA3ODY0MjA1NX0.IQswPG1NkJKht83isjWJk5nzuhymzETAf81_71kXaVE';
+
+        let supabase;
+
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+
+        function addResult(title, content, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status ${type}`;
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(content, null, 2)}</pre>
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        async function testConnection() {
+            try {
+                console.log('🔄 初始化 Supabase 客户端...');
+                supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                updateStatus('connection-status', '✅ Supabase 客户端初始化成功', 'success');
+
+                // 测试连接
+                console.log('🔍 测试数据库连接...');
+                const { data, error } = await supabase.from('users').select('id').limit(1);
+                
+                if (error) {
+                    throw error;
+                }
+
+                updateStatus('connection-status', '✅ 数据库连接测试成功', 'success');
+                addResult('连接测试结果', { success: true, message: '数据库连接正常' }, 'success');
+
+                // 加载用户数据
+                await loadUsers();
+
+            } catch (error) {
+                console.error('❌ 数据库连接失败:', error);
+                updateStatus('connection-status', `❌ 数据库连接失败: ${error.message}`, 'error');
+                addResult('连接错误', { error: error.message, details: error }, 'error');
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                document.getElementById('users-status').style.display = 'block';
+                updateStatus('users-status', '🔄 正在加载用户数据...');
+
+                console.log('📋 开始查询用户表...');
+                const { data, error, count } = await supabase
+                    .from('users')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    throw error;
+                }
+
+                updateStatus('users-status', `✅ 用户数据加载成功，共 ${count} 个用户`, 'success');
+                
+                addResult('用户统计', {
+                    总数: count,
+                    加载成功: true,
+                    数据预览: data?.slice(0, 3).map(user => ({
+                        id: user.id,
+                        username: user.username,
+                        nickname: user.nickname,
+                        email: user.email,
+                        created_at: user.created_at
+                    }))
+                }, 'success');
+
+                // 检查数据结构
+                if (data && data.length > 0) {
+                    const sampleUser = data[0];
+                    const fields = Object.keys(sampleUser);
+                    addResult('用户数据结构', {
+                        字段列表: fields,
+                        示例数据: sampleUser
+                    }, 'info');
+                } else {
+                    addResult('警告', { message: '用户表为空，没有任何用户数据' }, 'warning');
+                }
+
+            } catch (error) {
+                console.error('❌ 加载用户数据失败:', error);
+                updateStatus('users-status', `❌ 用户数据加载失败: ${error.message}`, 'error');
+                addResult('用户数据加载错误', { error: error.message, details: error }, 'error');
+            }
+        }
+
+        // 页面加载完成后自动运行测试
+        document.addEventListener('DOMContentLoaded', testConnection);
+
+        // 添加手动重新测试按钮
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.createElement('button');
+            button.textContent = '🔄 重新测试';
+            button.onclick = () => {
+                document.getElementById('results').innerHTML = '';
+                testConnection();
+            };
+            button.style.cssText = 'padding: 10px 20px; margin: 10px 0; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;';
+            document.body.insertBefore(button, document.getElementById('results'));
+        });
+    </script>
+</body>
+</html>

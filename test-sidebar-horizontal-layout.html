@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侧边栏底部同行布局测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+        }
+        
+        /* 管理后台侧边栏样式 */
+        .admin-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 16rem;
+            height: 100vh;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .sidebar-header p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow-y: auto;
+        }
+        
+        .sidebar-button {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .sidebar-button:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateX(2px);
+        }
+        
+        .sidebar-button span:first-child {
+            margin-right: 0.75rem;
+            font-size: 1.125rem;
+        }
+        
+        /* 侧边栏底部 - 同一行布局 */
+        .sidebar-bottom {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            background: white;
+        }
+        
+        .sidebar-bottom .main-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        .sidebar-bottom .avatar {
+            height: 2rem;
+            width: 2rem;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, #4ade80, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-bottom .avatar span {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .sidebar-bottom .username {
+            margin-left: 0.75rem;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .sidebar-bottom .username p {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #111827;
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .sidebar-bottom .time {
+            margin-left: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-bottom .time p {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin: 0;
+            white-space: nowrap;
+        }
+        
+        .sidebar-bottom .logout-btn {
+            margin-left: 0.5rem;
+            padding: 0.5rem;
+            color: #6b7280;
+            background: none;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .sidebar-bottom .logout-btn:hover {
+            color: #dc2626;
+        }
+        
+        .sidebar-bottom .logout-btn svg {
+            width: 1rem;
+            height: 1rem;
+        }
+        
+        .main-content {
+            margin-left: 16rem;
+            padding: 2rem;
+        }
+        
+        .test-section {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .layout-preview {
+            background: #f9fafb;
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .layout-item {
+            display: inline-block;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            margin: 0.125rem;
+            font-size: 0.75rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .status-item {
+            padding: 1rem;
+            background: #f9fafb;
+            border-radius: 0.375rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .status-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .status-value {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            margin: 0.25rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理后台侧边栏 -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <h2>管理后台</h2>
+            <p>系统管理中心</p>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-button">
+                <span>📊</span>
+                <span>仪表板</span>
+            </a>
+            <a href="#" class="sidebar-button">
+                <span>👥</span>
+                <span>用户管理</span>
+            </a>
+            <a href="#" class="sidebar-button">
+                <span>⚙️</span>
+                <span>系统设置</span>
+            </a>
+            <a href="#" class="sidebar-button">
+                <span>🔧</span>
+                <span>系统维护</span>
+            </a>
+        </nav>
+        
+        <!-- 侧边栏底部 - 同一行布局 -->
+        <div class="sidebar-bottom">
+            <div class="main-row">
+                <!-- 头像 -->
+                <div class="avatar">
+                    <span>A</span>
+                </div>
+                
+                <!-- 用户名 -->
+                <div class="username">
+                    <p>Administrator</p>
+                </div>
+                
+                <!-- 时间 -->
+                <div class="time">
+                    <p id="currentTime">--:--:--</p>
+                </div>
+                
+                <!-- 退出按钮 -->
+                <button class="logout-btn" title="退出登录">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+    
+    <main class="main-content">
+        <div class="test-section">
+            <h1>🔄 侧边栏底部同行布局测试</h1>
+            <p>这个页面测试侧边栏底部元素（头像、用户名、时间、退出按钮）在同一行显示的效果。</p>
+            
+            <h2>📋 布局说明</h2>
+            <div class="layout-preview">
+                <strong>新布局（同一行）：</strong><br>
+                <div style="margin: 1rem 0;">
+                    <span class="layout-item">头像</span>
+                    <span class="layout-item">用户名</span>
+                    <span class="layout-item">时间</span>
+                    <span class="layout-item">退出按钮</span>
+                </div>
+                <p style="margin: 1rem 0 0 0; font-size: 0.75rem;">
+                    使用 Flexbox 布局，头像固定宽度，用户名自适应，时间固定宽度，退出按钮固定宽度
+                </p>
+            </div>
+            
+            <h2>🧪 测试按钮</h2>
+            <button class="btn" onclick="changeUsername()">改变用户名</button>
+            <button class="btn" onclick="changeAvatar()">改变头像</button>
+            <button class="btn" onclick="toggleDark()">切换深色</button>
+            <button class="btn-danger" onclick="resetLayout()">重置布局</button>
+            
+            <h2>📊 布局状态</h2>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">头像位置</div>
+                    <div class="status-value">✅ 左侧固定</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">用户名位置</div>
+                    <div class="status-value">✅ 中间自适应</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">时间位置</div>
+                    <div class="status-value">✅ 右侧固定</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">退出按钮位置</div>
+                    <div class="status-value">✅ 最右侧固定</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">总宽度适应</div>
+                    <div class="status-value" id="widthStatus">检查中...</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">溢出处理</div>
+                    <div class="status-value" id="overflowStatus">检查中...</div>
+                </div>
+            </div>
+            
+            <h2>📱 响应式测试</h2>
+            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 1rem;">
+                <p><strong>当前侧边栏宽度：</strong> 16rem (256px)</p>
+                <p><strong>布局特点：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>头像：固定 2rem (32px)</li>
+                    <li>用户名：自适应，支持文字溢出省略</li>
+                    <li>时间：固定宽度，支持最长时间显示</li>
+                    <li>退出按钮：固定 2rem (32px)</li>
+                </ul>
+                <p><strong>Flexbox 分配：</strong></p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                    <li>头像：flex-shrink: 0 (不收缩)</li>
+                    <li>用户名：flex: 1 (占用剩余空间)</li>
+                    <li>时间：flex-shrink: 0 (不收缩)</li>
+                    <li>退出按钮：flex-shrink: 0 (不收缩)</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        let timeInterval;
+        let isDark = false;
+        let currentUsername = 'Administrator';
+        let currentAvatar = 'A';
+        
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
+        }
+        
+        // 检查布局状态
+        function checkLayoutStatus() {
+            const mainRow = document.querySelector('.main-row');
+            if (mainRow) {
+                const rect = mainRow.getBoundingClientRect();
+                const widthStatus = document.getElementById('widthStatus');
+                const overflowStatus = document.getElementById('overflowStatus');
+                
+                if (widthStatus) {
+                    widthStatus.textContent = rect.width > 200 ? '✅ 正常' : '⚠️ 过窄';
+                }
+                
+                if (overflowStatus) {
+                    const username = mainRow.querySelector('.username p');
+                    if (username) {
+                        const isOverflowing = username.scrollWidth > username.clientWidth;
+                        overflowStatus.textContent = isOverflowing ? '⚠️ 文字溢出' : '✅ 正常';
+                    }
+                }
+            }
+        }
+        
+        // 改变用户名
+        function changeUsername() {
+            const usernames = ['Admin', 'Administrator', '超级管理员', '系统管理员User', 'A Very Long Username Test'];
+            const currentIndex = usernames.indexOf(currentUsername);
+            currentUsername = usernames[(currentIndex + 1) % usernames.length];
+            
+            const usernameElement = document.querySelector('.username p');
+            if (usernameElement) {
+                usernameElement.textContent = currentUsername;
+            }
+            
+            setTimeout(checkLayoutStatus, 100);
+            console.log('📝 用户名已改变为:', currentUsername);
+        }
+        
+        // 改变头像
+        function changeAvatar() {
+            const avatars = ['A', 'Admin', '管', '👤', '🎯'];
+            const currentIndex = avatars.indexOf(currentAvatar);
+            currentAvatar = avatars[(currentIndex + 1) % avatars.length];
+            
+            const avatarElement = document.querySelector('.avatar span');
+            if (avatarElement) {
+                avatarElement.textContent = currentAvatar;
+            }
+            console.log('🎭 头像已改变为:', currentAvatar);
+        }
+        
+        // 切换深色模式
+        function toggleDark() {
+            isDark = !isDark;
+            const sidebar = document.querySelector('.admin-sidebar');
+            if (sidebar) {
+                if (isDark) {
+                    sidebar.style.background = '#1f2937';
+                    sidebar.style.borderColor = '#374151';
+                    
+                    // 更新文字颜色
+                    document.querySelector('.sidebar-header h2').style.color = '#f9fafb';
+                    document.querySelector('.sidebar-header p').style.color = '#9ca3af';
+                    
+                    // 更新底部元素
+                    document.querySelector('.username p').style.color = '#f9fafb';
+                    document.querySelector('.time p').style.color = '#9ca3af';
+                    document.querySelector('.logout-btn').style.color = '#9ca3af';
+                } else {
+                    sidebar.style.background = 'white';
+                    sidebar.style.borderColor = '#e5e7eb';
+                    
+                    document.querySelector('.sidebar-header h2').style.color = '#111827';
+                    document.querySelector('.sidebar-header p').style.color = '#6b7280';
+                    
+                    document.querySelector('.username p').style.color = '#111827';
+                    document.querySelector('.time p').style.color = '#6b7280';
+                    document.querySelector('.logout-btn').style.color = '#6b7280';
+                }
+            }
+            console.log('🌙 深色模式:', isDark ? '开启' : '关闭');
+        }
+        
+        // 重置布局
+        function resetLayout() {
+            currentUsername = 'Administrator';
+            currentAvatar = 'A';
+            isDark = false;
+            
+            const usernameElement = document.querySelector('.username p');
+            const avatarElement = document.querySelector('.avatar span');
+            const sidebar = document.querySelector('.admin-sidebar');
+            
+            if (usernameElement) usernameElement.textContent = currentUsername;
+            if (avatarElement) avatarElement.textContent = currentAvatar;
+            if (sidebar) {
+                sidebar.style.background = 'white';
+                sidebar.style.borderColor = '#e5e7eb';
+            }
+            
+            console.log('🔄 布局已重置');
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTime();
+            timeInterval = setInterval(updateTime, 1000);
+            checkLayoutStatus();
+            
+            // 定期检查布局状态
+            setInterval(checkLayoutStatus, 2000);
+        });
+        
+        // 清理
+        window.addEventListener('beforeunload', () => {
+            if (timeInterval) {
+                clearInterval(timeInterval);
+            }
+        });
+    </script>
+</body>
+</html>

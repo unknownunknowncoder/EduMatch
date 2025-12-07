@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>维护日志持久化测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .log-container {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-gray-900">维护日志持久化测试</h1>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">功能说明</h2>
+            <div class="space-y-2 text-sm text-gray-600">
+                <div>✅ <strong>持久化存储</strong>: 维护日志保存在localStorage中</div>
+                <div>✅ <strong>页面刷新保留</strong>: 刷新页面后日志仍然存在</div>
+                <div>✅ <strong>重新登录保留</strong>: 退出登录后重新登录，日志仍然存在</div>
+                <div>✅ <strong>系统重启保留</strong>: 系统重启时自动保留维护日志</div>
+                <div>✅ <strong>日志数量限制</strong>: 最多保存100条日志记录</div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-6">
+            <!-- 操作面板 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">测试操作</h2>
+                
+                <div class="space-y-4">
+                    <button id="addLog" class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        ➕ 添加测试日志
+                    </button>
+                    
+                    <button id="showLogs" class="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        📋 显示当前日志
+                    </button>
+                    
+                    <button id="clearLogs" class="w-full bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        🗑️ 清空所有日志
+                    </button>
+                    
+                    <button id="simulateRefresh" class="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+                        🔄 模拟页面刷新
+                    </button>
+                    
+                    <button id="checkStorage" class="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                        💾 检查本地存储
+                    </button>
+                </div>
+                
+                <!-- 统计信息 -->
+                <div class="mt-6 p-4 bg-gray-50 rounded">
+                    <h3 class="font-semibold mb-2">日志统计</h3>
+                    <div class="space-y-1 text-sm">
+                        <div>日志数量: <span id="logCount" class="font-bold">0</span></div>
+                        <div>存储大小: <span id="storageSize" class="font-bold">0</span> 字节</div>
+                        <div>最后更新: <span id="lastUpdate" class="font-bold">-</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 日志显示 -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold mb-4">维护日志</h2>
+                
+                <div id="logsList" class="space-y-2 max-h-96 overflow-y-auto">
+                    <div class="text-gray-500 text-center py-8">
+                        暂无日志，点击"添加测试日志"开始
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 测试日志 -->
+        <div class="mt-6 bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">操作日志</h2>
+            <div id="testLog" class="log-container bg-gray-900 text-green-400 p-4 rounded text-sm">
+                等待操作...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 日志类型
+        const LOG_TYPES = {
+            'clear-cache': { title: '清理缓存', icon: '🗑️' },
+            'export-data': { title: '数据导出', icon: '📊' },
+            'restart-system': { title: '系统重启', icon: '🔄' },
+            'test': { title: '测试操作', icon: '🧪' }
+        };
+
+        // 测试日志
+        function testLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            const logEl = document.getElementById('testLog');
+            logEl.innerHTML += logEntry;
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(message);
+        }
+
+        // 加载维护日志
+        function loadMaintenanceLogs() {
+            try {
+                const savedLogs = localStorage.getItem('maintenanceLogs');
+                if (savedLogs) {
+                    const parsedLogs = JSON.parse(savedLogs);
+                    if (Array.isArray(parsedLogs)) {
+                        testLog(`✅ 已加载 ${parsedLogs.length} 条维护日志`);
+                        return parsedLogs;
+                    }
+                }
+                testLog('ℹ️ 没有找到保存的维护日志');
+                return [];
+            } catch (error) {
+                testLog(`❌ 加载维护日志失败: ${error.message}`);
+                return [];
+            }
+        }
+
+        // 保存维护日志
+        function saveMaintenanceLogs(logs) {
+            try {
+                localStorage.setItem('maintenanceLogs', JSON.stringify(logs));
+                testLog(`💾 已保存 ${logs.length} 条维护日志到本地存储`);
+                updateStats();
+            } catch (error) {
+                testLog(`❌ 保存维护日志失败: ${error.message}`);
+            }
+        }
+
+        // 添加维护日志
+        function addMaintenanceLog(type, title, description, status = 'success') {
+            const logs = loadMaintenanceLogs();
+            
+            const newLog = {
+                id: Date.now().toString(),
+                type,
+                title,
+                description,
+                status,
+                timestamp: new Date().toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                })
+            };
+            
+            logs.unshift(newLog);
+            
+            // 保持最多100条日志
+            if (logs.length > 100) {
+                const removed = logs.length - 100;
+                logs.splice(100);
+                testLog(`⚠️ 日志数量超限，已删除最早的 ${removed} 条记录`);
+            }
+            
+            saveMaintenanceLogs(logs);
+            displayLogs();
+            testLog(`➕ 添加新日志: ${title} (${status})`);
+        }
+
+        // 显示日志
+        function displayLogs() {
+            const logs = loadMaintenanceLogs();
+            const container = document.getElementById('logsList');
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="text-gray-500 text-center py-8">暂无日志，点击"添加测试日志"开始</div>';
+                return;
+            }
+            
+            container.innerHTML = logs.map(log => {
+                const typeInfo = LOG_TYPES[log.type] || { title: log.type, icon: '📝' };
+                const statusColor = log.status === 'success' ? 'green' : 'red';
+                const statusIcon = log.status === 'success' ? '✅' : '❌';
+                
+                return `
+                    <div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start space-x-2">
+                                <span class="text-lg">${typeInfo.icon}</span>
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">${log.title}</div>
+                                    <div class="text-sm text-gray-600 mt-1">${log.description}</div>
+                                    <div class="text-xs text-gray-500 mt-2">
+                                        ${typeInfo.title} · ${log.timestamp} · ${statusIcon} ${log.status}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const logs = loadMaintenanceLogs();
+            const storageData = localStorage.getItem('maintenanceLogs') || '';
+            
+            document.getElementById('logCount').textContent = logs.length;
+            document.getElementById('storageSize').textContent = storageData.length;
+            
+            if (logs.length > 0) {
+                const lastLog = logs[0];
+                document.getElementById('lastUpdate').textContent = lastLog.timestamp;
+            } else {
+                document.getElementById('lastUpdate').textContent = '-';
+            }
+        }
+
+        // 事件监听器
+        document.getElementById('addLog').addEventListener('click', () => {
+            const testTypes = ['clear-cache', 'export-data', 'restart-system', 'test'];
+            const randomType = testTypes[Math.floor(Math.random() * testTypes.length)];
+            const testMessages = [
+                '这是一条测试日志，用于验证持久化功能',
+                '模拟缓存清理操作完成',
+                '模拟数据导出操作成功',
+                '模拟系统重启操作完成',
+                '测试日志持久化存储功能'
+            ];
+            const randomMessage = testMessages[Math.floor(Math.random() * testMessages.length)];
+            
+            addMaintenanceLog(randomType, '测试操作', randomMessage, 'success');
+        });
+
+        document.getElementById('showLogs').addEventListener('click', () => {
+            displayLogs();
+            testLog('📋 已刷新日志显示');
+        });
+
+        document.getElementById('clearLogs').addEventListener('click', () => {
+            const confirmed = confirm('确定要清空所有维护日志吗？\n\n此操作将删除所有历史维护记录，且无法恢复。');
+            
+            if (confirmed) {
+                localStorage.removeItem('maintenanceLogs');
+                displayLogs();
+                updateStats();
+                testLog('🗑️ 维护日志已清空');
+            }
+        });
+
+        document.getElementById('simulateRefresh').addEventListener('click', () => {
+            testLog('🔄 模拟页面刷新...');
+            setTimeout(() => {
+                displayLogs();
+                updateStats();
+                testLog('✅ 页面"刷新"完成，日志应该仍然存在');
+            }, 1000);
+        });
+
+        document.getElementById('checkStorage').addEventListener('click', () => {
+            const storageData = localStorage.getItem('maintenanceLogs');
+            if (storageData) {
+                testLog(`💾 本地存储中的维护日志数据大小: ${storageData.length} 字节`);
+                testLog(`📊 数据内容预览: ${storageData.substring(0, 100)}...`);
+            } else {
+                testLog('💾 本地存储中没有维护日志数据');
+            }
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            testLog('🚀 维护日志持久化测试页面已加载');
+            displayLogs();
+            updateStats();
+            testLog('📊 初始化完成，当前日志状态已显示');
+        });
+    </script>
+</body>
+</html>

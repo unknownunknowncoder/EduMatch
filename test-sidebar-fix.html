@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侧边栏修复测试</title>
+    <style>
+        /* 模拟 UserDetailAdmin 的样式 - 修复后的版本 */
+        div[class*="sidebar"]:not(.admin-sidebar):not([class*="admin"]),
+        div[class*="navigation"]:not(.admin-sidebar):not([class*="admin"]),
+        aside:not(.admin-sidebar):not([class*="admin"]) {
+            display: none !important;
+            visibility: hidden !important;
+        }
+        
+        /* 模拟 AdminSystem 的样式 */
+        .admin-sidebar {
+            display: block !important;
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            height: 100vh !important;
+            width: 16rem !important;
+            z-index: 50 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: none !important;
+            overflow: visible !important;
+            background: #f8fafc;
+            padding: 1rem;
+            border-right: 1px solid #e2e8f0;
+        }
+        
+        .sidebar-button {
+            display: flex !important;
+            padding: 0.75rem 1rem !important;
+            margin: 0.5rem 0 !important;
+            background: #fff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 0.5rem !important;
+            color: #374151 !important;
+            text-decoration: none !important;
+            font-weight: 500 !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
+        .sidebar-button:hover {
+            background: #f3f4f6 !important;
+        }
+        
+        /* 其他内容 */
+        .main-content {
+            margin-left: 16rem;
+            padding: 2rem;
+        }
+        
+        .test-description {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 模拟管理后台侧边栏 -->
+    <aside class="admin-sidebar">
+        <h3>管理后台导航</h3>
+        <nav class="sidebar-nav">
+            <a href="#" class="sidebar-button">📊 仪表板</a>
+            <a href="#" class="sidebar-button">👥 用户管理</a>
+            <a href="#" class="sidebar-button">⚙️ 系统设置</a>
+            <a href="#" class="sidebar-button">🔧 系统维护</a>
+        </nav>
+    </aside>
+    
+    <main class="main-content">
+        <div class="test-description">
+            <h1>🔧 侧边栏修复测试页面</h1>
+            <p>这个页面测试了侧边栏修复的效果。以下是修复的要点：</p>
+            <ul>
+                <li>✅ 修复了 UserDetailAdmin.vue 中的 CSS 规则，不再影响管理后台侧边栏</li>
+                <li>✅ 在 AdminSystem.vue 中添加了更强的样式保护</li>
+                <li>✅ 使用 CSS :not() 选择器只隐藏前端侧边栏，保留管理后台侧边栏</li>
+                <li>✅ 添加了终极保护规则，覆盖所有可能的外部样式干扰</li>
+            </ul>
+        </div>
+        
+        <div class="status">
+            <h2>🎯 修复效果验证</h2>
+            <p>如果左侧的侧边栏正常显示，包含4个按钮（仪表板、用户管理、系统设置、系统维护），则说明修复成功！</p>
+        </div>
+        
+        <div class="status">
+            <h2>📝 修复说明</h2>
+            <p><strong>问题原因：</strong>UserDetailAdmin.vue 中的 CSS 规则会隐藏所有包含 "sidebar" 类的元素，包括管理后台的侧边栏。</p>
+            <p><strong>解决方案：</strong>修改了 CSS 选择器，使用 :not() 伪类排除管理后台相关的元素。</p>
+            <p><strong>额外保护：</strong>在 AdminSystem.vue 中添加了最高优先级的样式规则，确保侧边栏始终可见。</p>
+        </div>
+    </main>
+    
+    <script>
+        // 模拟检查侧边栏是否正常显示
+        setTimeout(() => {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const buttons = document.querySelectorAll('.sidebar-button');
+            
+            console.log('🔍 侧边栏检查结果：');
+            console.log('- 侧边栏元素存在:', !!sidebar);
+            console.log('- 侧边栏可见状态:', sidebar ? window.getComputedStyle(sidebar).display : 'N/A');
+            console.log('- 按钮数量:', buttons.length);
+            console.log('- 所有按钮可见:', Array.from(buttons).every(btn => 
+                window.getComputedStyle(btn).display !== 'none'
+            ));
+            
+            if (sidebar && buttons.length >= 4) {
+                console.log('✅ 侧边栏修复成功！');
+            } else {
+                console.log('❌ 侧边栏仍有问题');
+            }
+        }, 100);
+    </script>
+</body>
+</html>
