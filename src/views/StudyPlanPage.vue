@@ -428,7 +428,7 @@
 // (Script logic remains mostly identical, just ensuring imports match Vue 3 setup)
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { supabaseService } from '@/services/supabase'
+import { getSupabaseService } from '@/services/supabase'
 import { useDatabaseStore } from '@/stores/database'
 import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -556,6 +556,7 @@ const loadCheckinsForAllPlans = async (plans: any[]) => {
   // 并行获取所有计划的打卡记录
   const checkinPromises = plans.map(async (plan) => {
     try {
+      const supabaseService = getSupabaseService()
       const checkins = await supabaseService.getStudyPlanCheckins(plan.id)
       
       // 计算实际完成的学习时长
@@ -742,6 +743,7 @@ const handleSubmitCheckin = async () => {
     }
     
     // 首先检查今天是否已经打卡了
+    const supabaseService = getSupabaseService()
     const existingCheckins = await supabaseService.getStudyPlanCheckins(selectedPlan.value.id)
     const todayCheckin = existingCheckins?.find((c: any) => c.checkin_date === checkinForm.value.date)
     

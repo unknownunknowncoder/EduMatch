@@ -263,7 +263,9 @@ const formatDate = (str: string) => new Date(str).toLocaleDateString('en-US', { 
 const toggleLike = async (post: Post) => {
   if (isLiking.value) return; isLiking.value = true;
   try {
-    const client = await dbStore.getClient();
+    const { getSupabaseService } = await import('@/services/supabase');
+    const supabaseService = getSupabaseService();
+    const client = await supabaseService.getClient();
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) { router.push('/login'); return; }
     const uid = JSON.parse(userStr).id;
@@ -281,7 +283,9 @@ const toggleLike = async (post: Post) => {
 const toggleFavorite = async (post: Post) => {
   if (isFavoriting.value) return; isFavoriting.value = true;
   try {
-    const client = await dbStore.getClient();
+    const { getSupabaseService } = await import('@/services/supabase');
+    const supabaseService = getSupabaseService();
+    const client = await supabaseService.getClient();
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) { router.push('/login'); return; }
     const uid = JSON.parse(userStr).id;
@@ -298,7 +302,8 @@ const toggleFavorite = async (post: Post) => {
 
 const fetchPostDetail = async () => {
   try {
-    const { supabaseService } = await import('@/services/supabase');
+    const { getSupabaseService } = await import('@/services/supabase');
+    const supabaseService = getSupabaseService();
     const postData = await supabaseService.getPostById(postId);
     if (!postData) return;
 
@@ -309,8 +314,10 @@ const fetchPostDetail = async () => {
     let isLiked = false, isFavorited = false;
     
     if (userStr) {
-      const uid = JSON.parse(userStr).id;
-      const client = supabaseService.getClient();
+    const uid = JSON.parse(userStr).id;
+    const { getSupabaseService } = await import('@/services/supabase');
+    const supabaseService = getSupabaseService();
+    const client = await supabaseService.getClient();
       const [l, f] = await Promise.all([
          client.from('post_likes').select('id').eq('user_id', uid).eq('post_id', postId),
          client.from('post_favorites').select('id').eq('user_id', uid).eq('post_id', postId)
@@ -320,7 +327,7 @@ const fetchPostDetail = async () => {
     }
 
     // 获取真实的互动数据
-    const client = supabaseService.getClient();
+    const client = await supabaseService.getClient();
     const [likes, favorites, comments] = await Promise.all([
       client.from('post_likes').select('id').eq('post_id', postId),
       client.from('post_favorites').select('id').eq('post_id', postId),
@@ -345,7 +352,9 @@ const fetchPostDetail = async () => {
 const loadComments = async () => {
   isLoadingComments.value = true;
   try {
-    const client = await dbStore.getClient();
+    const { getSupabaseService } = await import('@/services/supabase');
+    const supabaseService = getSupabaseService();
+    const client = await supabaseService.getClient();
     const { count } = await client.from('post_comments').select('*', { count: 'exact', head: true }).eq('post_id', postId);
     totalComments.value = count || 0;
 
@@ -366,7 +375,9 @@ const addComment = async () => {
     const userStr = localStorage.getItem('currentUser');
     if (!userStr) return;
     const uid = JSON.parse(userStr).id;
-    const client = await dbStore.getClient();
+    const { getSupabaseService } = await import('@/services/supabase');
+    const supabaseService = getSupabaseService();
+    const client = await supabaseService.getClient();
     
     await client.from('post_comments').insert([{ post_id: postId, user_id: uid, content: newComment.value.trim() }]);
     await loadComments();

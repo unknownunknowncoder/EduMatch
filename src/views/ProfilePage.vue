@@ -307,7 +307,7 @@
 import { computed, onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
-import { supabaseService } from '@/services/supabase'
+import { getSupabaseService } from '@/services/supabase'
 import { showToast, showMessage, messageText, messageType, getMessageClasses, getMessageIcon } from '@/utils/message'
 import EditUserDialog from '@/components/EditUserDialog.vue'
 import { 
@@ -394,7 +394,8 @@ const loadUserProfile = async () => {
     try {
       const user = JSON.parse(currentUserStr)
       // Fetch latest from DB
-      const client = supabaseService.getClient()
+      const supabaseService = getSupabaseService()
+      const client = await supabaseService.getClient()
       const { data } = await client.from('users').select('*').eq('id', user.id).single()
       if (data) {
          userInfo.value = { 
@@ -420,7 +421,8 @@ const loadUserProfile = async () => {
 const loadMyResources = async () => {
   isLoadingResources.value = true
   try {
-    const client = supabaseService.getClient()
+    const supabaseService = getSupabaseService()
+    const client = await supabaseService.getClient()
     const uid = userInfo.value.id || JSON.parse(localStorage.getItem('currentUser') || '{}').id
     if (!uid) return
 
@@ -434,7 +436,8 @@ const loadMyResources = async () => {
 const loadMyPosts = async () => {
   isLoadingPosts.value = true
   try {
-    const client = supabaseService.getClient()
+    const supabaseService = getSupabaseService()
+    const client = await supabaseService.getClient()
     const uid = userInfo.value.id || JSON.parse(localStorage.getItem('currentUser') || '{}').id
     if (!uid) return
 
@@ -450,10 +453,11 @@ const loadStats = async () => {
    if (!uid) return
    
    try {
+      const supabaseService = getSupabaseService()
       const follow = await supabaseService.getFollowStats(uid)
       followStats.value = follow || { followers_count: 0, followings_count: 0 }
       
-      const client = supabaseService.getClient()
+      const client = await supabaseService.getClient()
       const { count: l } = await client.from('post_likes').select('*', { count: 'exact', head: true }).eq('user_id', uid)
       likedCount.value = l || 0
       
@@ -468,12 +472,13 @@ const editBio = () => { editType.value = 'bio'; editDialogTitle.value = '编辑�
 
 const handleEditConfirm = async (val: string) => {
    const uid = userInfo.value.id || JSON.parse(localStorage.getItem('currentUser') || '{}').id
+   const supabaseService = getSupabaseService()
    if(editType.value === 'nickname') {
       await supabaseService.updateUserNickname(uid, val)
       userInfo.value.name = val
       showToast('昵称已更新', 'success')
    } else {
-      const client = supabaseService.getClient()
+      const client = await supabaseService.getClient()
       await client.from('users').update({ bio: val }).eq('id', uid)
       userInfo.value.bio = val
       showToast('签名已更新', 'success')
@@ -484,6 +489,7 @@ const updatePassword = async () => {
    if(passwordForm.newPassword !== passwordForm.confirmPassword) { showToast('两次输入的密码不一致', 'error'); return }
    const uid = userInfo.value.id || JSON.parse(localStorage.getItem('currentUser') || '{}').id
    try {
+      const supabaseService = getSupabaseService()
       await supabaseService.updateUserPassword(uid, passwordForm.newPassword)
       showToast('密码修改成功', 'success')
       passwordForm.currentPassword = ''; passwordForm.newPassword = ''; passwordForm.confirmPassword = ''
@@ -495,7 +501,8 @@ const loadPrivacySettings = async () => {
    if (!uid) return
    
    try {
-      const client = supabaseService.getClient()
+      const supabaseService = getSupabaseService()
+      const client = await supabaseService.getClient()
       const { data } = await client.from('user_privacy_settings').select('*').eq('user_id', uid).single()
       
       if (data) {
@@ -517,7 +524,8 @@ const updatePrivacySettings = async () => {
    if (!uid) return
    
    try {
-      const client = supabaseService.getClient()
+      const supabaseService = getSupabaseService()
+      const client = await supabaseService.getClient()
       
       // 先检查是否已存在记录
       const { data: existingRecord } = await client

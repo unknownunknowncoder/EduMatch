@@ -19,13 +19,11 @@ class SupabaseSingleton {
   static async getInstance(): Promise<SupabaseClient> {
     // 如果已有实例，直接返回
     if (this.instance) {
-      console.log('📋 复用现有 Supabase 客户端实例')
       return this.instance
     }
 
     // 如果正在初始化，等待初始化完成
     if (this.isInitializing && this.initPromise) {
-      console.log('⏳ 等待 Supabase 客户端初始化完成')
       return this.initPromise
     }
 
@@ -45,8 +43,6 @@ class SupabaseSingleton {
 
   // 创建客户端实例
   private static async createInstance(): Promise<SupabaseClient> {
-    console.log('🆕 创建新的 Supabase 客户端实例')
-
     if (!dbConfig.connectionString || !dbConfig.apiKey) {
       console.warn('⚠️ Supabase URL 或 API Key 未配置')
       throw new Error('Supabase 配置缺失')
@@ -60,22 +56,28 @@ class SupabaseSingleton {
         dbConfig.connectionString,
         dbConfig.apiKey,
         {
-          // 添加唯一标识，避免多实例警告
+          // 启用持久化会话
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            // 使用相同的存储键确保只有一个认证实例
+            storageKey: 'supabase.auth.token',
+            storage: window.localStorage
+          },
+          // 禁用一些可能导致多实例的功能
+          db: {
+            schema: 'public'
+          },
+          // 添加唯一标识
           global: {
             headers: {
               'X-Client-Name': 'EduMatch-Vue-App-Single',
               'X-Client-Version': '1.0.0'
             }
-          },
-          // 启用持久化会话
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true
           }
         }
       )
 
-      console.log('✅ Supabase 客户端创建成功（单例模式）')
       return client
 
     } catch (error) {
@@ -86,7 +88,6 @@ class SupabaseSingleton {
 
   // 重置单例（需要时调用）
   static reset(): void {
-    console.log('🔄 重置 Supabase 客户端单例')
     this.instance = null
     this.isInitializing = false
     this.initPromise = null

@@ -454,7 +454,7 @@ const loadUserResources = async () => {
     
     // 直接使用 supabaseService
     const { supabaseService } = await import('@/services/supabase')
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     
     const { data, error } = await client
       .from('resources')

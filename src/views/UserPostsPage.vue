@@ -229,7 +229,7 @@ const checkUserPrivacy = async (userId: string) => {
     }
 
     const { supabaseService } = await import('@/services/supabase')
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     const { data } = await client
       .from('user_privacy_settings')
       .select('*')

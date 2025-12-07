@@ -235,7 +235,7 @@ const showDeleteConfirm = async (resource: MyResource) => {
   selectedResource.value = resource
   
   try {
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     const { data: posts, error } = await client
       .from('community_posts')
       .select('id, title')
@@ -266,7 +266,7 @@ const handleCascadeDelete = async (option: string) => {
   const resourceId = selectedResource.value.id
   
   try {
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     
     if (option === 'cascade') {
       if (relatedPosts.value.length > 0) {
@@ -304,7 +304,7 @@ const handleCascadeDelete = async (option: string) => {
 }
 
 const performResourceDeletion = async (resourceId: string, resourceTitle: string) => {
-  const client = supabaseService.getClient()
+  const client = await supabaseService.getClient()
   
   try {
     const { error } = await client
@@ -327,7 +327,7 @@ const performResourceDeletion = async (resourceId: string, resourceTitle: string
 const loadMyResources = async () => {
   isLoading.value = true
   try {
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     const currentUser = localStorage.getItem('currentUser')
     
     if (!currentUser) {

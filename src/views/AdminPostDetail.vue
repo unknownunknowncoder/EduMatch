@@ -298,7 +298,7 @@ const loadPost = async () => {
     
     // 获取统计信息
     console.log('📊 获取统计信息...')
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     
     try {
       const { data: likesData } = await client

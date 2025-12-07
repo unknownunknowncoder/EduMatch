@@ -149,7 +149,7 @@ const fetchUserInfo = async () => {
 const fetchFollowingList = async () => {
   try {
     const { supabaseService } = await import('@/services/supabase')
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     
     const { data } = await client
       .from('user_follows')
@@ -172,7 +172,7 @@ const fetchFollowingList = async () => {
 const fetchPrivacySettings = async () => {
   try {
     const { supabaseService } = await import('@/services/supabase')
-    const client = supabaseService.getClient()
+    const client = await supabaseService.getClient()
     const { data } = await client.from('user_privacy_settings').select('*').eq('user_id', userInfo.value.id).single()
     
     if (data) {

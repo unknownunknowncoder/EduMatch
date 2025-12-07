@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { cozeAPIService } from '@/services/coze-api'
+import { cozeAPIService } from '@/services/coze-api-prod'
 
 const configStatus = ref({ configured: false, missing: [] as string[] })
 const apiToken = ref('')

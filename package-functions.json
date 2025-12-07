@@ -1,0 +1,11 @@
+{
+  "name": "edumatch-functions",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Functions are already built'"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}

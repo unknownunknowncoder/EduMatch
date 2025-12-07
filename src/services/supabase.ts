@@ -5,14 +5,23 @@ import { dbConfig } from '@/config/database'
 export class SupabaseService {
   private static instance: SupabaseService
   private client: any = null
+  private static isCreating = false
 
   constructor() {
+    if (SupabaseService.isCreating) {
+      // 如果正在创建实例，等待创建完成
+      while (SupabaseService.isCreating) {
+        // 简单的等待机制
+      }
+    }
+    
     if (SupabaseService.instance) {
-      console.log('📋 复用现有 SupabaseService 实例')
       return SupabaseService.instance
     }
+    
+    SupabaseService.isCreating = true
     SupabaseService.instance = this
-    console.log('🆕 创建新的 SupabaseService 实例')
+    SupabaseService.isCreating = false
   }
 
   // 获取 Supabase 客户端（使用全局单例）
@@ -20,9 +29,6 @@ export class SupabaseService {
     if (!this.client) {
       const SupabaseSingleton = (await import('./supabase-singleton')).default
       this.client = await SupabaseSingleton.getInstance()
-      console.log('🔗 获取 Supabase 客户端（通过单例）')
-    } else {
-      console.log('📋 复用缓存的 Supabase 客户端')
     }
     return this.client
   }
@@ -757,4 +763,15 @@ export class SupabaseService {
   }
 }
 
-export const supabaseService = new SupabaseService()
+// 导出单例实例
+let supabaseServiceInstance: SupabaseService | null = null
+
+export const getSupabaseService = (): SupabaseService => {
+  if (!supabaseServiceInstance) {
+    supabaseServiceInstance = new SupabaseService()
+  }
+  return supabaseServiceInstance
+}
+
+// 向后兼容的导出
+export const supabaseService = getSupabaseService()

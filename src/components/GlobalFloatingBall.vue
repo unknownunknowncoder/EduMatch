@@ -8,8 +8,8 @@ import {
   Minimize2
 } from 'lucide-vue-next';
 
-// 导入 Coze API 服务
-import { cozeAPIService } from '@/services/coze-api';
+// 导入 Coze API 服务 - 根据环境选择
+import { cozeAPIService } from '@/services/coze-api-prod';
 
 const router = useRouter();
 
