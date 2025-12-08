@@ -40,7 +40,12 @@ exports.handler = async (event) => {
       };
     }
 
-    console.log('🚀 快速扣子API请求:', { query, bot_id, user_id });
+    console.log('🚀 快速扣子API请求 (45秒超时):', { 
+      query: query.substring(0, 50) + '...', 
+      bot_id, 
+      user_id,
+      function_timeout: '45s'
+    });
     
     // 获取配置
     const apiToken = process.env.COZE_API_TOKEN;
@@ -54,16 +59,14 @@ exports.handler = async (event) => {
       };
     }
 
-    // 简化的扣子API调用
+    // 极简化的扣子API调用 - 最大化利用45秒超时
     const cozeApiUrl = `https://api.coze.cn/open_api/v2/chat`;
     const requestBody = {
-      conversation_id: "",
       bot_id: bot_id || defaultBotId,
       user: user_id || `netlify_user_${Date.now()}`,
-      query: query, // 简化查询
-      chat_history: [],
-      stream: false,
-      custom_variables: {}
+      query: query,
+      stream: false
+      // 移除不必要的字段以减少响应时间
     };
 
     console.log('📡 调用扣子API (快速模式):', {
@@ -73,9 +76,9 @@ exports.handler = async (event) => {
     });
 
     try {
-      // 设置更短的超时时间，避免Netlify函数超时
+      // 设置与Netlify Functions配置一致的超时时间：45秒
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 45000); // 45秒超时
+      const timeout = setTimeout(() => controller.abort(), 44000); // 44秒，留1秒缓冲
 
       const cozeResponse = await fetch(cozeApiUrl, {
         method: 'POST',

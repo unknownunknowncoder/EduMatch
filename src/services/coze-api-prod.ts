@@ -58,7 +58,7 @@ class CozeAPIServiceProduction {
         
         // 创建 AbortController，设置与Netlify Function一致的超时时间
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 50000) // 50秒超时，给Netlify Function留足时间
+        const timeoutId = setTimeout(() => controller.abort(), 48000) // 48秒超时，给Netlify Function留足时间
         
       // 直接调用优化的函数，不需要 /chat 路径
       const response = await fetch(`${this.baseUrl}`, {
