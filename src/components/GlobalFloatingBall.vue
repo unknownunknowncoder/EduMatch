@@ -9,7 +9,7 @@ import {
 } from 'lucide-vue-next';
 
 // 导入 Coze API 服务 - 根据环境选择
-import { cozeAPIService } from '@/services/coze-api-prod';
+import { getCozeAPI } from '@/services/coze-api-prod';
 
 const router = useRouter();
 
@@ -255,7 +255,8 @@ const sendMessage = async () => {
   setTimeout(() => { if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight; }, 100);
 
   try {
-    const response = await cozeAPIService.searchRecommendations({ query: message });
+    const cozeAPI = getCozeAPI();
+    const response = await cozeAPI.searchResources({ query: message });
 
     const mapResourceForChat = (rec: any) => {
       if (!rec) return null;
