@@ -202,12 +202,28 @@ class CozeAPIServiceProduction {
   private normalizeToCozeResponse(data: any): CozeSearchResponse {
     try {
       console.log('🔍 标准化数据格式，原始keys:', Object.keys(data))
+      console.log('📊 数据结构检查:', {
+        '最推荐类型': Array.isArray(data['最推荐']) ? 'array' : typeof data['最推荐'],
+        '其他推荐类型': Array.isArray(data['其他推荐']) ? 'array' : typeof data['其他推荐'],
+        '最推荐长度': Array.isArray(data['最推荐']) ? data['最推荐'].length : 'N/A',
+        '其他推荐长度': Array.isArray(data['其他推荐']) ? data['其他推荐'].length : 'N/A'
+      })
       
       // 处理中文字段格式：{ 最推荐: [...], 其他推荐: [...], 学习建议: "..." }
       if (data['最推荐'] || data['其他推荐'] || data['学习建议']) {
         console.log('✅ 检测到中文字段格式')
-        const topRecommendations = data['最推荐'] || []
+        let topRecommendations = data['最推荐'] || []
         const otherRecommendations = data['其他推荐'] || []
+        
+        // 处理"最推荐"可能是数组的第一个元素，或者直接是对象
+        let topRec
+        if (Array.isArray(topRecommendations)) {
+          console.log('📊 最推荐是数组，取第一个元素')
+          topRec = topRecommendations[0]
+        } else if (typeof topRecommendations === 'object' && topRecommendations !== null) {
+          console.log('📊 最推荐是对象，直接使用')
+          topRec = topRecommendations
+        }
         
         // 合并学习建议和权威资料
         let learningAdvice = data['学习建议'] || ''
@@ -222,7 +238,8 @@ class CozeAPIServiceProduction {
           learningAdvice = '建议制定合理的学习计划，循序渐进地学习。'
         }
         
-        const topRec = topRecommendations[0]
+        console.log('🎯 顶级推荐:', topRec?.['资源标题']?.substring(0, 50))
+        console.log('📚 其他推荐数量:', otherRecommendations.length)
         
         return {
           top_recommendation: {
