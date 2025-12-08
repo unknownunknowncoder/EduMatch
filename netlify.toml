@@ -21,12 +21,12 @@
 
 [[redirects]]
   from = "/api/coze/*"
-  to = "/.netlify/functions/coze-simple"
+  to = "/.netlify/functions/coze-fallback"
   status = 200
 
 [[redirects]]
   from = "/api/chat"
-  to = "/.netlify/functions/coze-simple"
+  to = "/.netlify/functions/coze-fallback"
   status = 200
 
 [[headers]]

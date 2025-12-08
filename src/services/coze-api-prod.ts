@@ -123,42 +123,206 @@ class CozeAPIServiceProduction {
    * 解析扣子API返回的数据
    */
   private parseCozeResponse(data: any): CozeSearchResponse {
+    console.log('🔍 开始解析扣子响应:', data)
+    
     try {
+      // 检查响应是否直接包含所需数据结构
+      if (data.data && typeof data.data === 'object') {
+        console.log('✅ 检测到直接数据格式')
+        return this.normalizeToCozeResponse(data.data)
+      }
+      
       // 检查是否有消息内容
       const messages = data?.messages || []
+      console.log('📝 消息数量:', messages.length)
+      
       if (messages.length === 0) {
-        throw new Error('扣子API返回空响应')
+        console.log('⚠️ 没有消息内容，检查其他格式')
+        // 尝试从其他字段提取数据
+        if (data.content) {
+          console.log('✅ 从content字段提取数据')
+          const jsonData = this.extractJsonFromContent(data.content)
+          if (jsonData) {
+            return this.normalizeToCozeResponse(jsonData)
+          }
+        }
+        
+        if (data.raw_response) {
+          console.log('✅ 从raw_response字段提取数据')
+          const jsonData = this.extractJsonFromContent(data.raw_response)
+          if (jsonData) {
+            return this.normalizeToCozeResponse(jsonData)
+          }
+        }
+        
+        throw new Error('扣子API返回空响应，所有字段都为空')
       }
 
       const lastMessage = messages[messages.length - 1]
       const content = lastMessage?.content || ''
+      console.log('📄 最后一条消息内容长度:', content.length)
+      
+      if (!content.trim()) {
+        throw new Error('最后一条消息内容为空')
+      }
       
       // 尝试解析JSON内容
       const jsonData = this.extractJsonFromContent(content)
       
       if (!jsonData) {
-        throw new Error('无法解析扣子返回的数据格式')
+        console.log('⚠️ 无法解析JSON，返回基于文本的响应')
+        return this.createTextBasedResponse(content)
       }
 
-      return {
-        top_recommendation: jsonData.top_recommendation || {},
-        other_recommendations: jsonData.other_recommendations || [],
-        learning_advice: jsonData.learning_advice || ''
-      }
+      console.log('✅ 成功解析JSON数据')
+      return this.normalizeToCozeResponse(jsonData)
+      
     } catch (error) {
-      console.error('解析扣子响应失败:', error)
+      console.error('❌ 解析扣子响应失败:', error)
+      console.log('📄 原始响应数据:', JSON.stringify(data, null, 2))
       // 返回默认响应
       return {
         top_recommendation: {
-          name: '解析失败',
-          platform: '其他',
+          name: 'API响应解析失败',
+          platform: 'B站',
           difficulty: '入门',
-          duration: '未知',
-          study_data: '无法解析扣子API返回的数据'
+          duration: '2小时',
+          study_data: '系统暂时无法解析AI响应，请稍后重试',
+          brief_description: '这是一个技术问题，我们正在修复'
         },
         other_recommendations: [],
-        learning_advice: '请稍后重试或联系管理员'
+        learning_advice: '建议稍后重试，或手动在B站搜索相关学习资源'
       }
+    }
+  }
+
+  /**
+   * 将各种数据格式标准化为CozeSearchResponse格式
+   */
+  private normalizeToCozeResponse(data: any): CozeSearchResponse {
+    try {
+      // 处理不同的数据格式
+      
+      // 格式1: { top: {...}, others: [...], advice: "..." }
+      if (data.top || data.others || data.advice) {
+        return {
+          top_recommendation: {
+            name: data.top?.title || data.top?.name || '推荐资源',
+            platform: data.top?.platform || 'B站',
+            difficulty: data.top?.difficulty || '入门',
+            duration: data.top?.duration || '2小时',
+            study_data: data.top?.study_data || data.top?.desc || '推荐学习资源',
+            brief_description: data.top?.desc || data.top?.brief_description || '优质学习资源',
+            reason: data.top?.reason || 'AI推荐',
+            url: data.top?.url || `https://www.bilibili.com/search?keyword=${encodeURIComponent(data.top?.title || '学习')}`
+          },
+          other_recommendations: (data.others || []).map((item: any) => ({
+            name: item.title || item.name || '其他资源',
+            platform: item.platform || 'B站',
+            difficulty: item.difficulty || '入门',
+            duration: item.duration || '2小时',
+            study_data: item.study_data || item.desc || '学习资源',
+            brief_description: item.desc || item.brief_description || '相关资源',
+            url: item.url || `https://www.bilibili.com/search?keyword=${encodeURIComponent(item.title || '学习')}`
+          })),
+          learning_advice: data.advice || data.learning_advice || '请制定合理的学习计划，循序渐进地学习。'
+        }
+      }
+      
+      // 格式2: { top_recommendation: {...}, other_recommendations: [...], learning_advice: "..." }
+      if (data.top_recommendation || data.other_recommendations || data.learning_advice) {
+        return {
+          top_recommendation: data.top_recommendation || this.createDefaultTopRecommendation(),
+          other_recommendations: data.other_recommendations || [],
+          learning_advice: data.learning_advice || '坚持学习，持续进步！'
+        }
+      }
+      
+      // 格式3: 单个对象，可能是推荐资源
+      if (data.name || data.title) {
+        return {
+          top_recommendation: {
+            name: data.name || data.title || '推荐资源',
+            platform: data.platform || 'B站',
+            difficulty: data.difficulty || '入门',
+            duration: data.duration || '2小时',
+            study_data: data.study_data || data.description || '推荐学习资源',
+            brief_description: data.description || data.brief_description || '优质学习资源',
+            url: data.url || '#'
+          },
+          other_recommendations: [],
+          learning_advice: '这是一个很好的学习资源，建议深入学习。'
+        }
+      }
+      
+      // 格式4: 其他情况，返回默认响应
+      return {
+        top_recommendation: this.createDefaultTopRecommendation(),
+        other_recommendations: [],
+        learning_advice: '请继续探索更多学习资源。'
+      }
+      
+    } catch (error) {
+      console.error('❌ 标准化数据失败:', error)
+      return this.createDefaultResponse()
+    }
+  }
+
+  /**
+   * 创建基于文本的响应（当JSON解析失败时）
+   */
+  private createTextBasedResponse(content: string): CozeSearchResponse {
+    const lines = content.split('\n').filter(line => line.trim())
+    const firstLine = lines[0] || '学习资源推荐'
+    
+    return {
+      top_recommendation: {
+        name: firstLine.substring(0, 50),
+        platform: 'B站',
+        difficulty: '入门',
+        duration: '2小时',
+        study_data: content.substring(0, 200),
+        brief_description: 'AI推荐的学习资源',
+        reason: '基于您的需求分析',
+        url: `https://www.bilibili.com/search?keyword=${encodeURIComponent(firstLine)}`
+      },
+      other_recommendations: lines.slice(1, 4).map((line, index) => ({
+        name: line.substring(0, 50),
+        platform: index % 2 === 0 ? 'B站' : '中国大学MOOC',
+        difficulty: '入门',
+        duration: '2小时',
+        study_data: line,
+        brief_description: '相关学习资源',
+        url: `https://www.bilibili.com/search?keyword=${encodeURIComponent(line)}`
+      })),
+      learning_advice: '以上是AI为您推荐的学习资源，建议根据个人情况选择适合的内容。'
+    }
+  }
+
+  /**
+   * 创建默认的顶级推荐
+   */
+  private createDefaultTopRecommendation(): any {
+    return {
+      name: '优质学习资源',
+      platform: 'B站',
+      difficulty: '入门',
+      duration: '2小时',
+      study_data: '推荐学习资源',
+      brief_description: '优质的学习内容',
+      reason: 'AI智能推荐',
+      url: 'https://www.bilibili.com'
+    }
+  }
+
+  /**
+   * 创建默认响应
+   */
+  private createDefaultResponse(): CozeSearchResponse {
+    return {
+      top_recommendation: this.createDefaultTopRecommendation(),
+      other_recommendations: [],
+      learning_advice: '请稍后重试或联系管理员获取帮助。'
     }
   }
 

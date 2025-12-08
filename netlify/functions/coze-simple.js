@@ -175,6 +175,12 @@ exports.handler = async (event) => {
       }
     }
 
+    console.log('✅ 构建最终响应:', {
+      top: result.top_recommendation.name,
+      others_count: result.other_recommendations.length,
+      advice_length: result.learning_advice.length
+    });
+
     return {
       statusCode: 200,
       headers,
