@@ -1,7 +1,10 @@
 const fetch = require('node-fetch');
 
 // 快速响应版本的扣子API代理
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
+  // 设置函数不等待事件循环清空
+  context.callbackWaitsForEmptyEventLoop = false;
+  
   const startTime = Date.now();
   
   // 设置 CORS 头
@@ -78,7 +81,7 @@ exports.handler = async (event) => {
     try {
       // 设置与Netlify Functions配置一致的超时时间：45秒
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 44000); // 44秒，留1秒缓冲
+      const timeout = setTimeout(() => controller.abort(), 43000); // 43秒，留2秒缓冲给Netlify处理
 
       const cozeResponse = await fetch(cozeApiUrl, {
         method: 'POST',

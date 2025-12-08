@@ -4,6 +4,9 @@
 
 [functions]
   directory = "netlify/functions"
+
+[[functions]]
+  name = "coze-api-fast"
   timeout = 45
 
 [[redirects]]
