@@ -26,7 +26,7 @@
         <div class="space-y-2">
            <div class="flex items-center gap-3">
               <ScrollText class="w-8 h-8 text-[#0f281f]" />
-              <h1 class="text-4xl font-serif font-bold text-[#0f281f]">我的研讨记录</h1>
+              <h1 class="text-4xl font-serif font-bold text-[#0f281f]">我的帖子</h1>
            </div>
            <p class="text-[#0f281f]/60 font-serif italic pl-11">
               您在学术社区发布的所有观点与见解均归档于此。

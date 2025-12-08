@@ -11,7 +11,7 @@
           </div>
           <div>
             <h1 class="text-3xl md:text-4xl font-serif font-bold text-[#1a3c34]">EduMatch 使用指南</h1>
-            <p class="mt-2 text-sm text-[#1a3c34]/60 font-mono uppercase tracking-widest">Knowledge Architect Platform</p>
+            <p class="mt-2 text-sm text-[#1a3c34]/60 font-mono uppercase tracking-widest">知识构建平台</p>
           </div>
         </div>
         <div class="bg-white p-6 border-l-4 border-[#d4c5a3] shadow-sm">
@@ -37,7 +37,7 @@
                 <li class="flex gap-3">
                   <span class="font-mono text-[#d4c5a3] font-bold">01</span>
                   <div>
-                    <strong class="text-[#1a3c34]">注册登录</strong> - 点击右上角「Join Registry」创建账号
+                    <strong class="text-[#1a3c34]">注册登录</strong> - 点击右上角「注册」创建账号
                   </div>
                 </li>
                 <li class="flex gap-3">
@@ -100,15 +100,15 @@
                 <span class="text-[#d4c5a3] font-mono">创建学习资源</span>
               </li>
               <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
-                <span class="font-medium text-[#1a3c34]">👥 Symposium</span>
+                <span class="font-medium text-[#1a3c34]">👥 社区</span>
                 <span class="text-[#d4c5a3] font-mono">学习社区</span>
               </li>
               <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
-                <span class="font-medium text-[#1a3c34]">📅 Agenda</span>
+                <span class="font-medium text-[#1a3c34]">📅 计划</span>
                 <span class="text-[#d4c5a3] font-mono">学习计划管理</span>
               </li>
               <li class="flex justify-between items-center">
-                <span class="font-medium text-[#1a3c34]">📁 Dossier</span>
+                <span class="font-medium text-[#1a3c34]">📁 个人中心</span>
                 <span class="text-[#d4c5a3] font-mono">个人中心</span>
               </li>
             </ul>
@@ -124,23 +124,23 @@
             </h3>
             <ul class="space-y-3 text-sm text-[#1a3c34]/70">
               <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
-                <span class="font-medium text-[#1a3c34]">🏠 Home</span>
+                <span class="font-medium text-[#1a3c34]">🏠 首页</span>
                 <span class="text-[#d4c5a3] font-mono">首页</span>
               </li>
               <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
-                <span class="font-medium text-[#1a3c34]">🔍 Find</span>
+                <span class="font-medium text-[#1a3c34]">🔍 搜索</span>
                 <span class="text-[#d4c5a3] font-mono">搜索资源</span>
               </li>
               <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
-                <span class="font-medium text-[#1a3c34]">📝 Entry</span>
+                <span class="font-medium text-[#1a3c34]">📝 创建</span>
                 <span class="text-[#d4c5a3] font-mono">创建资源</span>
               </li>
               <li class="flex justify-between items-center pb-2 border-b border-[#1a3c34]/10">
-                <span class="font-medium text-[#1a3c34]">👥 Hall</span>
+                <span class="font-medium text-[#1a3c34]">👥 社区</span>
                 <span class="text-[#d4c5a3] font-mono">社区</span>
               </li>
               <li class="flex justify-between items-center">
-                <span class="font-medium text-[#1a3c34]">👤 Me</span>
+                <span class="font-medium text-[#1a3c34]">👤 我的</span>
                 <span class="text-[#d4c5a3] font-mono">个人中心</span>
               </li>
             </ul>
@@ -196,8 +196,8 @@
             <div>
               <h4 class="font-serif font-bold text-[#1a3c34] mb-3">📊 推荐结果解读</h4>
               <div class="space-y-2 text-sm text-[#1a3c34]/70">
-                <p><strong class="text-[#1a3c34]">• Curator's Note</strong> - AI 给出的学习建议和路径规划</p>
-                <p><strong class="text-[#1a3c34]">• Primary Source</strong> - 最推荐的资源，包含详细信息</p>
+                <p><strong class="text-[#1a3c34]">• 学习建议</strong> - AI 给出的学习建议和路径规划</p>
+                <p><strong class="text-[#1a3c34]">• 首选资源</strong> - 最推荐的资源，包含详细信息</p>
                 <p><strong class="text-[#1a3c34]">• 其他推荐</strong> - 备选资源列表</p>
                 <p><strong class="text-[#1a3c34]">• 访问指引</strong> - 如何在对应平台找到课程</p>
               </div>
@@ -222,7 +222,7 @@
                 <span class="text-[#d4c5a3]">📅</span> 创建学习计划
               </h3>
               <ol class="space-y-3 text-sm text-[#1a3c34]/70">
-                <li><strong class="text-[#1a3c34]">1. 进入计划页面</strong> - 点击导航栏「Agenda」</li>
+                <li><strong class="text-[#1a3c34]">1. 进入计划页面</strong> - 点击导航栏「计划」</li>
                 <li><strong class="text-[#1a3c34]">2. 填写基本信息</strong> - 标题、目标描述</li>
                 <li><strong class="text-[#1a3c34]">3. 设置时间安排</strong> - 开始日期、每日学习时长</li>
                 <li><strong class="text-[#1a3c34]">4. 关联学习资源</strong> - 选择或添加相关学习材料</li>
@@ -413,7 +413,7 @@
             <div class="border-b border-[#1a3c34]/10 pb-4">
               <h3 class="font-serif font-bold text-[#1a3c34] mb-2">❓ 推荐的资源如何选择？</h3>
               <ul class="text-sm text-[#1a3c34]/70 space-y-1">
-                <li>• <strong>Primary Source</strong> 是 AI 最推荐的首选资源</li>
+                <li>• <strong>首选资源</strong> 是 AI 最推荐的首选资源</li>
                 <li>• <strong>其他推荐</strong> 提供更多备选方案</li>
                 <li>• 结合个人基础、时间安排和学习习惯选择</li>
                 <li>• 参考社区中其他用户的实际使用反馈</li>

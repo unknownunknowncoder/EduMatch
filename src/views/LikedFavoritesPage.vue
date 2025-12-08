@@ -1,42 +1,50 @@
 <template>
   <div class="min-h-screen bg-[#f4f1ea] font-sans selection:bg-[#0f281f] selection:text-[#d4c5a3] pb-20">
     
-    <!-- Top Banner (Collection) -->
-    <div class="h-64 relative overflow-hidden bg-[#0f281f]">
-      <!-- 选用一张复古藏书室/陈列柜的图片 -->
-      <img 
-        src="https://images.unsplash.com/photo-1507842217121-ad5864104f10?q=80&w=2000&auto=format&fit=crop" 
-        class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-multiply grayscale-[30%]"
-        alt="Private Collection"
-      />
-      <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#f4f1ea]"></div>
-      
-      <!-- Back Navigation -->
-      <div class="absolute top-6 left-6 z-20">
+    <!-- 顶部导航 (与“我的资源”一致) -->
+    <div class="sticky top-0 z-30 bg-[#f4f1ea]/90 backdrop-blur-sm border-b border-[#0f281f]/5 px-6 py-4">
+      <div class="max-w-6xl mx-auto flex items-center justify-between">
         <button 
           @click="goBack"
-          class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-[#0f281f] hover:border-[#d4c5a3] transition-all rounded-sm text-xs font-bold uppercase tracking-widest group"
+          class="group flex items-center text-[#0f281f]/60 hover:text-[#0f281f] transition-colors font-serif italic"
         >
-          <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-          返回
+          <ArrowLeft class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+          返回个人档案
         </button>
+        
+        <div class="text-xs font-bold text-[#0f281f]/30 uppercase tracking-widest hidden md:block">
+           精选收藏
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Banner (Collection) -->
+    <div class="relative overflow-hidden bg-[#f4f1ea]">
+      
+      <div class="relative px-8 pt-8 pb-4">
+         <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+               <div class="space-y-2">
+                  <div class="flex items-center gap-3">
+                     <Bookmark class="w-8 h-8 text-[#0f281f]" />
+                     <h1 class="text-4xl font-serif font-bold text-[#0f281f]">精选收藏</h1>
+                  </div>
+                  <p class="text-[#0f281f]/60 font-serif italic pl-11">
+                     您个人珍藏的智慧见解合集。
+                  </p>
+               </div>
+            </div>
+         </div>
       </div>
       
-      <div class="absolute bottom-0 left-0 right-0 p-8 text-center">
-         <div class="flex items-center justify-center gap-3 mb-2">
-            <Bookmark class="w-8 h-8 text-[#d4c5a3]" />
-            <h1 class="text-4xl md:text-5xl font-serif font-bold text-[#0f281f]">精选收藏</h1>
-         </div>
-         <p class="text-[#0f281f]/60 font-serif italic tracking-wide">
-            您个人珍藏的智慧见解合集。
-         </p>
+      <!-- Border Line directly under the text -->
+      <div class="px-8">
+        <div class="max-w-6xl mx-auto border-b-2 border-[#0f281f]"></div>
       </div>
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-4xl mx-auto px-4 -mt-8 relative z-10">
+    <div class="max-w-4xl mx-auto px-4 mt-4 relative z-10">
       
       <!-- Tab Navigation (Archive Tabs) -->
       <div class="flex justify-center mb-10">
@@ -61,7 +69,7 @@
       <!-- Loading State -->
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-32 space-y-6">
          <div class="w-16 h-16 border-4 border-[#d4c5a3] border-t-[#0f281f] rounded-full animate-spin"></div>
-         <p class="text-[#0f281f] font-serif tracking-widest uppercase">Accessing Vault...</p>
+         <p class="text-[#0f281f] font-serif tracking-widest uppercase">正在访问收藏库...</p>
       </div>
 
       <!-- Content Grid -->
@@ -72,12 +80,12 @@
             <div class="w-24 h-24 bg-[#0f281f]/5 rounded-full flex items-center justify-center mx-auto mb-6">
                <component :is="activeTab === 'liked' ? ThumbsUp : Heart" class="w-10 h-10 text-[#0f281f]/20" />
             </div>
-            <h3 class="text-2xl font-serif font-bold text-[#0f281f] mb-2">Collection Empty</h3>
+            <h3 class="text-2xl font-serif font-bold text-[#0f281f] mb-2">收藏夹为空</h3>
             <p class="text-[#0f281f]/60 max-w-md mx-auto mb-8 font-serif">
-               You haven't {{ activeTab === 'liked' ? 'liked' : 'saved' }} any manuscripts yet. Explore the symposium to find valuable works.
+               您还没有{{ activeTab === 'liked' ? '点赞' : '收藏' }}任何内容。去社区探索有价值的作品吧。
             </p>
             <router-link to="/community" class="px-8 py-3 border-2 border-[#0f281f] text-[#0f281f] font-bold uppercase tracking-widest hover:bg-[#0f281f] hover:text-[#d4c5a3] transition-colors">
-               Explore Archives
+               探索社区
             </router-link>
          </div>
 
@@ -112,7 +120,7 @@
                      </div>
                      
                      <div class="text-sm text-[#0f281f]/60 font-serif italic mb-4">
-                        By {{ resource.provider }}
+                        作者：{{ resource.provider }}
                      </div>
 
                      <!-- Tags -->
@@ -121,7 +129,7 @@
                            class="px-2 py-0.5 border border-[#0f281f]/10 text-[#0f281f] text-[10px] font-bold uppercase tracking-widest"
                            :class="activeTab === 'liked' ? 'bg-[#dbeafe]/30 text-blue-800' : 'bg-[#fee2e2]/30 text-red-800'"
                         >
-                           {{ activeTab === 'liked' ? 'Endorsed' : 'Archived' }}
+                           {{ activeTab === 'liked' ? '已点赞' : '已收藏' }}
                         </span>
                         
                         <div class="flex items-center gap-4 ml-auto text-xs font-mono text-[#0f281f]/40">
@@ -144,7 +152,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useDatabaseStore } from '@/stores/database'
 import { 
-  ThumbsUp, Heart, Bookmark, FileText, ScrollText, Loader2
+  ArrowLeft, ThumbsUp, Heart, Bookmark, FileText, ScrollText, Loader2
 } from 'lucide-vue-next'
 
 // Interfaces (Keep same as logic provided)

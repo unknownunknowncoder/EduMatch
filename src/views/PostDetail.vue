@@ -388,7 +388,11 @@ const addComment = async () => {
 
 const navigateToUserProfile = (id?: string) => { if(id) router.push(`/user/${id}`); }
 
-onMounted(() => { fetchPostDetail(); })
+onMounted(() => { 
+  // 确保页面从顶部开始显示
+  window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  fetchPostDetail(); 
+})
 </script>
 
 <style scoped>

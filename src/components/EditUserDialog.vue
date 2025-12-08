@@ -19,23 +19,23 @@
           <div class="mb-8 border-b border-[#1a3c34]/10 pb-4">
             <div class="flex items-center gap-2 mb-1">
               <FileSignature class="w-5 h-5 text-[#d4c5a3]" />
-              <h3 class="text-2xl font-serif font-bold text-[#1a3c34]">Update Record</h3>
+              <h3 class="text-2xl font-serif font-bold text-[#1a3c34]">编辑记录</h3>
             </div>
             <p class="text-[10px] font-bold text-[#1a3c34]/40 uppercase tracking-widest">
-              Request to amend: {{ editType === 'nickname' ? 'Identity' : 'Biography' }}
+              修改类型：{{ editType === 'nickname' ? '身份信息' : '个人简介' }}
             </p>
           </div>
           
           <!-- 昵称编辑 -->
           <div class="mb-6" v-if="editType === 'nickname'">
             <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">
-              Display Name
+              昵称
             </label>
             <div class="relative">
               <input 
                 v-model="nicknameValue"
                 type="text" 
-                placeholder="Enter new designation..."
+                placeholder="请输入新昵称..."
                 maxlength="20"
                 class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif focus:border-[#1a3c34] focus:outline-none transition-colors placeholder-[#1a3c34]/20"
               >
@@ -48,14 +48,14 @@
           <!-- 个人签名编辑 -->
           <div class="mb-6" v-if="editType === 'bio'">
             <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">
-              Personal Statement
+              个性签名
             </label>
             <div class="relative">
               <textarea
                 v-model="bioValue"
                 rows="4"
                 maxlength="200"
-                placeholder="Draft your academic background or interests..."
+                placeholder="请介绍一下您的学术背景或兴趣..."
                 class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif leading-relaxed focus:border-[#1a3c34] focus:outline-none transition-colors resize-none placeholder-[#1a3c34]/20"
               ></textarea>
               <div class="absolute right-2 bottom-2 text-[10px] font-mono text-[#1a3c34]/40 bg-[#f4f1ea] px-1 rounded">
@@ -70,7 +70,7 @@
               @click="handleCancel"
               class="px-4 py-2 text-[#1a3c34]/60 font-bold uppercase tracking-widest text-xs hover:text-[#1a3c34] transition-colors"
             >
-              Discard
+              取消
             </button>
             <button
               @click="handleConfirm"
@@ -100,8 +100,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'Edit Info',
-  confirmText: 'Save Changes'
+  title: '编辑信息',
+  confirmText: '保存更改'
 })
 
 const emit = defineEmits<{

@@ -141,13 +141,13 @@ async function hashPassword(password: string): Promise<string> {
 
 async function handleLogin() {
   if (!formData.username || !formData.password) {
-    message.value = 'Identity credentials required.'
+    message.value = '请输入用户名和密码。'
     messageType.value = 'error'
     return
   }
 
   if (formData.password.length < 6) {
-    message.value = 'Passkey invalid (min 6 chars).'
+    message.value = '密码无效（至少需要6个字符）。'
     messageType.value = 'error'
     return
   }
@@ -158,14 +158,14 @@ async function handleLogin() {
   try {
     const user = await dbStore.getUserByUsername(formData.username)
     if (!user) {
-      message.value = 'Scholar identity not found.'
+      message.value = '未找到用户身份信息。'
       messageType.value = 'error'
       return
     }
 
     const inputPasswordHash = await hashPassword(formData.password)
     if (user.password_hash !== inputPasswordHash) {
-      message.value = 'Credentials mismatch.'
+      message.value = '用户名或密码不匹配。'
       messageType.value = 'error'
       return
     }
@@ -178,7 +178,7 @@ async function handleLogin() {
       avatar_url: user.avatar_url
     }))
 
-    message.value = 'Access Granted. Redirecting...'
+    message.value = '访问已授权，正在跳转...'
     messageType.value = 'success'
 
     const redirectTo = router.currentRoute.value.query.redirect as string || '/'
@@ -188,7 +188,7 @@ async function handleLogin() {
 
   } catch (error) {
     console.error('Login Error:', error)
-    message.value = 'System Error. Please retry.'
+    message.value = '系统错误，请重试。'
     messageType.value = 'error'
   } finally {
     isLoading.value = false

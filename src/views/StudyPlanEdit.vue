@@ -17,7 +17,7 @@
           class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-[#1a3c34] hover:border-[#d4c5a3] transition-all rounded-sm text-xs font-bold uppercase tracking-widest group"
         >
           <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
-          Back to Plans
+          返回计划列表
         </button>
       </div>
 
@@ -38,7 +38,7 @@
       <!-- Loading State -->
       <div v-if="isLoading" class="bg-white p-12 shadow-xl border-t-8 border-[#1a3c34] text-center">
         <div class="w-12 h-12 border-4 border-[#d4c5a3] border-t-[#1a3c34] rounded-full animate-spin mx-auto"></div>
-        <p class="mt-4 text-[#1a3c34]/60 font-serif italic">Loading plan details...</p>
+        <p class="mt-4 text-[#1a3c34]/60 font-serif italic">正在加载计划详情...</p>
       </div>
 
       <!-- Edit Form -->
@@ -54,7 +54,7 @@
             </div>
             <div>
               <div class="text-xl font-bold text-[#1a3c34]">{{ completedHours }}h</div>
-              <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">Completed</div>
+              <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">已完成</div>
             </div>
             <div>
               <div class="text-xl font-bold text-[#1a3c34]">{{ editPlan.totalHours || 0 }}h</div>
@@ -151,7 +151,7 @@
                 @click="handleOpenResourceModal" 
                 class="px-3 bg-[#d4c5a3] text-[#1a3c34] font-bold text-xs uppercase hover:bg-[#c4b593]"
               >
-                Select
+                选择
               </button>
             </div>
             <input 
@@ -176,7 +176,7 @@
               @click="goBackToPlanList"
               class="flex-1 py-3 text-[#1a3c34] font-bold uppercase tracking-widest hover:underline transition-colors"
             >
-              Cancel
+              取消
             </button>
             <button 
               type="submit" 

@@ -141,11 +141,10 @@
       </div>
 
       <!-- === 右侧内容流 (文章列表) === -->
-      <div class="lg:col-span-3 space-y-6">
+      <div class="lg:col-span-3 space-y-6 -mt-8">
         
         <!-- 状态栏 -->
-        <div class="flex items-center justify-between pb-4 border-b border-[#1a3c34]/10">
-          <h2 class="text-xl font-serif font-bold text-[#1a3c34]">最新手稿</h2>
+        <div class="flex items-center justify-between pb-2">
           <div v-if="showSearchResults" class="text-sm text-[#1a3c34]/60 flex items-center gap-2">
             找到 {{ filteredPosts.length }} 条结果
             <button @click="clearSearch" class="text-[#b03e3e] hover:underline text-xs font-bold uppercase">清除</button>
@@ -630,7 +629,24 @@ const applySorting = () => {
    updatePagination();
 };
 
-onMounted(() => { loadPosts().then(loadPopularTags); });
+onMounted(() => { 
+  // 确保返回社区页面时回到顶部 - 使用更强制的方式
+  setTimeout(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 0);
+  loadPosts().then(loadPopularTags); 
+});
+
+onUnmounted(() => {
+  // 组件卸载时也强制重置滚动位置
+  setTimeout(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 0);
+});
 </script>
 
 <style scoped>

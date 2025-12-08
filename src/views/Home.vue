@@ -113,7 +113,7 @@ onMounted(() => {
       <div class="relative z-10 text-center px-6 parallax-layer-base">
          <div class="animate-fade-in-up">
             <span class="inline-block py-1 px-4 border border-[#d4c5a3]/30 text-[#d4c5a3] text-xs font-serif tracking-[0.2em] uppercase mb-6 rounded-full bg-[#0f281f]/50 backdrop-blur-sm">
-               成立于 2024 年
+               成立于 2025 年
             </span>
             <h1 class="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-[#f4f1ea] tracking-tight leading-[0.9] mb-8 text-shadow-lg">
                知识 <br />

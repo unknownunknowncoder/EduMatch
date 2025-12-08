@@ -49,8 +49,14 @@
          </button>
       </div>
 
+      <!-- Loading State -->
+      <div v-if="isLoadingPlans" class="bg-white p-16 shadow-xl border-t-8 border-[#1a3c34] text-center">
+         <div class="w-12 h-12 border-4 border-[#d4c5a3] border-t-[#1a3c34] rounded-full animate-spin mx-auto"></div>
+         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">正在加载您的学习计划...</p>
+      </div>
+
       <!-- Empty State -->
-      <div v-if="currentPlans.length === 0" class="bg-white p-16 shadow-xl border-t-8 border-[#1a3c34] text-center">
+      <div v-else-if="currentPlans.length === 0" class="bg-white p-16 shadow-xl border-t-8 border-[#1a3c34] text-center">
          <Calendar class="w-16 h-16 text-[#1a3c34]/20 mx-auto mb-6" />
          <h2 class="text-2xl font-serif font-bold text-[#1a3c34] mb-2">日程为空</h2>
          <p class="text-[#1a3c34]/60 font-serif italic mb-8">未找到活跃的学习计划。设置新目标。</p>
@@ -62,14 +68,8 @@
          </button>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="isLoadingPlans" class="bg-white p-16 shadow-xl border-t-8 border-[#1a3c34] text-center">
-         <div class="w-12 h-12 border-4 border-[#d4c5a3] border-t-[#1a3c34] rounded-full animate-spin mx-auto"></div>
-         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">加载您的学习计划...</p>
-      </div>
-
       <!-- Plan List -->
-      <div v-else-if="currentPlans.length > 0" class="space-y-6 mt-2">
+      <div v-else class="space-y-6 mt-2">
         <div 
           v-for="plan in currentPlans" 
           :key="plan.id"
@@ -249,7 +249,7 @@
              <button @click="showMyResourcesModal = false" class="text-[#1a3c34]/40 hover:text-[#1a3c34] hover:bg-[#1a3c34]/10 rounded-sm p-1 transition-all"><X class="w-5 h-5"/></button>
           </div>
           <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
-             <div v-if="isLoadingMyResources" class="text-center py-4 text-[#1a3c34]/40 italic">加载中...</div>
+             <div v-if="isLoadingMyResources" class="text-center py-4 text-[#1a3c34]/40 italic">资源加载中...</div>
              <div v-else-if="myResources.length === 0" class="text-center py-4 text-[#1a3c34]/40 italic">未找到资源。</div>
              <div v-else v-for="res in myResources" :key="res.id" @click="selectResource(res)" class="p-3 bg-white border border-[#1a3c34]/10 hover:border-[#1a3c34] cursor-pointer transition-colors">
                 <div class="font-bold text-[#1a3c34] text-sm">{{ res.title }}</div>

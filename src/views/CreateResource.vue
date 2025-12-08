@@ -10,18 +10,10 @@
       />
       <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#f4f1ea]"></div>
       
-      <!-- Back Button -->
-      <div class="absolute top-6 left-6 z-10">
-        <button 
-          @click="handleCancel" 
-          class="flex items-center gap-2 text-[#d4c5a3] hover:text-white transition-colors font-serif italic"
-        >
-          <ArrowLeft class="w-4 h-4" /> 返回搜索
-        </button>
-      </div>
+
       
       <div class="absolute bottom-8 left-0 right-0 p-8 text-center">
-         <h1 class="text-4xl md:text-5xl font-serif font-bold text-[#0f281f] mb-2">新建条目</h1>
+         <h1 class="text-4xl md:text-5xl font-serif font-bold text-[#0f281f] mb-2">新建资源</h1>
          <p class="text-[#0f281f]/60 font-serif italic tracking-wide">将新资源编录到档案中。</p>
       </div>
     </div>
@@ -174,7 +166,7 @@
               class="px-8 py-3 bg-[#0f281f] text-[#d4c5a3] rounded-sm font-bold uppercase tracking-widest hover:bg-[#1a4533] hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 group"
             >
               <span v-if="isSubmitting" class="w-4 h-4 border-2 border-[#d4c5a3] border-t-transparent rounded-full animate-spin"></span>
-              <span>{{ isSubmitting ? '归档中...' : '提交条目' }}</span>
+              <span>{{ isSubmitting ? '归档中...' : '发布资源' }}</span>
               <Save v-if="!isSubmitting" class="w-4 h-4 group-hover:scale-110 transition-transform" />
             </button>
           </div>
