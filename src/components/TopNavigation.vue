@@ -19,7 +19,7 @@
         </div>
         <div class="flex flex-col">
           <span class="text-xl font-serif font-bold text-[#f2f0e9] tracking-wide leading-none group-hover:text-[#d4c5a3] transition-colors">
-            学识库
+            EduMatch
           </span>
           <span class="text-[10px] text-[#d4c5a3]/60 uppercase tracking-[0.2em] font-medium group-hover:text-[#d4c5a3] transition-colors">
             学术档案

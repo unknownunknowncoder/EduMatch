@@ -40,7 +40,7 @@ class CozeAPIServiceProduction {
       environment: isProduction ? 'production' : 'development',
       mode: import.meta.env.MODE,
       baseUrl: this.baseUrl,
-      note: '直接调用 Netlify Functions'
+      note: '直接调用优化的 Netlify Functions (30秒超时)'
     })
   }
 
@@ -49,6 +49,9 @@ class CozeAPIServiceProduction {
    */
   async searchResources(request: CozeSearchRequest): Promise<CozeSearchResponse> {
     try {
+      console.log('🔍 开始搜索资源:', request.query)
+      const startTime = Date.now()
+      
       const response = await fetch(`${this.baseUrl}/chat`, {
         method: 'POST',
         headers: {
@@ -56,18 +59,30 @@ class CozeAPIServiceProduction {
         },
         body: JSON.stringify({
           query: request.query,
-          conversation_id: request.conversation_id,
+          bot_id: request.bot_id,
+          user_id: request.conversation_id || `user_${Date.now()}`,
           stream: false
         })
       })
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('Coze API 调用失败:', response.status, errorText)
+        const elapsed = Date.now() - startTime
+        console.error('Coze API 调用失败:', { 
+          status: response.status, 
+          errorText: errorText.substring(0, 200),
+          elapsed: `${elapsed}ms`
+        })
+        
+        if (response.status === 408) {
+          throw new Error('请求超时，请稍后重试')
+        }
         throw new Error(`Coze API 调用失败: ${response.status}`)
       }
 
       const data = await response.json()
+      const elapsed = Date.now() - startTime
+      console.log(`✅ API调用成功，耗时: ${elapsed}ms`)
       
       // 解析扣子返回的数据
       return this.parseCozeResponse(data)

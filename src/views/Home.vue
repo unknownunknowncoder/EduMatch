@@ -247,7 +247,7 @@ onMounted(() => {
           <BookOpen class="w-12 h-12 mx-auto mb-6 text-[#d4c5a3]" />
           <h2 class="text-3xl font-serif font-bold mb-4">准备好构建您的智慧了吗？</h2>
 
-          <div class="mt-12 text-white/30 text-sm font-serif">© 2025 学识库平台。保留所有权利。</div>
+          <div class="mt-12 text-white/30 text-sm font-serif">© 2025 EduMatch平台。保留所有权利。</div>
        </footer>
 
     </div>

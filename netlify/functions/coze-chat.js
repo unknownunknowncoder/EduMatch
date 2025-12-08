@@ -47,15 +47,13 @@ exports.handler = async (event) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        bot_id: process.env.COZE_BOT_ID,
-        user_id: "netlify_user_" + Date.now(),
+        bot_id: process.env.COZE_BOT_ID || '7573579561607331840',
+        conversation_id: "",
+        user: "netlify_user_" + Date.now(),
+        query: `请推荐${query}相关的优质学习资源，包括B站视频和中国大学MOOC课程。请以JSON格式返回，包含最推荐、其他推荐和学习建议。`,
+        chat_history: [],
         stream: false,
-        auto_save_history: false,
-        additional_messages: [{
-          role: "user",
-          content: query,
-          content_type: "text"
-        }]
+        custom_variables: {}
       })
     });
 
