@@ -126,6 +126,27 @@ class CozeAPIServiceProduction {
     console.log('🔍 开始解析扣子响应:', data)
     
     try {
+      // 处理被 success/error 包裹的情况，保证拿到最内层有效载荷
+      if (data?.success !== undefined && data?.data) {
+        console.log('🧭 发现 success/data 包裹，解包后解析')
+        data = data.data
+      }
+      if (data?.data?.success !== undefined && data?.data?.data) {
+        console.log('🧭 发现嵌套 success/data 结构，解包后解析')
+        data = data.data.data
+      }
+
+      // 优先展开一次 payload，避免嵌套 data 层导致遗漏
+      const directPayload = (data && typeof data === 'object' && !Array.isArray(data) && data.data && typeof data.data === 'object')
+        ? data.data
+        : data
+
+      // 如果直接是中文/标准结构则直接解析
+      if (directPayload && typeof directPayload === 'object' && (directPayload['最推荐'] || directPayload['其他推荐'] || directPayload['学习建议'])) {
+        console.log('✅ 检测到直接数据格式/中文字段')
+        return this.normalizeToCozeResponse(directPayload)
+      }
+
       // 检查响应是否直接包含所需数据结构
       if (data.data && typeof data.data === 'object') {
         console.log('✅ 检测到直接数据格式')
@@ -213,7 +234,14 @@ class CozeAPIServiceProduction {
       if (data['最推荐'] || data['其他推荐'] || data['学习建议']) {
         console.log('✅ 检测到中文字段格式')
         let topRecommendations = data['最推荐'] || []
-        const otherRecommendations = data['其他推荐'] || []
+        let otherRecommendations = data['其他推荐'] || []
+        
+        // 如果其他推荐为空，把最推荐里除第一个之外的项目兜底放入其他推荐
+        if ((!otherRecommendations || (Array.isArray(otherRecommendations) && otherRecommendations.length === 0)) 
+          && Array.isArray(topRecommendations) && topRecommendations.length > 1) {
+          console.log('🔄 其他推荐为空，使用最推荐的剩余项填充')
+          otherRecommendations = topRecommendations.slice(1)
+        }
         
         // 处理"最推荐"可能是数组的第一个元素，或者直接是对象
         let topRec
@@ -223,6 +251,13 @@ class CozeAPIServiceProduction {
         } else if (typeof topRecommendations === 'object' && topRecommendations !== null) {
           console.log('📊 最推荐是对象，直接使用')
           topRec = topRecommendations
+        }
+
+        // 如果最推荐缺失但有其他推荐，则使用其他推荐的第一条作为顶级推荐
+        if (!topRec && Array.isArray(otherRecommendations) && otherRecommendations.length > 0) {
+          console.log('🧭 最推荐缺失，使用其他推荐的第一条作为顶级推荐')
+          topRec = otherRecommendations[0]
+          otherRecommendations = otherRecommendations.slice(1)
         }
         
         // 合并学习建议和权威资料
