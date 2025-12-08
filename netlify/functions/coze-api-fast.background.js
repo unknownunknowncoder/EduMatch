@@ -1,10 +1,7 @@
 const fetch = require('node-fetch');
 
-// 快速响应版本的扣子API代理
+// Background Function版本 - 支持最长15分钟超时
 exports.handler = async (event, context) => {
-  // 设置函数不等待事件循环清空
-  context.callbackWaitsForEmptyEventLoop = false;
-  
   const startTime = Date.now();
   
   // 设置 CORS 头
@@ -43,11 +40,11 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log('🚀 快速扣子API请求 (45秒超时):', { 
+    console.log('🚀 Background扣子API请求 (15分钟超时):', { 
       query: query.substring(0, 50) + '...', 
       bot_id, 
       user_id,
-      function_timeout: '45s'
+      function_type: 'background_function'
     });
     
     // 获取配置
@@ -62,26 +59,25 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // 极简化的扣子API调用 - 优化速度确保30秒内完成
+    // 扣子API调用 - Background Function 支持15分钟
     const cozeApiUrl = `https://api.coze.cn/open_api/v2/chat`;
     const requestBody = {
       bot_id: bot_id || defaultBotId,
-      user: user_id || `netlify_user_${Date.now()}`,
-      query: query.substring(0, 100), // 限制查询长度
+      user: user_id || `bg_user_${Date.now()}`,
+      query: query,
       stream: false
-      // 最简化请求，只包含必需字段
     };
 
-    console.log('📡 调用扣子API (快速模式):', {
+    console.log('📡 调用扣子API (Background模式，15分钟超时):', {
       url: cozeApiUrl,
       bot_id: bot_id || defaultBotId,
       query_length: query.length
     });
 
     try {
-      // 精确设置超时时间，避免与Netlify的30秒限制冲突
+      // Background Function 可以设置更长的超时时间
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 28000); // 28秒，留2秒缓冲给Netlify
+      const timeout = setTimeout(() => controller.abort(), 840000); // 14分钟，留1分钟缓冲
 
       const cozeResponse = await fetch(cozeApiUrl, {
         method: 'POST',
@@ -89,11 +85,10 @@ exports.handler = async (event, context) => {
           'Authorization': `Bearer ${apiToken}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'User-Agent': 'EduMatch-Netlify-Function/1.0'
+          'User-Agent': 'EduMatch-Background-Function/1.0'
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal
-        // 移除 node-fetch 的 timeout 参数，只使用 AbortController
       });
 
       clearTimeout(timeout);
@@ -129,7 +124,6 @@ exports.handler = async (event, context) => {
       try {
         response = JSON.parse(responseText);
         console.log('📊 响应结构:', Object.keys(response));
-        
       } catch (parseError) {
         console.log('📝 响应不是JSON格式，返回原始文本');
         response = { 
@@ -146,7 +140,8 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({
           success: true,
           data: response,
-          elapsed: elapsed
+          elapsed: elapsed,
+          function_type: 'background'
         })
       };
 
@@ -161,7 +156,7 @@ exports.handler = async (event, context) => {
           body: JSON.stringify({ 
             success: false, 
             error: 'Request timeout',
-            message: '扣子API响应超时',
+            message: '扣子API响应超时（Background Function）',
             elapsed: elapsed
           })
         };
@@ -172,7 +167,7 @@ exports.handler = async (event, context) => {
 
   } catch (error) {
     const elapsed = Date.now() - startTime;
-    console.error('💥 快速 Netlify Function 错误:', error);
+    console.error('💥 Background Netlify Function 错误:', error);
     
     return {
       statusCode: 500,

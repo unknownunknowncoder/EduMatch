@@ -33,14 +33,14 @@ class CozeAPIServiceProduction {
   private baseUrl: string
 
   constructor() {
-    // 生产环境直接调用 Netlify Functions，开发环境使用本地 Functions
+    // 生产环境使用 Background Function (15分钟超时)，开发环境使用本地 Functions
     const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'production'
     this.baseUrl = isProduction ? '/.netlify/functions/coze-api-fast' : 'http://localhost:9999/.netlify/functions/coze-api-fast'
     console.log('Coze API配置:', { 
       environment: isProduction ? 'production' : 'development',
       mode: import.meta.env.MODE,
       baseUrl: this.baseUrl,
-      note: '使用快速响应的 Netlify Functions (45秒超时 + 优化请求)'
+      note: '使用 Background Functions (15分钟超时) - 彻底解决超时问题'
     })
   }
 
@@ -56,9 +56,9 @@ class CozeAPIServiceProduction {
         console.log(`🔍 开始搜索资源 (尝试 ${attempt}/${maxRetries}):`, request.query)
         const startTime = Date.now()
         
-        // 创建 AbortController，设置更长的超时时间测试
+        // 创建 AbortController，Background Function 支持15分钟超时
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 60000) // 60秒超时，测试实际限制
+        const timeoutId = setTimeout(() => controller.abort(), 300000) // 5分钟超时，给充分时间处理
         
       // 直接调用优化的函数，不需要 /chat 路径
       const response = await fetch(`${this.baseUrl}`, {
