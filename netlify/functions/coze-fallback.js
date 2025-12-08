@@ -42,7 +42,7 @@ exports.handler = async (event) => {
 
     console.log('🔍 后备API请求:', query);
 
-    // 直接构建响应，不依赖外部API
+    // 直接构建响应，不依赖外部API - 返回英文格式
     const result = {
       top_recommendation: {
         name: `${query} - 推荐学习资源`,

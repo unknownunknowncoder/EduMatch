@@ -201,10 +201,56 @@ class CozeAPIServiceProduction {
    */
   private normalizeToCozeResponse(data: any): CozeSearchResponse {
     try {
-      // 处理不同的数据格式
+      console.log('🔍 标准化数据格式，原始keys:', Object.keys(data))
       
-      // 格式1: { top: {...}, others: [...], advice: "..." }
+      // 处理中文字段格式：{ 最推荐: [...], 其他推荐: [...], 学习建议: "..." }
+      if (data['最推荐'] || data['其他推荐'] || data['学习建议']) {
+        console.log('✅ 检测到中文字段格式')
+        const topRecommendations = data['最推荐'] || []
+        const otherRecommendations = data['其他推荐'] || []
+        
+        // 合并学习建议和权威资料
+        let learningAdvice = data['学习建议'] || ''
+        if (data['权威资料与工具'] && Array.isArray(data['权威资料与工具'])) {
+          const authoritativeResources = data['权威资料与工具'].map((item: any) => 
+            `${item['网站/文档名称']}：${item['核心价值']}`
+          ).join('；')
+          learningAdvice += learningAdvice ? '\n\n权威资源：' + authoritativeResources : '权威资源：' + authoritativeResources
+        }
+        
+        if (!learningAdvice) {
+          learningAdvice = '建议制定合理的学习计划，循序渐进地学习。'
+        }
+        
+        const topRec = topRecommendations[0]
+        
+        return {
+          top_recommendation: {
+            name: topRec?.['资源标题'] || topRec?.['网站/文档名称'] || '推荐资源',
+            platform: topRec?.['来源平台'] || 'B站',
+            difficulty: '入门',
+            duration: '2小时',
+            study_data: topRec?.['学习数据'] || '推荐学习资源',
+            brief_description: topRec?.['推荐理由'] || '优质学习资源',
+            reason: topRec?.['推荐理由'] || 'AI推荐',
+            url: this.buildChineseUrl(topRec?.['访问/观看'], topRec?.['访问指引'], topRec?.['资源标题'])
+          },
+          other_recommendations: otherRecommendations.slice(0, 4).map((item: any) => ({
+            name: item['资源标题'] || item['网站/文档名称'] || '其他资源',
+            platform: item['来源平台'] || 'B站',
+            difficulty: '入门',
+            duration: this.extractChineseDuration(item['学习数据']),
+            study_data: item['学习数据'] || item['核心价值'] || '学习资源',
+            brief_description: item['推荐理由'] || '相关资源',
+            url: this.buildChineseUrl(item['访问/观看'], item['访问指引'], item['资源标题'])
+          })),
+          learning_advice: learningAdvice
+        }
+      }
+      
+      // 处理英文字段格式：{ top: {...}, others: [...], advice: "..." }
       if (data.top || data.others || data.advice) {
+        console.log('✅ 检测到英文字段格式')
         return {
           top_recommendation: {
             name: data.top?.title || data.top?.name || '推荐资源',
@@ -324,6 +370,62 @@ class CozeAPIServiceProduction {
       other_recommendations: [],
       learning_advice: '请稍后重试或联系管理员获取帮助。'
     }
+  }
+
+  /**
+   * 处理中文URL构建
+   */
+  private buildChineseUrl(accessUrl?: string, accessGuide?: string, title?: string): string {
+    // 优先处理直接的URL
+    if (accessUrl && accessUrl.startsWith('http')) {
+      return accessUrl
+    }
+    
+    // 处理B站BV号
+    if (accessUrl && accessUrl.startsWith('BV')) {
+      return `https://www.bilibili.com/video/${accessUrl}`
+    }
+    
+    // 处理B站课程链接
+    if (accessUrl && accessUrl.includes('bilibili.com/cheese')) {
+      return accessUrl
+    }
+    
+    // 根据标题生成搜索链接
+    if (title) {
+      return `https://www.bilibili.com/search?keyword=${encodeURIComponent(title)}`
+    }
+    
+    return 'https://www.bilibili.com'
+  }
+
+  /**
+   * 从中文学习数据中提取时长
+   */
+  private extractChineseDuration(studyData?: string): string {
+    if (!studyData) return '2小时'
+    
+    // 匹配 "时长 2203:44" 格式
+    const timeMatch = studyData.match(/时长\s*(\d+):(\d+)/)
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1])
+      const minutes = parseInt(timeMatch[2])
+      return `${hours + Math.ceil(minutes / 60)}小时`
+    }
+    
+    // 匹配 "播放量 13474759" 格式中的时长信息（如果有）
+    const durationMatch = studyData.match(/(\d+(\.\d+)?)\s*[小时小时]/)
+    if (durationMatch) {
+      return durationMatch[1] + '小时'
+    }
+    
+    // 匹配分钟格式
+    const minuteMatch = studyData.match(/(\d+)\s*[分钟分]/)
+    if (minuteMatch) {
+      return Math.ceil(Number(minuteMatch[1]) / 60) + '小时'
+    }
+    
+    return '2小时'
   }
 
   /**
