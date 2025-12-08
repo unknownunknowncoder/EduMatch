@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-// 优化的扣子API代理，增加超时处理和重试机制
+// 快速响应版本的扣子API代理
 exports.handler = async (event) => {
   const startTime = Date.now();
   
@@ -40,7 +40,7 @@ exports.handler = async (event) => {
       };
     }
 
-    console.log('🔍 收到扣子API请求:', { query, bot_id, user_id });
+    console.log('🚀 快速扣子API请求:', { query, bot_id, user_id });
     
     // 获取配置
     const apiToken = process.env.COZE_API_TOKEN;
@@ -54,51 +54,54 @@ exports.handler = async (event) => {
       };
     }
 
-    // 扣子API调用，设置更长的超时时间，但要在Netlify限制内
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 50000); // 50秒超时（Netlify最大限制）
-
+    // 简化的扣子API调用
     const cozeApiUrl = `https://api.coze.cn/open_api/v2/chat`;
     const requestBody = {
       conversation_id: "",
       bot_id: bot_id || defaultBotId,
       user: user_id || `netlify_user_${Date.now()}`,
-      query: query, // 直接使用原始查询，避免额外的提示词增加处理时间
+      query: query, // 简化查询
       chat_history: [],
       stream: false,
       custom_variables: {}
     };
 
-    console.log('📡 调用扣子API:', {
+    console.log('📡 调用扣子API (快速模式):', {
       url: cozeApiUrl,
       bot_id: bot_id || defaultBotId,
       query_length: query.length
     });
 
     try {
+      // 设置更短的超时时间，避免Netlify函数超时
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000); // 45秒超时
+
       const cozeResponse = await fetch(cozeApiUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${apiToken}`,
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'User-Agent': 'EduMatch-Netlify-Function/1.0'
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal,
-        timeout: 50000
+        timeout: 45000
       });
 
       clearTimeout(timeout);
 
+      const elapsed = Date.now() - startTime;
       console.log('📡 扣子API响应状态:', cozeResponse.status);
-      console.log('⏱️ 请求耗时:', Date.now() - startTime, 'ms');
+      console.log('⏱️ 总请求耗时:', elapsed, 'ms');
 
       if (!cozeResponse.ok) {
         const errorText = await cozeResponse.text();
         console.error('❌ 扣子API错误:', {
           status: cozeResponse.status,
           statusText: cozeResponse.statusText,
-          body: errorText
+          body: errorText.substring(0, 500)
         });
         
         return {
@@ -106,9 +109,9 @@ exports.handler = async (event) => {
           headers,
           body: JSON.stringify({ 
             success: false, 
-            error: `扣子API错误: ${cozeResponse.status} ${cozeResponse.statusText}`,
-            details: errorText,
-            elapsed: Date.now() - startTime
+            error: `扣子API错误: ${cozeResponse.status}`,
+            details: errorText.substring(0, 200),
+            elapsed: elapsed
           })
         };
       }
@@ -120,12 +123,6 @@ exports.handler = async (event) => {
       try {
         response = JSON.parse(responseText);
         console.log('📊 响应结构:', Object.keys(response));
-        
-        // 检查是否是新的API格式
-        if (response.messages && response.messages.length > 0) {
-          const lastMessage = response.messages[response.messages.length - 1];
-          console.log('💬 提取消息内容:', lastMessage.content ? lastMessage.content.substring(0, 100) + '...' : '无内容');
-        }
         
       } catch (parseError) {
         console.log('📝 响应不是JSON格式，返回原始文本');
@@ -143,12 +140,12 @@ exports.handler = async (event) => {
         body: JSON.stringify({
           success: true,
           data: response,
-          elapsed: Date.now() - startTime
+          elapsed: elapsed
         })
       };
 
     } catch (fetchError) {
-      clearTimeout(timeout);
+      const elapsed = Date.now() - startTime;
       
       if (fetchError.name === 'AbortError') {
         console.error('❌ 请求超时:', fetchError);
@@ -158,7 +155,8 @@ exports.handler = async (event) => {
           body: JSON.stringify({ 
             success: false, 
             error: 'Request timeout',
-            message: '扣子API响应超时，请稍后重试'
+            message: '扣子API响应超时',
+            elapsed: elapsed
           })
         };
       }
@@ -167,7 +165,8 @@ exports.handler = async (event) => {
     }
 
   } catch (error) {
-    console.error('💥 Netlify Function 错误:', error);
+    const elapsed = Date.now() - startTime;
+    console.error('💥 快速 Netlify Function 错误:', error);
     
     return {
       statusCode: 500,
@@ -175,7 +174,7 @@ exports.handler = async (event) => {
       body: JSON.stringify({ 
         success: false, 
         error: error.message,
-        elapsed: Date.now() - startTime
+        elapsed: elapsed
       })
     };
   }

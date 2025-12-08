@@ -35,12 +35,12 @@ class CozeAPIServiceProduction {
   constructor() {
     // 生产环境直接调用 Netlify Functions，开发环境使用本地 Functions
     const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'production'
-    this.baseUrl = isProduction ? '/.netlify/functions/coze-api-timeout' : 'http://localhost:9999/.netlify/functions/coze-api-timeout'
+    this.baseUrl = isProduction ? '/.netlify/functions/coze-api-fast' : 'http://localhost:9999/.netlify/functions/coze-api-fast'
     console.log('Coze API配置:', { 
       environment: isProduction ? 'production' : 'development',
       mode: import.meta.env.MODE,
       baseUrl: this.baseUrl,
-      note: '使用优化的 Netlify Functions with timeout handling (35秒超时 + 重试机制)'
+      note: '使用快速响应的 Netlify Functions (45秒超时 + 优化请求)'
     })
   }
 
@@ -56,9 +56,9 @@ class CozeAPIServiceProduction {
         console.log(`🔍 开始搜索资源 (尝试 ${attempt}/${maxRetries}):`, request.query)
         const startTime = Date.now()
         
-        // 创建 AbortController，设置更长的超时时间
+        // 创建 AbortController，设置与Netlify Function一致的超时时间
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 35000) // 35秒超时
+        const timeoutId = setTimeout(() => controller.abort(), 50000) // 50秒超时，给Netlify Function留足时间
         
       // 直接调用优化的函数，不需要 /chat 路径
       const response = await fetch(`${this.baseUrl}`, {
@@ -67,7 +67,7 @@ class CozeAPIServiceProduction {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: request.query,
+          query: request.query, // 保持查询简洁
           bot_id: request.bot_id,
           user_id: request.conversation_id || `user_${Date.now()}`,
           stream: false
