@@ -35,12 +35,12 @@ class CozeAPIServiceProduction {
   constructor() {
     // 生产环境直接调用 Netlify Functions，开发环境使用本地 Functions
     const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'production'
-    this.baseUrl = isProduction ? '/api/coze' : 'http://localhost:9999/.netlify/functions/coze-api'
+    this.baseUrl = isProduction ? '/.netlify/functions/coze-api-timeout' : 'http://localhost:9999/.netlify/functions/coze-api-timeout'
     console.log('Coze API配置:', { 
       environment: isProduction ? 'production' : 'development',
       mode: import.meta.env.MODE,
       baseUrl: this.baseUrl,
-      note: '直接调用优化的 Netlify Functions (30秒超时)'
+      note: '使用优化的 Netlify Functions with timeout handling (35秒超时 + 重试机制)'
     })
   }
 
@@ -48,11 +48,20 @@ class CozeAPIServiceProduction {
    * 搜索教育资源
    */
   async searchResources(request: CozeSearchRequest): Promise<CozeSearchResponse> {
-    try {
-      console.log('🔍 开始搜索资源:', request.query)
-      const startTime = Date.now()
-      
-      const response = await fetch(`${this.baseUrl}/chat`, {
+    const maxRetries = 2
+    let lastError: any = null
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔍 开始搜索资源 (尝试 ${attempt}/${maxRetries}):`, request.query)
+        const startTime = Date.now()
+        
+        // 创建 AbortController，设置更长的超时时间
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 35000) // 35秒超时
+        
+      // 直接调用优化的函数，不需要 /chat 路径
+      const response = await fetch(`${this.baseUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,35 +71,65 @@ class CozeAPIServiceProduction {
           bot_id: request.bot_id,
           user_id: request.conversation_id || `user_${Date.now()}`,
           stream: false
-        })
+        }),
+        signal: controller.signal
       })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        const elapsed = Date.now() - startTime
-        console.error('Coze API 调用失败:', { 
-          status: response.status, 
-          errorText: errorText.substring(0, 200),
-          elapsed: `${elapsed}ms`
-        })
-        
-        if (response.status === 408) {
-          throw new Error('请求超时，请稍后重试')
-        }
-        throw new Error(`Coze API 调用失败: ${response.status}`)
-      }
+        clearTimeout(timeoutId)
 
-      const data = await response.json()
-      const elapsed = Date.now() - startTime
-      console.log(`✅ API调用成功，耗时: ${elapsed}ms`)
-      
-      // 解析扣子返回的数据
-      return this.parseCozeResponse(data)
-      
-    } catch (error) {
-      console.error('搜索教育资源失败:', error)
-      throw error
+        if (!response.ok) {
+          const errorText = await response.text()
+          const elapsed = Date.now() - startTime
+          console.error('Coze API 调用失败:', { 
+            status: response.status, 
+            errorText: errorText.substring(0, 200),
+            elapsed: `${elapsed}ms`
+          })
+          
+          if (response.status === 408) {
+            throw new Error('请求超时，请稍后重试')
+          }
+          throw new Error(`Coze API 调用失败: ${response.status}`)
+        }
+
+        const data = await response.json()
+        const elapsed = Date.now() - startTime
+        console.log(`✅ API调用成功，耗时: ${elapsed}ms`)
+        
+        // 解析扣子返回的数据
+        const result = this.parseCozeResponse(data)
+        
+        // 检查解析结果是否包含错误信息
+        if (result.top_recommendation.name.includes('API响应解析失败') || 
+            result.learning_advice.includes('系统暂时不可用') ||
+            result.learning_advice.includes('请稍后重试')) {
+          throw new Error('解析结果包含错误信息，可能需要重试')
+        }
+        
+        // 成功返回结果
+        return result
+        
+      } catch (error: any) {
+        lastError = error
+        console.error(`搜索教育资源失败 (尝试 ${attempt}/${maxRetries}):`, error)
+        
+        // 特殊处理请求中止错误
+        if (error.name === 'AbortError') {
+          lastError = new Error('AI响应超时，请稍后重试。扣子智能体正在为您处理中...')
+        }
+        
+        // 如果是最后一次尝试，抛出错误
+        if (attempt === maxRetries) {
+          break
+        }
+        
+        // 等待一段时间后重试
+        console.log(`⏳ 等待2秒后重试...`)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
     }
+    
+    throw lastError || new Error('搜索教育资源失败')
   }
 
   /**
@@ -237,6 +276,18 @@ class CozeAPIServiceProduction {
         console.log('✅ 检测到中文字段格式')
         let topRecommendations = data['最推荐'] || []
         let otherRecommendations = data['其他推荐'] || []
+        let learningAdvice = data['学习建议'] || ''
+        
+        // 检测是否是错误响应数据
+        if (learningAdvice && (
+          learningAdvice.includes('网络连接暂时不稳定') || 
+          learningAdvice.includes('系统暂时不可用') ||
+          learningAdvice.includes('请稍后重试') ||
+          learningAdvice.includes('无法解析')
+        )) {
+          console.log('⚠️ 检测到错误响应数据，重新获取数据')
+          throw new Error('扣子API返回了错误响应，可能是网络超时导致的')
+        }
         
         // 如果其他推荐为空，把最推荐里除第一个之外的项目兜底放入其他推荐
         if ((!otherRecommendations || (Array.isArray(otherRecommendations) && otherRecommendations.length === 0)) 
@@ -263,7 +314,6 @@ class CozeAPIServiceProduction {
         }
         
         // 合并学习建议和权威资料
-        let learningAdvice = data['学习建议'] || ''
         if (data['权威资料与工具'] && Array.isArray(data['权威资料与工具'])) {
           const authoritativeResources = data['权威资料与工具'].map((item: any) => 
             `${item['网站/文档名称']}：${item['核心价值']}`
