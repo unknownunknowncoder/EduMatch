@@ -4,9 +4,6 @@
 
 [functions]
   directory = "netlify/functions"
-  node_version = "18"
-  # 设置函数超时时间为最大值（Netlify Pro计划的限制）
-  included_files = ["**"]
 
 [[redirects]]
   from = "/api/*"
@@ -15,9 +12,3 @@
 
 [build.environment]
   NODE_VERSION = "18"
-
-# 开发环境配置
-[dev]
-  command = "npm run dev"
-  functions = "netlify/functions"
-  publish = "dist"
