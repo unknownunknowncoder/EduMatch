@@ -4,11 +4,6 @@
 
 [functions]
   directory = "netlify/functions"
-  timeout = 10  # 全局默认10秒
-
-# 为 coze-api-fast 函数单独设置最大超时
-[functions."coze-api-fast"]
-  timeout = 26  # Business计划最大26秒
 
 [[redirects]]
   from = "/api/*"

@@ -35,6 +35,7 @@ class CozeAPIServiceProduction {
   constructor() {
     // 生产环境使用 Background Function (15分钟超时)，开发环境使用本地 Functions
     const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'production'
+    // Background Function 的调用路径不同
     this.baseUrl = isProduction ? '/.netlify/functions/coze-api-fast' : 'http://localhost:9999/.netlify/functions/coze-api-fast'
     console.log('Coze API配置:', { 
       environment: isProduction ? 'production' : 'development',
