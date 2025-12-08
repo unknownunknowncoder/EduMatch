@@ -188,10 +188,12 @@ class CozeAPIServiceProduction {
       }
       
       // 尝试解析JSON内容
+      console.log('📄 消息内容预览:', content.substring(0, 200))
       const jsonData = this.extractJsonFromContent(content)
       
       if (!jsonData) {
         console.log('⚠️ 无法解析JSON，返回基于文本的响应')
+        console.log('📄 完整消息内容:', content)
         return this.createTextBasedResponse(content)
       }
 
@@ -275,6 +277,12 @@ class CozeAPIServiceProduction {
         
         console.log('🎯 顶级推荐:', topRec?.['资源标题']?.substring(0, 50))
         console.log('📚 其他推荐数量:', otherRecommendations.length)
+        console.log('🔍 调试信息:', {
+          topRecommendations: Array.isArray(topRecommendations) ? topRecommendations.length : 'not array',
+          topRec: topRec ? 'exists' : 'null/undefined',
+          topRecKeys: topRec ? Object.keys(topRec) : [],
+          topRecTitle: topRec?.['资源标题']
+        })
         
         return {
           top_recommendation: {
@@ -285,7 +293,7 @@ class CozeAPIServiceProduction {
             study_data: topRec?.['学习数据'] || '推荐学习资源',
             brief_description: topRec?.['推荐理由'] || '优质学习资源',
             reason: topRec?.['推荐理由'] || 'AI推荐',
-            url: this.buildChineseUrl(topRec?.['访问/观看'], topRec?.['访问指引'], topRec?.['资源标题'])
+            url: this.buildChineseUrl(topRec?.['访问/观看'], undefined, topRec?.['资源标题'])
           },
           other_recommendations: otherRecommendations.slice(0, 4).map((item: any) => ({
             name: item['资源标题'] || item['网站/文档名称'] || '其他资源',
@@ -294,7 +302,7 @@ class CozeAPIServiceProduction {
             duration: this.extractChineseDuration(item['学习数据']),
             study_data: item['学习数据'] || item['核心价值'] || '学习资源',
             brief_description: item['推荐理由'] || '相关资源',
-            url: this.buildChineseUrl(item['访问/观看'], item['访问指引'], item['资源标题'])
+            url: this.buildChineseUrl(item['访问/观看'], undefined, item['资源标题'])
           })),
           learning_advice: learningAdvice
         }
@@ -427,20 +435,20 @@ class CozeAPIServiceProduction {
   /**
    * 处理中文URL构建
    */
-  private buildChineseUrl(accessUrl?: string, accessGuide?: string, title?: string): string {
+  private buildChineseUrl(accessWatch?: string, accessGuide?: string, title?: string): string {
     // 优先处理直接的URL
-    if (accessUrl && accessUrl.startsWith('http')) {
-      return accessUrl
+    if (accessWatch && accessWatch.startsWith('http')) {
+      return accessWatch
     }
     
     // 处理B站BV号
-    if (accessUrl && accessUrl.startsWith('BV')) {
-      return `https://www.bilibili.com/video/${accessUrl}`
+    if (accessWatch && accessWatch.startsWith('BV')) {
+      return `https://www.bilibili.com/video/${accessWatch}`
     }
     
     // 处理B站课程链接
-    if (accessUrl && accessUrl.includes('bilibili.com/cheese')) {
-      return accessUrl
+    if (accessWatch && accessWatch.includes('bilibili.com/cheese')) {
+      return accessWatch
     }
     
     // 根据标题生成搜索链接
@@ -485,24 +493,34 @@ class CozeAPIServiceProduction {
    */
   private extractJsonFromContent(content: string): any {
     try {
+      console.log('🔍 尝试解析JSON，内容长度:', content.length)
+      
       // 查找JSON块
       const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/)
       if (jsonMatch) {
+        console.log('✅ 找到JSON块，尝试解析')
         return JSON.parse(jsonMatch[1])
       }
       
       // 尝试直接解析整个内容
+      console.log('🔄 尝试直接解析整个内容')
       return JSON.parse(content)
-    } catch {
+    } catch (error) {
+      console.log('❌ JSON解析失败:', error)
       // 尝试查找对象模式
       const objectMatch = content.match(/\{[\s\S]*\}/)
       if (objectMatch) {
+        console.log('🔍 找到对象模式，尝试解析')
         try {
-          return JSON.parse(objectMatch[0])
-        } catch {
+          const result = JSON.parse(objectMatch[0])
+          console.log('✅ 对象模式解析成功')
+          return result
+        } catch (error) {
+          console.log('❌ 对象模式解析失败:', error)
           return null
         }
       }
+      console.log('❌ 未找到任何JSON对象')
       return null
     }
   }
