@@ -56,9 +56,9 @@ class CozeAPIServiceProduction {
         console.log(`🔍 开始搜索资源 (尝试 ${attempt}/${maxRetries}):`, request.query)
         const startTime = Date.now()
         
-        // 创建 AbortController，设置与Netlify Function一致的超时时间
+        // 创建 AbortController，设置更长的超时时间测试
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 46000) // 46秒超时，给Netlify Function留足时间
+        const timeoutId = setTimeout(() => controller.abort(), 60000) // 60秒超时，测试实际限制
         
       // 直接调用优化的函数，不需要 /chat 路径
       const response = await fetch(`${this.baseUrl}`, {

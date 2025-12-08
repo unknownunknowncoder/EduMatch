@@ -79,9 +79,9 @@ exports.handler = async (event, context) => {
     });
 
     try {
-      // 设置与Netlify Functions配置一致的超时时间：45秒
+      // 设置更长的超时时间，测试是否是内部超时限制
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 43000); // 43秒，留2秒缓冲给Netlify处理
+      const timeout = setTimeout(() => controller.abort(), 58000); // 58秒，测试实际限制
 
       const cozeResponse = await fetch(cozeApiUrl, {
         method: 'POST',
@@ -92,8 +92,8 @@ exports.handler = async (event, context) => {
           'User-Agent': 'EduMatch-Netlify-Function/1.0'
         },
         body: JSON.stringify(requestBody),
-        signal: controller.signal,
-        timeout: 45000
+        signal: controller.signal
+        // 移除 node-fetch 的 timeout 参数，只使用 AbortController
       });
 
       clearTimeout(timeout);

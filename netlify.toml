@@ -5,10 +5,6 @@
 [functions]
   directory = "netlify/functions"
 
-[[functions]]
-  name = "coze-api-fast"
-  timeout = 45
-
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
