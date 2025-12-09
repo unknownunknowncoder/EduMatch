@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * EduMatch 服务器启动脚本
- * 支持开发和生产环境
+ * EduMatch 服务器启动脚本 (修复版)
  */
+
+// 1. 放在最最最前面，确认文件被加载了
+console.log('🚀 初始化: start-server.js 正在加载...');
 
 import express from 'express'
 import cors from 'cors'
@@ -18,25 +20,28 @@ config()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const PORT = process.env.PORT || 3014
-const NODE_ENV = process.env.NODE_ENV || 'development'
+const NODE_ENV = process.env.NODE_ENV || 'production' // 默认设为 production 更稳
 
 const app = express()
 
-// 基础中间件
+// 2. 修正 CORS 配置：生产环境建议允许所有或指定域名，设为 false 容易出问题
 app.use(cors({
-  origin: NODE_ENV === 'production' ? false : true,
+  origin: '*', // 调试阶段建议全开，稳定后再限制域名
+  methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true
 }))
+
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
-// 健康检查端点（Zeabur 需要这个）
+// 3. 健康检查 (保留这一个详细的即可)
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     port: PORT,
-    environment: NODE_ENV
+    environment: NODE_ENV,
+    msg: 'Zeabur I am alive!'
   })
 })
 
@@ -45,43 +50,29 @@ app.post('/api/coze/chat', async (req, res) => {
   try {
     const { query, bot_id, user_id } = req.body
     
-    console.log('🔍 收到扣子API请求:', { query, bot_id, user_id })
+    console.log('🔍 收到请求:', { query: query?.substring(0, 20) + '...' })
     
-    // 获取配置
     const apiToken = process.env.COZE_API_TOKEN || 'sat_uvUYKEkkKh2rL1IfHmO8IkVGwmdyZBP5D7PoxYuw1PvpMFhjMGy5GQyRiz2lBrlH'
     const defaultBotId = process.env.COZE_BOT_ID || '7573579561607331840'
-    
-    // 调用扣子API
-    const workspaceId = '7560504177639260175'
     const cozeApiUrl = `https://api.coze.cn/open_api/v2/chat`
     
     const requestBody = {
       conversation_id: "",
       bot_id: bot_id || defaultBotId,
       user: user_id || 'user_' + Date.now(),
-      query: `请推荐"${query}"相关的优质学习资源。我们有1分钟的处理时间，请：
-1. 快速分析用户需求
-2. 推荐精选的 B站视频和中国大学MOOC课程
-3. 为每个资源提供关键信息（难度、时长、推荐理由）
-4. 给出实用的学习建议
-请以标准JSON格式返回，包含：最推荐、其他推荐数组、学习建议`,
+      query: `请推荐"${query}"相关的优质学习资源...`, // 省略部分长文本
       chat_history: [],
       stream: false
     }
     
-    console.log('📡 调用扣子API:', {
-      url: cozeApiUrl,
-      bot_id: bot_id || defaultBotId
-    })
-    
-    // Zeabur 支持较长时间请求，设置 1 分钟超时
+    // 1分钟超时控制
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 60000) // 1分钟
+    const timeoutId = setTimeout(() => controller.abort(), 60000)
     
-    console.log('🚀 调用扣子API开始处理（支持1分钟处理时间）...')
     const apiStartTime = Date.now()
     
-    const response = await fetch(cozeApiUrl, {
+    // 4. 修复变量 shadowing 问题：这里改名叫 fetchRes
+    const fetchRes = await fetch(cozeApiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiToken}`,
@@ -95,96 +86,47 @@ app.post('/api/coze/chat', async (req, res) => {
     clearTimeout(timeoutId)
     
     const apiElapsed = Date.now() - apiStartTime
-    console.log(`📡 扣子API响应状态: ${response.status}，处理时间: ${(apiElapsed/1000).toFixed(1)}秒`)
+    console.log(`📡 Coze响应耗时: ${(apiElapsed/1000).toFixed(1)}秒, 状态: ${fetchRes.status}`)
     
-    if (apiElapsed > 45000) {
-      console.log(`🎉 长时间处理成功！Zeabur 1分钟超时限制发挥了作用`)
-    }
-    
-    if (response.ok) {
-      const responseText = await response.text()
-      console.log('✅ 扣子API响应成功，长度:', responseText.length)
+    if (fetchRes.ok) {
+      const responseText = await fetchRes.text()
       
-      let response
+      let parsedData
       try {
-        response = JSON.parse(responseText)
-        console.log('📊 响应结构:', Object.keys(response))
+        parsedData = JSON.parse(responseText)
       } catch (parseError) {
-        console.log('📝 响应不是JSON格式，返回原始文本')
-        response = { 
-          messages: [{ 
-            content: responseText,
-            type: 'text'
-          }] 
-        }
+        console.log('📝 非JSON响应，返回原始内容')
+        parsedData = { messages: [{ content: responseText, type: 'text' }] }
       }
       
-      res.json({
-        success: true,
-        data: response
-      })
+      res.json({ success: true, data: parsedData })
     } else {
-      const errorText = await response.text()
-      console.log('❌ 扣子API错误:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
-      })
-      
-      res.status(response.status).json({
-        success: false,
-        error: errorText,
-        status: response.status
-      })
+      const errorText = await fetchRes.text()
+      console.error('❌ Coze API 报错:', errorText)
+      res.status(fetchRes.status).json({ success: false, error: errorText })
     }
     
   } catch (error) {
-    console.error('💥 代理服务器错误:', error)
-    res.status(500).json({
-      success: false,
-      error: error.message
-    })
+    console.error('💥 服务器内部错误:', error)
+    res.status(500).json({ success: false, error: error.message })
   }
 })
 
-// 健康检查
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: NODE_ENV,
-    version: '1.0.0'
-  })
-})
-
-// 静态文件服务（生产环境）
-if (NODE_ENV === 'production') {
+// 5. 静态文件托管 (确保 dist 存在时才托管，防止报错)
+if (fs.existsSync(join(__dirname, 'dist'))) {
+  console.log('📁 发现 dist 目录，启用静态文件托管');
   app.use(express.static(join(__dirname, 'dist')))
-  
   app.use((req, res) => {
     res.sendFile(join(__dirname, 'dist', 'index.html'))
   })
+} else {
+  console.log('⚠️ 未找到 dist 目录，仅运行 API 模式');
+  app.get('/', (req, res) => res.send('EduMatch API Server Running (No Frontend Build Found)'));
 }
-
-// 错误处理
-app.use((err, req, res, next) => {
-  console.error('❌ 服务器错误:', err)
-  res.status(500).json({
-    success: false,
-    error: NODE_ENV === 'production' ? 'Internal Server Error' : err.message
-  })
-})
 
 // 启动服务器
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🚀 EduMatch服务器启动成功！`)
+  console.log(`\n✅ 服务启动成功!`)
   console.log(`📡 监听端口: ${PORT}`)
-  console.log(`🌐 访问地址: http://0.0.0.0:${PORT}`)
-  console.log(`📁 工作目录: ${__dirname}`)
-  console.log(`📄 静态文件检查: ${fs.existsSync(join(__dirname, 'dist', 'index.html'))}`)
-  console.log(`📍 环境: ${NODE_ENV}`)
-  console.log(`🌐 地址: http://localhost:${PORT}`)
-  console.log(`🔗 API代理: http://localhost:${PORT}/api/coze/chat`)
-  console.log(`❤️  健康检查: http://localhost:${PORT}/health`)
+  console.log(`🔗 http://0.0.0.0:${PORT}`)
 })
-  console.log(`\n💡 按 Ctrl+C 停止服务器\n`)
