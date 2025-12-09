@@ -33,14 +33,14 @@ class CozeAPIServiceProduction {
   private baseUrl: string
 
   constructor() {
-    // 回到普通函数，但优化请求确保30秒内完成
+    // Zeabur 部署：直接调用 Express 服务器的 API 端点
     const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'production'
-    this.baseUrl = isProduction ? '/.netlify/functions/coze-api-fast' : 'http://localhost:9999/.netlify/functions/coze-api-fast'
+    this.baseUrl = isProduction ? '' : 'http://localhost:3014'
     console.log('Coze API配置:', { 
       environment: isProduction ? 'production' : 'development',
       mode: import.meta.env.MODE,
       baseUrl: this.baseUrl,
-      note: '使用优化版普通函数 - 确保30秒内完成'
+      note: 'Zeabur 部署 - 直接调用 Express API'
     })
   }
 
@@ -60,8 +60,8 @@ class CozeAPIServiceProduction {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 25000) // 25秒超时，给函数留5秒缓冲
         
-      // 直接调用优化的函数，不需要 /chat 路径
-      const response = await fetch(`${this.baseUrl}`, {
+      // 调用 Express 服务器的 API 端点
+      const response = await fetch(`${this.baseUrl}/api/coze/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,28 +133,15 @@ class CozeAPIServiceProduction {
   }
 
   /**
-   * 获取对话历史
+   * 获取对话历史（暂未实现）
    */
   async getConversationHistory(conversationId: string) {
-    try {
-      const response = await fetch(`${this.baseUrl}/history`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          conversation_id: conversationId
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error(`获取对话历史失败: ${response.status}`)
+    console.log('对话历史功能暂未实现，返回空数据')
+    return {
+      success: true,
+      data: {
+        messages: []
       }
-
-      return await response.json()
-    } catch (error) {
-      console.error('获取对话历史失败:', error)
-      throw error
     }
   }
 
