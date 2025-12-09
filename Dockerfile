@@ -1,30 +1,30 @@
-# 基于 Node 20 Alpine 镜像
+# 使用 Node 20 Alpine
 FROM node:20-alpine
 
-# 设置工作目录
 WORKDIR /app
 
-# 1. 复制依赖文件
+# 1. 复制依赖清单
 COPY package*.json ./
 
-# 2. 安装所有依赖 (包括 devDependencies，因为 vite build 需要它们)
-RUN npm install
+# --- 核心修复开始 ---
+# 强制告诉 npm：不管现在的环境变量是啥，必须给我安装 devDependencies (包含 vite)
+# 否则下一步 npm run build 找不到 vite 命令
+RUN npm install --include=dev
+# --- 核心修复结束 ---
 
-# 3. 复制所有源代码
+# 2. 复制源码
 COPY . .
 
-# 4. 执行构建 (生成 dist 文件夹)
-# 这一步非常关键，没有它，你的后端找不到前端页面
+# 3. 执行构建 (这时候就有 vite 命令了)
 RUN npm run build
 
-# 5. 设置环境变量
+# 4. 构建完成后，再把环境变量设为 production
+# 这样运行时的性能是最好的，但不会影响构建时的 vite
 ENV NODE_ENV=production
-# 强制让代码知道端口是 3014
 ENV PORT=3014
 
-# 6. 暴露端口 (给 Zeabur 看的)
+# 5. 暴露端口
 EXPOSE 3014
 
-# 7. 启动命令
-# 直接使用你在 package.json 里定义的 start 脚本
+# 6. 启动服务
 CMD ["npm", "run", "start"]
