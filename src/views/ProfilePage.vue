@@ -47,16 +47,16 @@
            <div class="flex-1 w-full">
               <!-- 姓名与签名 -->
               <div class="mb-8">
-                 <div class="flex items-center gap-3 mb-2">
+                 <div class="flex items-end gap-3 mb-2">
                     <h1 class="text-4xl font-serif font-bold text-[#1a3c34]">{{ userInfo.name }}</h1>
-                    <button @click="editNickname" class="text-[#1a3c34]/40 hover:text-[#1a3c34] transition-colors" title="编辑姓名">
+                    <button @click="editNickname" class="text-[#1a3c34]/40 hover:text-[#1a3c34] transition-colors mb-1" title="编辑姓名">
                        <Edit3 class="w-4 h-4" />
                     </button>
                  </div>
-                 <div class="flex items-start gap-2 text-[#1a3c34]/70 font-serif italic text-lg leading-relaxed max-w-2xl relative group">
+                 <div class="flex items-start gap-2 text-[#1a3c34]/70 font-serif italic text-lg leading-relaxed max-w-2xl relative">
                     <span class="absolute -left-4 -top-2 text-4xl text-[#d4c5a3] opacity-50">"</span>
-                    {{ userInfo.bio || '暂无个人陈述。' }}
-                    <button @click="editBio" class="opacity-0 group-hover:opacity-100 ml-2 text-[#1a3c34]/40 hover:text-[#1a3c34] transition-all" title="编辑签名">
+                    <span>{{ userInfo.bio || '暂无个人陈述。' }}</span>
+                    <button @click="editBio" class="text-[#1a3c34]/40 hover:text-[#1a3c34] transition-colors self-end mb-0.5" title="编辑个性签名">
                        <Edit3 class="w-4 h-4" />
                     </button>
                  </div>
@@ -102,7 +102,7 @@
                </div>
                <ArrowRight class="w-4 h-4 text-[#1a3c34]/30 group-hover:text-[#1a3c34] group-hover:translate-x-1 transition-transform" />
             </div>
-            <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-1">我的手稿</h3>
+            <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-1">我的帖子</h3>
             <p class="text-sm text-[#1a3c34]/60">管理已发布的 {{ myPosts.length }} 篇帖子。</p>
          </div>
 
@@ -119,7 +119,7 @@
                </div>
                <ArrowRight class="w-4 h-4 text-[#1a3c34]/30 group-hover:text-[#1a3c34] group-hover:translate-x-1 transition-transform" />
             </div>
-            <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-1">个人档案</h3>
+            <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-1">我的资源</h3>
             <p class="text-sm text-[#1a3c34]/60">管理上传的 {{ myResources.length }} 份资源。</p>
          </div>
 
@@ -136,7 +136,7 @@
                </div>
                <ArrowRight class="w-4 h-4 text-[#1a3c34]/30 group-hover:text-[#1a3c34] group-hover:translate-x-1 transition-transform" />
             </div>
-            <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-1">珍藏目录</h3>
+            <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-1">点赞收藏</h3>
             <p class="text-sm text-[#1a3c34]/60">查看收藏和点赞的内容。</p>
          </div>
 
@@ -274,11 +274,11 @@
 
             <!-- 装饰性系统信息 -->
             <div class="bg-[#f2f0e9] p-6 border border-[#1a3c34]/5 text-[#1a3c34]/60 text-xs font-mono leading-loose flex flex-col justify-center">
-               <p>USER ID: {{ userInfo.id || 'UNKNOWN' }}</p>
-               <p>STATUS: ACTIVE / VERIFIED</p>
-               <p>LAST LOGIN: {{ new Date().toLocaleString() }}</p>
+               <p>用户编号: {{ userInfo.id || '未知' }}</p>
+               <p>账户状态: 活跃 / 已验证</p>
+               <p>最后登录: {{ new Date().toLocaleString() }}</p>
                <div class="w-full h-px bg-[#1a3c34]/10 my-4"></div>
-               <p class="italic font-serif">"The securest of all possessions is knowledge."</p>
+               <p class="italic font-serif">"知识是所有财富中最安全的。"</p>
             </div>
          </div>
       </section>
@@ -365,7 +365,7 @@ const userAvatar = computed(() => {
 
 // Formatters
 const formatDate = (dateStr?: string) => {
-  if (!dateStr) return 'N/A'
+  if (!dateStr) return '无日期'
   return new Date(dateStr).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', year: 'numeric' })
 }
 
@@ -468,7 +468,7 @@ const loadStats = async () => {
 
 // Edit Actions
 const editNickname = () => { editType.value = 'nickname'; editDialogTitle.value = '编辑昵称'; editInitialValue.value = userInfo.value.name; editDialog.value?.show() }
-const editBio = () => { editType.value = 'bio'; editDialogTitle.value = '编辑个人签名'; editInitialValue.value = userInfo.value.bio || ''; editDialog.value?.show() }
+const editBio = () => { editType.value = 'bio'; editDialogTitle.value = '编辑个性签名'; editInitialValue.value = userInfo.value.bio || ''; editDialog.value?.show() }
 
 const handleEditConfirm = async (val: string) => {
    const uid = userInfo.value.id || JSON.parse(localStorage.getItem('currentUser') || '{}').id

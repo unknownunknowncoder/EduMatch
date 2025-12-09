@@ -49,7 +49,7 @@
       <!-- Loading State -->
       <div v-if="!plan" class="bg-white p-12 shadow-xl border-t-8 border-[#1a3c34] text-center">
          <div class="w-12 h-12 border-4 border-[#d4c5a3] border-t-[#1a3c34] rounded-full animate-spin mx-auto"></div>
-         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">Retrieving file...</p>
+         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">正在获取文件...</p>
       </div>
 
       <!-- Plan Detail Card -->
@@ -109,7 +109,7 @@
                <!-- Recent Check-ins -->
                <div v-if="recentCheckins.length > 0">
                   <h3 class="text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-3 border-b border-[#1a3c34]/10 pb-1 flex items-center gap-2">
-                     <Clock class="w-4 h-4" /> Recent Check-ins
+                     <Clock class="w-4 h-4" /> 最近打卡
                   </h3>
                   <div class="space-y-2">
                      <div v-for="checkin in recentCheckins" :key="checkin.id" class="flex items-center justify-between p-3 bg-[#f9f9f7] border border-[#1a3c34]/10">
@@ -118,7 +118,7 @@
                            <div v-if="checkin.notes" class="text-xs text-[#1a3c34]/60 mt-1">{{ checkin.notes }}</div>
                         </div>
                         <div class="text-right">
-                           <div class="font-bold text-[#1a3c34]">{{ checkin.hours }}h</div>
+                           <div class="font-bold text-[#1a3c34]">{{ checkin.hours }}小时</div>
                         </div>
                      </div>
                   </div>
@@ -127,7 +127,7 @@
                <!-- Goals (Checklist) -->
                <div v-if="plan.goals && plan.goals.length > 0">
                   <h3 class="text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-3 border-b border-[#1a3c34]/10 pb-1 flex items-center gap-2">
-                     <Target class="w-4 h-4" /> 里程碑
+                     <Target class="w-4 h-4" /> 学习目标
                   </h3>
                   <ul class="space-y-2">
                      <li v-for="(goal, index) in plan.goals" :key="index" class="flex items-start gap-3">

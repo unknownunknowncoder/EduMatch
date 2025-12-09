@@ -20,7 +20,7 @@
           class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-[#1a3c34] hover:border-[#d4c5a3] transition-all rounded-sm text-xs font-bold uppercase tracking-widest group"
         >
           <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
-          Return
+          返回首页
         </button>
       </div>
 
@@ -28,11 +28,11 @@
       <div class="absolute bottom-8 left-0 w-full p-8 z-10">
         <div class="max-w-7xl mx-auto flex items-end justify-between">
            <div>
-              <h2 class="text-[#d4c5a3] text-xs font-bold uppercase tracking-[0.3em] mb-2">Query Results</h2>
+              <h2 class="text-[#d4c5a3] text-xs font-bold uppercase tracking-[0.3em] mb-2">查询结果</h2>
               <h1 class="text-3xl md:text-4xl font-serif font-bold text-white tracking-wide shadow-black drop-shadow-md">
-                 Research Findings
+                 研究发现
               </h1>
-              <p class="text-white/60 font-serif italic mt-2">Curated by AI Archivist</p>
+              <p class="text-white/60 font-serif italic mt-2">由AI档案管理员整理</p>
            </div>
         </div>
       </div>
@@ -136,7 +136,7 @@
                  <Lightbulb class="w-6 h-6" />
               </div>
               <div>
-                 <h3 class="text-xs font-bold text-[#8c734b] uppercase tracking-widest mb-2">Curator's Strategy Note</h3>
+                 <h3 class="text-xs font-bold text-[#8c734b] uppercase tracking-widest mb-2">策划者策略笔记</h3>
                  <p class="text-[#1a3c34] font-serif leading-relaxed italic text-lg">
                     "{{ normalizedResults.learningAdvice }}"
                  </p>
@@ -214,7 +214,7 @@
            <div class="bg-white p-6 border border-[#1a3c34]/10 shadow-sm relative group hover:border-[#d4c5a3] transition-colors">
               <div class="text-4xl font-serif font-bold text-[#1a3c34]/10 absolute top-4 right-4 group-hover:text-[#d4c5a3]/20">01</div>
               <div class="mb-4 text-[#1a3c34]"><Bot class="w-8 h-8" /></div>
-              <h3 class="font-bold text-[#1a3c34] text-sm uppercase tracking-widest mb-2">Activate</h3>
+              <h3 class="font-bold text-[#1a3c34] text-sm uppercase tracking-widest mb-2">激活</h3>
               <p class="text-xs text-[#1a3c34]/60 font-serif">点击悬浮徽标唤醒AI助理。</p>
            </div>
            <div class="bg-white p-6 border border-[#1a3c34]/10 shadow-sm relative group hover:border-[#d4c5a3] transition-colors">
@@ -332,7 +332,7 @@ const openResource = (resource: any) => {
 
 const saveToFavorites = (resource: any) => {
   // 这里可以接入真实的收藏逻辑
-  showToast('Resource archived to personal collection.', 'success')
+  showToast('资源已归档到个人收藏', 'success')
   console.log('Archiving:', resource)
 }
 
@@ -356,7 +356,7 @@ const clearSearch = () => {
 }
 
 const showPopularSearches = () => {
-  showToast('Feature coming soon.', 'info')
+  showToast('功能即将推出', 'info')
 }
 
 // 处理搜索结果的函数
@@ -374,7 +374,7 @@ const handleSearchResults = () => {
       // 保存到sessionStorage
       saveToStorage(results)
     } catch (error) {
-      console.error('Failed to parse archives:', error)
+      console.error('解析档案失败:', error)
       searchResults.value = null
     }
   } else if (!hasSearched.value && !searchResults.value) {

@@ -9,11 +9,11 @@
           class="group flex items-center text-[#0f281f]/60 hover:text-[#0f281f] transition-colors font-serif italic"
         >
           <ArrowLeft class="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-          Back to Profile
+          返回个人档案
         </button>
         
         <div class="text-xs font-bold text-[#0f281f]/30 uppercase tracking-widest hidden md:block">
-           Personal Archive Registry
+           个人档案库
         </div>
       </div>
     </div>
@@ -24,10 +24,10 @@
           <div class="space-y-2">
              <div class="flex items-center gap-3">
                 <FolderOpen class="w-8 h-8 text-[#0f281f]" />
-                <h1 class="text-4xl font-serif font-bold text-[#0f281f]">My Contributions</h1>
+                <h1 class="text-4xl font-serif font-bold text-[#0f281f]">我的资源</h1>
              </div>
              <p class="text-[#0f281f]/60 font-serif italic pl-11">
-                Registry of all knowledge artifacts you've archived.
+                您已归档的所有知识成果记录。
              </p>
           </div>
           
@@ -36,14 +36,14 @@
              class="px-6 py-3 bg-[#0f281f] text-[#d4c5a3] rounded-sm font-bold uppercase tracking-widest hover:bg-[#1a4533] hover:shadow-lg transition-all flex items-center gap-2 group"
           >
              <Plus class="w-4 h-4 group-hover:rotate-90 transition-transform" />
-             New Entry
+             新建条目
           </button>
        </div>
 
        <!-- Loading State -->
        <div v-if="isLoading" class="flex flex-col items-center justify-center py-32 space-y-6">
           <div class="w-16 h-16 border-4 border-[#d4c5a3] border-t-[#0f281f] rounded-full animate-spin"></div>
-          <p class="text-[#0f281f] font-serif tracking-widest uppercase">Retrieving Records...</p>
+          <p class="text-[#0f281f] font-serif tracking-widest uppercase">正在检索记录...</p>
        </div>
 
        <!-- Empty State -->
@@ -51,15 +51,15 @@
           <div class="w-24 h-24 bg-[#0f281f]/5 rounded-full flex items-center justify-center mx-auto mb-6">
              <FileX class="w-10 h-10 text-[#0f281f]/30" />
           </div>
-          <h3 class="text-2xl font-serif font-bold text-[#0f281f] mb-2">No Records Found</h3>
+          <h3 class="text-2xl font-serif font-bold text-[#0f281f] mb-2">未找到记录</h3>
           <p class="text-[#0f281f]/60 max-w-md mx-auto mb-8 font-serif">
-             Your personal archive is currently empty. Begin by cataloging your first resource.
+             您的个人档案库当前为空。开始整理您的第一个资源吧。
           </p>
           <button 
              @click="navigateToCreateResource"
              class="px-8 py-3 border-2 border-[#0f281f] text-[#0f281f] font-bold uppercase tracking-widest hover:bg-[#0f281f] hover:text-[#d4c5a3] transition-colors"
           >
-             Initialize Archive
+             初始化档案库
           </button>
        </div>
 
@@ -99,14 +99,14 @@
                          <button 
                             @click.stop="navigateToResource(resource.id)"
                             class="p-2 text-[#0f281f]/40 hover:text-[#0f281f] hover:bg-[#f4f1ea] rounded-sm transition-colors"
-                            title="View Details"
+                            title="查看详情"
                          >
                             <Eye class="w-4 h-4" />
                          </button>
                          <button 
                             @click.stop="showDeleteConfirm(resource)"
                             class="p-2 text-red-400 hover:text-red-700 hover:bg-red-50 rounded-sm transition-colors"
-                            title="Delete Record"
+                            title="删除记录"
                          >
                             <Trash2 class="w-4 h-4" />
                          </button>
@@ -114,7 +114,7 @@
                    </div>
 
                    <p class="text-[#0f281f]/60 text-sm line-clamp-2 mb-4 font-serif">
-                      {{ resource.description || 'No description provided.' }}
+                      {{ resource.description || '未提供描述。' }}
                    </p>
 
                    <!-- Meta Data -->
@@ -145,8 +145,8 @@
     <!-- Delete Dialog -->
     <CascadeDeleteDialog
       ref="cascadeDeleteDialog"
-      title="Confirm Deletion"
-      :message="`Permanently remove '${selectedResource?.title}' from the archive?`"
+      title="确认删除"
+      :message="`是否从档案库中永久删除 '${selectedResource?.title}'？`"
       :relatedPosts="relatedPosts"
       @confirm="handleCascadeDelete"
       @cancel="hideDeleteConfirm"
@@ -212,19 +212,19 @@ const navigateToCreateResource = () => {
 // 根据类型获取图标
 const getTypeIcon = (type: string) => {
   const icons: Record<string, any> = {
-    video: Video,
-    article: FileText,
-    book: Book,
-    course: MonitorPlay,
-    tool: Wrench,
-    other: Box
+    '视频': Video,
+    '文章': FileText,
+    '书籍': Book,
+    '课程': MonitorPlay,
+    '工具': Wrench,
+    '其他': Box
   }
   return icons[type] || Box
 }
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'
@@ -242,13 +242,13 @@ const showDeleteConfirm = async (resource: MyResource) => {
       .eq('resource_id', resource.id)
     
     if (error) {
-      console.error('Check related posts failed:', error)
+      console.error('检查相关帖子失败:', error)
       relatedPosts.value = []
     } else {
       relatedPosts.value = posts || []
     }
   } catch (error) {
-    console.error('Check related posts exception:', error)
+    console.error('检查相关帖子异常:', error)
     relatedPosts.value = []
   }
   
@@ -276,7 +276,7 @@ const handleCascadeDelete = async (option: string) => {
           .eq('resource_id', resourceId)
         
         if (postsDeleteError) {
-          showToast('Failed to delete related posts.', 'error')
+          showToast('删除相关帖子失败', 'error')
           return
         }
       }
@@ -290,7 +290,7 @@ const handleCascadeDelete = async (option: string) => {
           .eq('resource_id', resourceId)
         
         if (updateError) {
-          showToast('Failed to unlink resources.', 'error')
+          showToast('取消资源关联失败', 'error')
           return
         }
       }
@@ -298,8 +298,8 @@ const handleCascadeDelete = async (option: string) => {
     }
     
   } catch (error) {
-    console.error('Cascade delete failed:', error)
-    showToast('Delete operation failed.', 'error')
+    console.error('级联删除失败:', error)
+    showToast('删除操作失败', 'error')
   }
 }
 
@@ -316,11 +316,11 @@ const performResourceDeletion = async (resourceId: string, resourceTitle: string
     
     myResources.value = myResources.value.filter(resource => resource.id !== resourceId)
     hideDeleteConfirm()
-    showToast(`Archived record '${resourceTitle}' deleted.`, 'success')
+    showToast(`已删除档案记录 '${resourceTitle}'`, 'success')
     
   } catch (error: any) {
-    console.error('Resource deletion failed:', error)
-    showToast(`Delete failed: ${error.message || 'Unknown error'}`, 'error')
+    console.error('资源删除失败:', error)
+    showToast(`删除失败: ${error.message || '未知错误'}`, 'error')
   }
 }
 
@@ -358,7 +358,7 @@ const loadMyResources = async () => {
       id: resource.id,
       title: resource.title,
       description: resource.description || '',
-      type: resource.type || 'other',
+      type: resource.type || '其他',
       category: resource.category,
       difficulty: resource.difficulty,
       duration: resource.duration,
@@ -370,7 +370,7 @@ const loadMyResources = async () => {
     }))
     
   } catch (error) {
-    console.error('Load resources failed:', error)
+    console.error('加载资源失败:', error)
     myResources.value = []
   } finally {
     isLoading.value = false

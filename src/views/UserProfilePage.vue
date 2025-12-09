@@ -18,7 +18,7 @@
           class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-[#1a3c34] hover:border-[#d4c5a3] transition-all rounded-sm text-xs font-bold uppercase tracking-widest group"
         >
           <ArrowLeft class="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> 
-          Return
+          返回
         </button>
       </div>
 
@@ -26,8 +26,8 @@
       <div class="absolute bottom-24 left-0 w-full px-8 z-10">
         <div class="max-w-6xl mx-auto flex items-end justify-between">
            <div>
-              <h2 class="text-[#d4c5a3] text-xs font-bold uppercase tracking-[0.3em] mb-2">Public Registry</h2>
-              <h1 class="text-4xl font-serif font-bold text-white tracking-wide shadow-black drop-shadow-md">Scholar Profile</h1>
+              <h2 class="text-[#d4c5a3] text-xs font-bold uppercase tracking-[0.3em] mb-2">公共档案</h2>
+              <h1 class="text-4xl font-serif font-bold text-white tracking-wide shadow-black drop-shadow-md">学者档案</h1>
            </div>
         </div>
       </div>
@@ -39,14 +39,14 @@
       <!-- 加载/错误状态 -->
       <div v-if="loading" class="bg-white p-12 shadow-xl border-t-8 border-[#1a3c34] text-center">
          <div class="w-12 h-12 border-4 border-[#d4c5a3] border-t-[#1a3c34] rounded-full animate-spin mx-auto"></div>
-         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">Retrieving dossier...</p>
+         <p class="mt-4 text-[#1a3c34]/60 font-serif italic">正在获取档案...</p>
       </div>
 
       <div v-else-if="error" class="bg-white p-12 shadow-xl border-t-8 border-[#b03e3e] text-center">
          <UserX class="w-16 h-16 text-[#b03e3e]/20 mx-auto mb-4" />
-         <h2 class="text-2xl font-serif font-bold text-[#b03e3e] mb-2">Record Not Found</h2>
+         <h2 class="text-2xl font-serif font-bold text-[#b03e3e] mb-2">记录未找到</h2>
          <p class="text-[#1a3c34]/60 mb-6">{{ error }}</p>
-         <button @click="goBack()" class="px-6 py-2 border border-[#1a3c34] text-[#1a3c34] uppercase tracking-widest text-xs font-bold hover:bg-[#1a3c34] hover:text-white transition-colors">Return</button>
+         <button @click="goBack()" class="px-6 py-2 border border-[#1a3c34] text-[#1a3c34] uppercase tracking-widest text-xs font-bold hover:bg-[#1a3c34] hover:text-white transition-colors">返回</button>
       </div>
 
       <!-- 正常内容 -->
@@ -84,7 +84,7 @@
                         <h1 class="text-2xl font-serif font-bold text-[#1a3c34]">{{ userInfo.nickname || userInfo.username }}</h1>
                         <p class="text-xs font-mono text-[#1a3c34]/50 mt-1 uppercase tracking-wider">@{{ userInfo.username }}</p>
                         <div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-[#1a3c34]/5 text-[#1a3c34] text-[10px] font-bold uppercase tracking-widest border border-[#1a3c34]/10">
-                           <Award class="w-3 h-3" /> Scholar
+                           <Award class="w-3 h-3" /> 学者
                         </div>
                      </div>
                   </div>
@@ -95,10 +95,10 @@
                      <!-- 签名 -->
                      <div class="mb-8 relative pl-6 border-l-2 border-[#d4c5a3]">
                         <p class="text-[#1a3c34]/80 font-serif italic text-lg leading-relaxed">
-                           "{{ userInfo.bio || 'No personal statement recorded in the archive.' }}"
+                           "{{ userInfo.bio || '档案中未记录个人陈述。' }}"
                         </p>
                         <p class="text-[10px] text-[#1a3c34]/40 mt-3 font-mono uppercase tracking-widest">
-                           Member since {{ formatDate(userInfo.created_at) }}
+                           注册于 {{ formatDate(userInfo.created_at) }}
                         </p>
                      </div>
 
@@ -106,11 +106,11 @@
                      <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#1a3c34]/10 border border-[#1a3c34]/10 mb-6">
                         <div class="bg-white p-4 text-center group hover:bg-[#f9f9f7] transition-colors">
                            <div class="text-xl font-serif font-bold text-[#1a3c34] group-hover:text-[#d4c5a3]">{{ stats.resourceCount }}</div>
-                           <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">Resources</div>
+                           <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">资源</div>
                         </div>
                         <div class="bg-white p-4 text-center group hover:bg-[#f9f9f7] transition-colors">
                            <div class="text-xl font-serif font-bold text-[#1a3c34] group-hover:text-[#d4c5a3]">{{ stats.postCount }}</div>
-                           <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">Manuscripts</div>
+                           <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">帖子</div>
                         </div>
                         <div 
                            @click="!privacySettings.hide_followers && goToFollowers()" 
@@ -121,7 +121,7 @@
                               {{ privacySettings.hide_followers ? '---' : followStats.followers_count }}
                            </div>
                            <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">
-                              {{ privacySettings.hide_followers ? 'Private' : 'Followers' }}
+                              {{ privacySettings.hide_followers ? '私有' : '粉丝' }}
                            </div>
                         </div>
                         <div 
@@ -133,7 +133,7 @@
                               {{ privacySettings.hide_following ? '---' : followStats.followings_count }}
                            </div>
                            <div class="text-[9px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mt-1">
-                              {{ privacySettings.hide_following ? 'Private' : 'Following' }}
+                              {{ privacySettings.hide_following ? '私有' : '关注' }}
                            </div>
                         </div>
                      </div>
@@ -145,7 +145,7 @@
                            @click="router.push('/profile')"
                            class="flex-1 py-3 border border-[#1a3c34] text-[#1a3c34] font-bold uppercase tracking-widest text-xs hover:bg-[#1a3c34] hover:text-white transition-all flex items-center justify-center gap-2"
                         >
-                           <Settings class="w-4 h-4" /> Edit Dossier
+                           <Settings class="w-4 h-4" /> 编辑档案
                         </button>
                         <button
                            v-else
@@ -158,7 +158,7 @@
                         >
                            <span v-if="followLoading" class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
                            <component v-else :is="isFollowing ? UserCheck : UserPlus" class="w-4 h-4" />
-                           {{ isFollowing ? 'Connected' : 'Connect' }}
+                           {{ isFollowing ? '已关注' : '关注' }}
                         </button>
                      </div>
                   </div>
@@ -177,7 +177,7 @@
                      ? 'border-t-2 border-x border-[#1a3c34]/20 border-b-white bg-white text-[#1a3c34]' 
                      : 'text-[#1a3c34]/40 hover:text-[#1a3c34] bg-[#f9f9f7] border border-transparent'"
                >
-                  <span class="flex items-center gap-2"><FolderOpen class="w-4 h-4" /> Resources</span>
+                  <span class="flex items-center gap-2"><FolderOpen class="w-4 h-4" /> 资源</span>
                </button>
                <button
                   @click="activeTab = 'posts'"
@@ -186,20 +186,20 @@
                      ? 'border-t-2 border-x border-[#1a3c34]/20 border-b-white bg-white text-[#1a3c34]' 
                      : 'text-[#1a3c34]/40 hover:text-[#1a3c34] bg-[#f9f9f7] border border-transparent'"
                >
-                  <span class="flex items-center gap-2"><PenTool class="w-4 h-4" /> Manuscripts</span>
+                  <span class="flex items-center gap-2"><PenTool class="w-4 h-4" /> 帖子</span>
                </button>
             </div>
 
             <!-- 1. Resources Tab -->
             <div v-if="activeTab === 'resources'" class="min-h-[300px]">
-               <div v-if="loading" class="text-center py-12 text-[#1a3c34]/40 font-serif italic">Accessing archives...</div>
+               <div v-if="loading" class="text-center py-12 text-[#1a3c34]/40 font-serif italic">正在访问档案...</div>
                <div v-else-if="privacySettings.hide_resources" class="text-center py-16 border-2 border-dashed border-[#1a3c34]/10 rounded-sm bg-white/50">
                   <Shield class="w-12 h-12 text-[#1a3c34]/20 mx-auto mb-4" />
-                  <p class="text-[#1a3c34]/60 font-serif">This scholar's resource library is private.</p>
+                  <p class="text-[#1a3c34]/60 font-serif">该学者的资源库为私有。</p>
                </div>
                <div v-else-if="userResources.length === 0" class="text-center py-16 border-2 border-dashed border-[#1a3c34]/10 rounded-sm bg-white/50">
                   <FileX class="w-12 h-12 text-[#1a3c34]/20 mx-auto mb-4" />
-                  <p class="text-[#1a3c34]/60 font-serif">No resources cataloged by this scholar.</p>
+                  <p class="text-[#1a3c34]/60 font-serif">该学者未记录任何资源。</p>
                </div>
                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <ResourceCard
@@ -214,14 +214,14 @@
 
             <!-- 2. Posts Tab -->
             <div v-else class="min-h-[300px]">
-               <div v-if="loading" class="text-center py-12 text-[#1a3c34]/40 font-serif italic">Retrieving manuscripts...</div>
+               <div v-if="loading" class="text-center py-12 text-[#1a3c34]/40 font-serif italic">正在检索帖子...</div>
                <div v-else-if="privacySettings.hide_posts" class="text-center py-16 border-2 border-dashed border-[#1a3c34]/10 rounded-sm bg-white/50">
                   <Shield class="w-12 h-12 text-[#1a3c34]/20 mx-auto mb-4" />
-                  <p class="text-[#1a3c34]/60 font-serif">This scholar's manuscripts are private.</p>
+                  <p class="text-[#1a3c34]/60 font-serif">该学者的帖子为私有。</p>
                </div>
                <div v-else-if="userPosts.length === 0" class="text-center py-16 border-2 border-dashed border-[#1a3c34]/10 rounded-sm bg-white/50">
                   <Feather class="w-12 h-12 text-[#1a3c34]/20 mx-auto mb-4" />
-                  <p class="text-[#1a3c34]/60 font-serif">No manuscripts published.</p>
+                  <p class="text-[#1a3c34]/60 font-serif">未发布任何帖子。</p>
                </div>
                <div v-else class="space-y-4">
                   <div 
@@ -237,7 +237,7 @@
                      <p class="text-[#1a3c34]/60 text-sm font-serif line-clamp-2 mb-4">{{ post.content }}</p>
                      
                      <div class="flex items-center justify-between border-t border-[#1a3c34]/5 pt-3">
-                        <span class="text-xs font-bold uppercase tracking-wider text-[#1a3c34]/50">{{ post.category || 'General' }}</span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-[#1a3c34]/50">{{ post.category || '通用' }}</span>
                         <div class="flex gap-4 text-xs font-mono text-[#1a3c34]/40">
                            <span class="flex items-center gap-1"><Heart class="w-3 h-3"/> {{ post.likes_count || 0 }}</span>
                            <span class="flex items-center gap-1"><MessageSquare class="w-3 h-3"/> {{ post.comments_count || 0 }}</span>
@@ -296,8 +296,8 @@ const isCurrentUser = computed(() => {
 
 // Methods
 const formatDate = (str: string) => {
-  if(!str) return 'N/A'
-  return new Date(str).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })
+  if(!str) return '无日期'
+  return new Date(str).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit', year: 'numeric' })
 }
 
 const handleImageError = (e: Event) => {
@@ -309,12 +309,12 @@ const fetchUserInfo = async () => {
   try {
     const userId = route.params.userId as string
     const user = await dbStore.getUserById(userId)
-    if (!user) { error.value = 'Scholar not found in archive.'; return; }
+    if (!user) { error.value = '档案中未找到该学者。'; return; }
 
     userInfo.value = { ...user, bio: user.bio || '' }
     await Promise.all([fetchUserStats(), fetchUserContent(), fetchPrivacySettings()])
     if (!isCurrentUser.value) await checkFollowStatus()
-  } catch (err) { error.value = 'Failed to retrieve dossier.'; } 
+  } catch (err) { error.value = '获取档案失败。'; } 
   finally { loading.value = false }
 }
 
@@ -400,8 +400,8 @@ const toggleFollow = async () => {
       isFollowing.value = true
       followStats.value.followers_count++
     }
-    showToast(isFollowing.value ? 'Connection established.' : 'Connection severed.', 'success')
-  } catch (e) { showToast('Action failed.', 'error') }
+    showToast(isFollowing.value ? '关注成功。' : '取消关注。', 'success')
+  } catch (e) { showToast('操作失败。', 'error') }
   finally { followLoading.value = false }
 }
 

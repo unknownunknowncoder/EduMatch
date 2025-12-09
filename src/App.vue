@@ -7,26 +7,14 @@
   -->
   <div class="min-h-screen bg-[#f2f0e9] font-sans text-[#1a3c34] selection:bg-[#1a3c34] selection:text-[#d4c5a3] antialiased overflow-x-hidden">
     
-    <!-- 检查是否为认证页面 (全屏布局) -->
-    <div v-if="isAuthPage">
+    <!-- 认证页面和首页使用独立布局 -->
+    <div v-if="!shouldUseFullLayout">
       <main class="min-h-screen w-full relative">
-        <!-- 添加路由过渡动画 -->
         <RouterView v-slot="{ Component, route }">
           <transition name="fade" mode="out-in" appear>
             <div class="w-full h-full">
               <component :is="Component" :key="route.path" v-if="Component" />
             </div>
-          </transition>
-        </RouterView>
-      </main>
-    </div>
-
-    <!-- 首页和认证页面使用独立布局 -->
-    <div v-if="!shouldUseFullLayout">
-      <main class="min-h-screen w-full relative">
-        <RouterView v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <component :is="Component" />
           </transition>
         </RouterView>
       </main>
