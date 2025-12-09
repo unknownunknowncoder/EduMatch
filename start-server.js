@@ -59,7 +59,12 @@ app.post('/api/coze/chat', async (req, res) => {
       conversation_id: "",
       bot_id: bot_id || defaultBotId,
       user: user_id || 'user_' + Date.now(),
-      query: `请推荐${query}相关的优质学习资源，包括B站视频和中国大学MOOC课程。请以JSON格式返回，包含最推荐、其他推荐和学习建议。`,
+      query: `请推荐"${query}"相关的优质学习资源。我们有1分钟的处理时间，请：
+1. 快速分析用户需求
+2. 推荐精选的 B站视频和中国大学MOOC课程
+3. 为每个资源提供关键信息（难度、时长、推荐理由）
+4. 给出实用的学习建议
+请以标准JSON格式返回，包含：最推荐、其他推荐数组、学习建议`,
       chat_history: [],
       stream: false
     }
@@ -69,6 +74,13 @@ app.post('/api/coze/chat', async (req, res) => {
       bot_id: bot_id || defaultBotId
     })
     
+    // Zeabur 支持较长时间请求，设置 1 分钟超时
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 60000) // 1分钟
+    
+    console.log('🚀 调用扣子API开始处理（支持1分钟处理时间）...')
+    const apiStartTime = Date.now()
+    
     const response = await fetch(cozeApiUrl, {
       method: 'POST',
       headers: {
@@ -76,10 +88,18 @@ app.post('/api/coze/chat', async (req, res) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
     })
     
-    console.log('📡 扣子API响应状态:', response.status)
+    clearTimeout(timeoutId)
+    
+    const apiElapsed = Date.now() - apiStartTime
+    console.log(`📡 扣子API响应状态: ${response.status}，处理时间: ${(apiElapsed/1000).toFixed(1)}秒`)
+    
+    if (apiElapsed > 45000) {
+      console.log(`🎉 长时间处理成功！Zeabur 1分钟超时限制发挥了作用`)
+    }
     
     if (response.ok) {
       const responseText = await response.text()

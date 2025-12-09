@@ -40,7 +40,7 @@ class CozeAPIServiceProduction {
       environment: isProduction ? 'production' : 'development',
       mode: import.meta.env.MODE,
       baseUrl: this.baseUrl,
-      note: 'Zeabur 部署 - 直接调用 Express API'
+      note: 'Zeabur 部署 - 支持长时间 AI 响应，无超时限制'
     })
   }
 
@@ -48,7 +48,7 @@ class CozeAPIServiceProduction {
    * 搜索教育资源
    */
   async searchResources(request: CozeSearchRequest): Promise<CozeSearchResponse> {
-    const maxRetries = 2
+    const maxRetries = 3 // 增加重试次数
     let lastError: any = null
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -56,21 +56,22 @@ class CozeAPIServiceProduction {
         console.log(`🔍 开始搜索资源 (尝试 ${attempt}/${maxRetries}):`, request.query)
         const startTime = Date.now()
         
-        // 创建 AbortController，确保30秒内完成
+        // Zeabur 支持较长响应时间，设置为1分钟超时
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 25000) // 25秒超时，给函数留5秒缓冲
+        const timeoutId = setTimeout(() => controller.abort(), 60000) // 60秒超时，1分钟充足时间
         
       // 调用 Express 服务器的 API 端点
-      const response = await fetch(`${this.baseUrl}/api/coze/chat`, {
+        const response = await fetch(`${this.baseUrl}/api/coze/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: request.query, // 保持查询简洁
+          query: request.query, // 可以提供更详细的查询，不用担心超时
           bot_id: request.bot_id,
           user_id: request.conversation_id || `user_${Date.now()}`,
-          stream: false
+          stream: false,
+          timeout: 60 // 告诉后端我们支持1分钟响应时间
         }),
         signal: controller.signal
       })
@@ -87,14 +88,19 @@ class CozeAPIServiceProduction {
           })
           
           if (response.status === 408) {
-            throw new Error('请求超时，请稍后重试')
+            throw new Error('请求超时，AI 处理时间较长，请稍后重试')
           }
           throw new Error(`Coze API 调用失败: ${response.status}`)
         }
 
         const data = await response.json()
         const elapsed = Date.now() - startTime
-        console.log(`✅ API调用成功，耗时: ${elapsed}ms`)
+        console.log(`✅ API调用成功，耗时: ${elapsed}ms (${(elapsed/1000).toFixed(1)}秒)`)
+        
+        // 记录接近超时的响应
+        if (elapsed > 50000) { // 超过50秒
+          console.log(`🐌 长时间响应检测: ${(elapsed/1000).toFixed(1)}秒，接近Zeabur超时限制`)
+        }
         
         // 解析扣子返回的数据
         const result = this.parseCozeResponse(data)
@@ -115,7 +121,7 @@ class CozeAPIServiceProduction {
         
         // 特殊处理请求中止错误
         if (error.name === 'AbortError') {
-          lastError = new Error('AI响应超时，请稍后重试。扣子智能体正在为您处理中...')
+          lastError = new Error('AI响应超时（1分钟），请稍后重试。扣子智能体正在为您处理中...')
         }
         
         // 如果是最后一次尝试，抛出错误
@@ -123,9 +129,9 @@ class CozeAPIServiceProduction {
           break
         }
         
-        // 等待一段时间后重试
-        console.log(`⏳ 等待2秒后重试...`)
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        // 等待一段时间后重试（考虑到长时间处理，增加等待时间）
+        console.log(`⏳ 等待3秒后重试...`)
+        await new Promise(resolve => setTimeout(resolve, 3000))
       }
     }
     

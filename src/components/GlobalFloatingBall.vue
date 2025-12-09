@@ -26,8 +26,13 @@ const messages = ref<any[]>([
 ]);
 const chatContainer = ref<HTMLElement | null>(null);
 
-// 快速提问标签
-const quickPrompts = ['英语六级备考', 'Python数据分析', 'React基础', '高等数学复习'];
+// 快速提问标签（支持深度分析）
+const quickPrompts = [
+  '英语六级备考计划', 
+  'Python数据分析完整路径', 
+  'React高级进阶指南', 
+  '机器学习入门到精通'
+];
 
 // 拖拽相关状态
 const isDragging = ref(false);
@@ -249,14 +254,20 @@ const sendMessage = async () => {
   isLoading.value = true;
 
   const aiMessageIndex = messages.value.push({
-    role: 'assistant', content: '', timestamp: new Date().toISOString(), loading: true, resources: []
+    role: 'assistant', 
+    content: '🤖 AI智能体正在深度分析您的需求，生成个性化学习推荐（支持1分钟处理时间）...', 
+    timestamp: new Date().toISOString(), 
+    loading: true, 
+    resources: []
   }) - 1;
 
   setTimeout(() => { if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight; }, 100);
 
   try {
     const cozeAPI = getCozeAPI();
+    console.log(`🚀 开始AI查询（Zeabur支持1分钟超时）: "${message}"`);
     const response = await cozeAPI.searchResources({ query: message });
+    console.log(`✅ AI查询完成，获得高质量推荐`);
 
     const mapResourceForChat = (rec: any) => {
       if (!rec) return null;
