@@ -21,6 +21,7 @@ export interface CozeResource {
   brief_description?: string
   reason?: string
   access_guide?: string // 添加访问指引字段
+  watch_url?: string // 添加观看URL字段
 }
 
 export interface CozeSearchResponse {
@@ -458,34 +459,47 @@ class CozeAPIService {
                 currentRecommendation.reason = reasonMatch[1].trim()
               }
             }
-            // 访问地址/访问观看（B站特有） - 移除平台限制，先提取BV号或URL
+            // 访问地址/访问观看（B站特有） - 优先提取BV号，超长URL存为access_guide
             else if (cleanDetail.includes('访问地址：') || cleanDetail.includes('访问/观看：')) {
               // 先检查是否是完整URL
               const urlMatch = cleanDetail.match(/https?:\/\/[^\s]+/)
               if (urlMatch) {
                 const url = urlMatch[0]
-                // 如果是B站URL，提取BV号；否则保存完整URL
+                // 如果是B站URL，提取BV号
                 if (url.includes('bilibili.com')) {
                   const bvMatch = url.match(/BV[a-zA-Z0-9]+/)
                   if (bvMatch) {
                     currentRecommendation.bv_number = bvMatch[0]
-                  } else {
-                    // 保存完整URL作为bv_number（后续会处理）
-                    currentRecommendation.bv_number = url
                   }
+                  // B站资源保存完整URL用于跳转，但不显示
                   currentRecommendation.platform = 'B站'
+                  currentRecommendation.watch_url = url
                 } else {
-                  // 非B站URL，保存为access_guide
-                  currentRecommendation.access_guide = url
+                  // 非B站URL，如果太长则缩短，否则保存为access_guide
+                  if (url.length > 80) {
+                    // 超长URL只显示域名部分
+                    const urlObj = new URL(url)
+                    currentRecommendation.access_guide = urlObj.hostname
+                  } else {
+                    currentRecommendation.access_guide = url
+                  }
                 }
               } else {
-                // 提取BV号
+                // 没有URL，尝试直接提取BV号
                 const bvMatch = cleanDetail.match(/BV[a-zA-Z0-9]+/)
                 if (bvMatch) {
                   currentRecommendation.bv_number = bvMatch[0]
+                  currentRecommendation.watch_url = `https://www.bilibili.com/video/${bvMatch[0]}`
                   // 确保平台设置为B站
                   if (!currentRecommendation.platform || currentRecommendation.platform !== 'B站') {
                     currentRecommendation.platform = 'B站'
+                  }
+                } else {
+                  // 既不是URL也不是BV号，保存为访问指引
+                  const accessMatch = cleanDetail.match(/(?:访问地址：|访问\/观看：)\s*(.+)/)
+                  if (accessMatch) {
+                    currentRecommendation.access_guide = accessMatch[1].trim()
+                    console.log(`🔧 设置访问指引: ${currentRecommendation.name} -> ${accessMatch[1].trim()}`)
                   }
                 }
               }
@@ -495,6 +509,19 @@ class CozeAPIService {
               const bvMatch = cleanDetail.match(/B站BV号：\s*(BV[a-zA-Z0-9]+)/)
               if (bvMatch) {
                 currentRecommendation.bv_number = bvMatch[1]
+                currentRecommendation.watch_url = `https://www.bilibili.com/video/${bvMatch[1]}`
+                currentRecommendation.platform = 'B站'
+                console.log(`🔧 匹配到B站BV号: ${cleanDetail} -> ${bvMatch[1]}`)
+              } else {
+                console.log(`⚠️ B站BV号匹配失败: ${cleanDetail}`)
+              }
+            }
+            // BV号（其他格式）
+            else if (cleanDetail.includes('BV号：')) {
+              const bvMatch = cleanDetail.match(/BV号：\s*(BV[a-zA-Z0-9]+)/)
+              if (bvMatch) {
+                currentRecommendation.bv_number = bvMatch[1]
+                currentRecommendation.watch_url = `https://www.bilibili.com/video/${bvMatch[1]}`
                 currentRecommendation.platform = 'B站'
               }
             }
@@ -556,13 +583,11 @@ class CozeAPIService {
             else {
               const bvMatch = cleanDetail.match(/BV[a-zA-Z0-9]+/)
               if (bvMatch) {
-                // 如果当前资源是B站或未设置平台，则设置BV号并标记为B站
-                if (!currentRecommendation.platform || 
-                    currentRecommendation.platform === 'B站' || 
-                    currentRecommendation.platform === 'Bilibili') {
-                  currentRecommendation.bv_number = bvMatch[0]
-                  currentRecommendation.platform = 'B站'
-                }
+                // 强制设置BV号和平台信息，不管当前是什么平台
+                currentRecommendation.bv_number = bvMatch[0]
+                currentRecommendation.watch_url = `https://www.bilibili.com/video/${bvMatch[0]}`
+                currentRecommendation.platform = 'B站'
+                console.log(`🔧 智能检测到BV号: ${currentRecommendation.name} -> ${bvMatch[0]} (来自: ${cleanDetail})`)
               }
             }
           }
@@ -724,31 +749,37 @@ class CozeAPIService {
                 currentRecommendation.reason = reasonMatch[1].trim()
               }
             }
-            // 访问地址/访问观看（B站特有）- 移除平台限制
+            // 访问地址/访问观看（B站特有）- 优先提取BV号，超长URL存为access_guide
             else if (cleanDetail.includes('访问地址：') || cleanDetail.includes('访问/观看：')) {
               // 先检查是否是完整URL
               const urlMatch = cleanDetail.match(/https?:\/\/[^\s]+/)
               if (urlMatch) {
                 const url = urlMatch[0]
-                // 如果是B站URL，提取BV号；否则保存完整URL
+                // 如果是B站URL，提取BV号
                 if (url.includes('bilibili.com')) {
                   const bvMatch = url.match(/BV[a-zA-Z0-9]+/)
                   if (bvMatch) {
                     currentRecommendation.bv_number = bvMatch[0]
-                  } else {
-                    // 保存完整URL作为bv_number（后续会处理）
-                    currentRecommendation.bv_number = url
                   }
+                  // B站资源保存完整URL用于跳转，但不显示
                   currentRecommendation.platform = 'B站'
+                  currentRecommendation.watch_url = url
                 } else {
-                  // 非B站URL，保存为access_guide
-                  currentRecommendation.access_guide = url
+                  // 非B站URL，如果太长则缩短，否则保存为access_guide
+                  if (url.length > 80) {
+                    // 超长URL只显示域名部分
+                    const urlObj = new URL(url)
+                    currentRecommendation.access_guide = urlObj.hostname
+                  } else {
+                    currentRecommendation.access_guide = url
+                  }
                 }
               } else {
                 // 提取BV号
                 const bvMatch = cleanDetail.match(/BV[a-zA-Z0-9]+/)
                 if (bvMatch) {
                   currentRecommendation.bv_number = bvMatch[0]
+                  currentRecommendation.watch_url = `https://www.bilibili.com/video/${bvMatch[0]}`
                   currentRecommendation.platform = 'B站'
                 }
               }
@@ -863,7 +894,145 @@ class CozeAPIService {
       throw new Error(`解析推荐内容失败: ${error.message}`)
     }
     
+    // 最终修复：确保所有B站资源都有watch_url
+    const ensureB站Urls = (resource: any) => {
+      // 检查是否是B站资源
+      if (resource.platform === 'B站' || resource.platform === 'Bilibili') {
+        // 如果没有watch_url，尝试从不同字段生成
+        if (!resource.watch_url) {
+          let bvNumber = resource.bv_number
+          
+          // 如果bv_number不存在，尝试从所有可能字段提取BV号
+          if (!bvNumber) {
+            // 从access_guide中提取BV号
+            if (resource.access_guide && typeof resource.access_guide === 'string') {
+              const bvMatch = resource.access_guide.match(/BV[a-zA-Z0-9]+/)
+              if (bvMatch) {
+                bvNumber = bvMatch[0]
+                resource.bv_number = bvNumber
+                console.log(`🔧 从access_guide提取BV号: ${resource.name} -> ${bvNumber}`)
+              }
+            }
+            
+            // 从reason中提取BV号
+            if (!bvNumber && resource.reason && typeof resource.reason === 'string') {
+              const bvMatch = resource.reason.match(/BV[a-zA-Z0-9]+/)
+              if (bvMatch) {
+                bvNumber = bvMatch[0]
+                resource.bv_number = bvNumber
+                console.log(`🔧 从reason提取BV号: ${resource.name} -> ${bvNumber}`)
+              }
+            }
+            
+            // 从study_data中提取BV号
+            if (!bvNumber && resource.study_data && typeof resource.study_data === 'string') {
+              const bvMatch = resource.study_data.match(/BV[a-zA-Z0-9]+/)
+              if (bvMatch) {
+                bvNumber = bvMatch[0]
+                resource.bv_number = bvNumber
+                console.log(`🔧 从study_data提取BV号: ${resource.name} -> ${bvNumber}`)
+              }
+            }
+          }
+          
+          // 如果找到了BV号，生成watch_url
+          if (bvNumber) {
+            resource.watch_url = `https://www.bilibili.com/video/${bvNumber}`
+            console.log(`🔧 为B站资源生成watch_url: ${resource.name} -> ${resource.watch_url}`)
+          } else {
+            console.log(`⚠️ B站资源缺少BV号: ${resource.name}`)
+            console.log(`🔍 资源详情:`, {
+              name: resource.name,
+              platform: resource.platform,
+              bv_number: resource.bv_number,
+              reason: resource.reason,
+              study_data: resource.study_data,
+              access_guide: resource.access_guide
+            })
+          }
+        }
+      }
+    }
+    
+    // 修复最推荐资源
+    if (result.top_recommendation) {
+      ensureB站Urls(result.top_recommendation)
+    }
+    
+    // 修复其他推荐资源
+    if (result.other_recommendations && result.other_recommendations.length > 0) {
+      result.other_recommendations.forEach(ensureB站Urls)
+    }
+
+    // 全局BV号提取和分配（作为最后的保险）
+    const extractAndAssignBvNumbers = () => {
+      // 提取文本中所有的BV号及其上下文
+      const allBvMatches = content.match(/B站BV号[：:]\s*(BV[a-zA-Z0-9]+)/g)
+      if (!allBvMatches) return
+      
+      const extractedBvNumbers: string[] = []
+      allBvMatches.forEach(match => {
+        const bvMatch = match.match(/BV[a-zA-Z0-9]+/)
+        if (bvMatch) {
+          extractedBvNumbers.push(bvMatch[0])
+        }
+      })
+      
+      console.log(`🔍 全局提取到 ${extractedBvNumbers.length} 个BV号:`, extractedBvNumbers)
+      
+      // 为缺少BV号的B站资源分配BV号
+      const assignBvToB站Resources = (resources: any[]) => {
+        let bvIndex = 0
+        resources.forEach(resource => {
+          if (resource.platform === 'B站' && !resource.bv_number && !resource.watch_url) {
+            if (bvIndex < extractedBvNumbers.length) {
+              const bvNumber = extractedBvNumbers[bvIndex]
+              resource.bv_number = bvNumber
+              resource.watch_url = `https://www.bilibili.com/video/${bvNumber}`
+              console.log(`🔧 全局分配BV号: ${resource.name} -> ${bvNumber}`)
+              bvIndex++
+            }
+          }
+        })
+      }
+      
+      // 为最推荐资源和其他推荐资源分配BV号
+      if (result.top_recommendation) {
+        assignBvToB站Resources([result.top_recommendation])
+      }
+      if (result.other_recommendations) {
+        assignBvToB站Resources(result.other_recommendations)
+      }
+    }
+    
+    extractAndAssignBvNumbers()
+    
     console.log('✅ V9格式解析结果:', result)
+    
+    // 调试输出：检查最推荐资源的URL信息
+    if (result.top_recommendation) {
+      console.log('🔍 最推荐资源调试信息:', {
+        name: result.top_recommendation.name,
+        platform: result.top_recommendation.platform,
+        bv_number: result.top_recommendation.bv_number,
+        watch_url: result.top_recommendation.watch_url,
+        access_guide: result.top_recommendation.access_guide
+      })
+    }
+    
+    // 调试输出：检查其他推荐资源的URL信息
+    if (result.other_recommendations && result.other_recommendations.length > 0) {
+      result.other_recommendations.forEach((resource, index) => {
+        console.log(`🔍 其他推荐资源[${index}]调试信息:`, {
+          name: resource.name,
+          platform: resource.platform,
+          bv_number: resource.bv_number,
+          watch_url: resource.watch_url,
+          access_guide: resource.access_guide
+        })
+      })
+    }
+    
     return result
   }
 
@@ -938,7 +1107,15 @@ class CozeAPIService {
     }
     
     const difficulty = item?.['难度等级'] || item?.difficulty || '入门'
-    const bvNumber = item?.['访问/观看'] || item?.['访问方式'] || item?.['B站BV号'] || item?.['BV号'] || item?.bv_number
+    let bvNumber = item?.['访问/观看'] || item?.['访问方式'] || item?.['B站BV号'] || item?.['BV号'] || item?.bv_number
+    
+    // 如果bvNumber是字符串，尝试提取其中的BV号
+    if (typeof bvNumber === 'string') {
+      const bvMatch = bvNumber.match(/BV[a-zA-Z0-9]+/)
+      if (bvMatch) {
+        bvNumber = bvMatch[0]
+      }
+    }
     const institution = item?.['机构'] || item?.institution
     const upHost = item?.['UP主'] || item?.up_host
     
@@ -981,7 +1158,7 @@ class CozeAPIService {
       }
       
       // 如果访问信息包含BV号，说明是B站资源
-      if (bvNumber && typeof bvNumber === 'string' && bvNumber.startsWith('BV')) {
+      if (bvNumber && typeof bvNumber === 'string' && bvNumber.includes('BV')) {
         return 'B站'
       }
       
@@ -1000,10 +1177,18 @@ class CozeAPIService {
     const platform = determinePlatform()
     
     // 对于B站资源，从访问方式中提取BV号；对于非B站资源，保留访问指引
-    const finalBvNumber = platform === 'B站' ? 
-      (typeof bvNumber === 'string' && bvNumber.startsWith('BV') ? bvNumber : undefined) : 
-      undefined
+    let finalBvNumber = undefined
+    if (platform === 'B站' && typeof bvNumber === 'string') {
+      const bvMatch = bvNumber.match(/BV[a-zA-Z0-9]+/)
+      if (bvMatch) {
+        finalBvNumber = bvMatch[0]
+      }
+    }
     const finalAccessGuide = platform !== 'B站' ? (accessGuide || bvNumber) : undefined
+    // 为B站资源生成watch_url
+    const watchUrl = platform === 'B站' && finalBvNumber ? 
+      `https://www.bilibili.com/video/${finalBvNumber}` : 
+      undefined
 
     return {
       name: resourceName,
@@ -1015,6 +1200,7 @@ class CozeAPIService {
       study_data: studyData,
       bv_number: finalBvNumber,
       access_guide: finalAccessGuide,
+      watch_url: watchUrl,
       brief_description: item?.['简要说明'] || item?.brief_description,
       reason
     }

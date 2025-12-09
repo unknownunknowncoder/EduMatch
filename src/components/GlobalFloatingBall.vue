@@ -244,10 +244,34 @@ const handleChatDragEnd = () => {
   document.body.style.userSelect = '';
 };
 
+// 处理登录
+const handleLogin = () => {
+  router.push('/login');
+  closeChatWindow();
+};
+
 // --- 发送消息逻辑 ---
 const sendMessage = async () => {
   const message = chatInput.value.trim();
   if (!message || isLoading.value) return;
+
+  // 检查用户登录状态
+  const userStr = localStorage.getItem('currentUser');
+  if (!userStr) {
+    // 用户未登录，显示游客提示
+    messages.value.push({ role: 'user', content: message, timestamp: new Date().toISOString() });
+    chatInput.value = '';
+    
+    const aiMessageIndex = messages.value.push({
+      role: 'assistant', 
+      content: '🔒 当前用户未登录，请登录后再使用本功能\n\n💡 登录后您可以：\n• 获得个性化的学习推荐\n• 保存喜欢的学习资源\n• 创建个人学习计划\n• 追踪学习进度', 
+      timestamp: new Date().toISOString(), 
+      resources: []
+    }) - 1;
+
+    setTimeout(() => { if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight; }, 100);
+    return;
+  }
 
   messages.value.push({ role: 'user', content: message, timestamp: new Date().toISOString() });
   chatInput.value = '';
@@ -543,6 +567,19 @@ onUnmounted(() => {
                   </div>
                   <div v-else>
                     <div class="whitespace-pre-wrap">{{ msg.content }}</div>
+                    
+                    <!-- 未登录时的登录按钮 -->
+                    <div v-if="msg.content.includes('当前用户未登录')" class="mt-4 p-3 bg-[#1a3c34]/5 border border-[#1a3c34]/20 rounded-sm">
+                      <button 
+                        @click="handleLogin"
+                        class="w-full px-4 py-2 bg-[#1a3c34] text-[#d4c5a3] font-bold uppercase tracking-widest text-sm hover:bg-[#235246] transition-colors flex items-center justify-center gap-2"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
+                        立即登录
+                      </button>
+                    </div>
                     
                     <!-- 推荐卡片 (Index Card Style) -->
                     <div v-if="msg.resources && msg.resources.length > 0" class="mt-4 space-y-3">

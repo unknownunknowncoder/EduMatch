@@ -97,7 +97,7 @@
                       </div>
                       <div v-else-if="normalizedResults?.topRecommendation?.access_guide">
                          <div class="text-[10px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mb-1">访问</div>
-                         <div class="font-mono text-xs text-[#1a3c34] truncate">{{ normalizedResults.topRecommendation.access_guide }}</div>
+                         <div class="font-mono text-xs text-[#1a3c34]">{{ normalizedResults.topRecommendation.access_guide }}</div>
                       </div>
                       <div>
                          <div class="text-[10px] font-bold text-[#1a3c34]/40 uppercase tracking-widest mb-1">影响</div>
@@ -116,7 +116,7 @@
                          @click="openResource({
                            url: normalizedResults?.topRecommendation?.watch_url || 
                                (normalizedResults?.topRecommendation?.bv_number ? `https://www.bilibili.com/video/${normalizedResults.topRecommendation.bv_number}` : 
-                                normalizedResults?.topRecommendation?.access_guide ? `https://www.google.com/search?q=${encodeURIComponent(normalizedResults.topRecommendation.access_guide)}` : undefined)
+                                normalizedResults?.topRecommendation?.access_guide ? `https://www.bing.com/search?q=${encodeURIComponent(normalizedResults.topRecommendation.access_guide)}` : undefined)
                          })"
                          class="px-8 py-3 bg-[#1a3c34] text-[#d4c5a3] font-bold uppercase tracking-widest text-xs hover:bg-[#235246] transition-all shadow-lg flex items-center gap-2"
                       >
@@ -159,7 +159,7 @@
                  @click="openResource({
                    url: resource.watch_url || 
                        (resource.bv_number ? `https://www.bilibili.com/video/${resource.bv_number}` : 
-                        resource.access_guide ? `https://www.google.com/search?q=${encodeURIComponent(resource.access_guide)}` : undefined)
+                        resource.access_guide ? `https://www.bing.com/search?q=${encodeURIComponent(resource.access_guide)}` : undefined)
                  })"
               >
                  <!-- Left color bar -->
@@ -185,7 +185,7 @@
                        <span>{{ resource.difficulty || '入门' }} • {{ resource.duration || '未知' }} • {{ resource.study_data || '暂无数据' }}</span>
                        <span v-if="resource.bv_number">编号: {{ resource.bv_number }}</span>
                     </div>
-                    <div v-if="resource.access_guide" class="text-[9px] text-[#1a3c34]/60 font-mono bg-[#f9f9f7] p-2 rounded border border-[#1a3c34]/10">
+                    <div v-if="resource.access_guide && !resource.bv_number" class="text-[9px] text-[#1a3c34]/60 font-mono bg-[#f9f9f7] p-2 rounded border border-[#1a3c34]/10">
                        <span class="font-bold">访问指引:</span> {{ resource.access_guide }}
                     </div>
                  </div>
@@ -325,8 +325,12 @@ const goBack = () => {
 }
 
 const openResource = (resource: any) => {
+  console.log('🔗 点击资源跳转:', resource)
   if (resource.url) {
+    console.log('🚀 准备跳转到:', resource.url)
     window.open(resource.url, '_blank')
+  } else {
+    console.log('❌ 没有找到可跳转的URL')
   }
 }
 
