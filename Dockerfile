@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . .
 
 # 安装所有依赖（包括开发依赖，因为构建需要）
-RUN npm install
+RUN npm install --include=dev
 
 # 构建前端
 RUN npm run build
