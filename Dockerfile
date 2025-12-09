@@ -30,6 +30,9 @@ EXPOSE 3014
 ENV NODE_ENV=production
 ENV PORT=3014
 
+# 复制生产环境配置
+COPY .env.production .env
+
 # 复制启动脚本
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
@@ -37,6 +40,9 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # 设置环境变量
 ENV NODE_ENV=production
 ENV PORT=3014
+
+# 复制生产环境配置
+COPY .env.production .env
 
 # 暴露端口
 EXPOSE 3014
