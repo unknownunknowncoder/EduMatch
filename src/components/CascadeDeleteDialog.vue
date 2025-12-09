@@ -16,7 +16,7 @@
               <Trash2 class="w-8 h-8 text-[#b03e3e]" />
             </div>
             <div>
-              <h3 class="text-2xl font-serif font-bold text-[#1a3c34] leading-tight">Deletion Protocol</h3>
+              <h3 class="text-2xl font-serif font-bold text-[#1a3c34] leading-tight">删除协议</h3>
               <p class="text-[#1a3c34]/60 text-sm mt-1 font-medium">
                 {{ message }}
               </p>
@@ -30,7 +30,7 @@
               <div class="absolute -top-3 right-4 w-4 h-8 border-2 border-[#1a3c34]/40 rounded-full border-b-0"></div>
               
               <h4 class="text-xs font-bold text-[#1a3c34] uppercase tracking-widest mb-3 flex items-center gap-2">
-                <Link class="w-3 h-3" /> Linked References Detected
+                <Link class="w-3 h-3" /> 检测到关联引用
               </h4>
               
               <ul class="space-y-2">
@@ -39,7 +39,7 @@
                   <span class="line-clamp-1">{{ post.title }}</span>
                 </li>
                 <li v-if="relatedPosts.length > 3" class="text-xs text-[#1a3c34]/50 italic pl-2 pt-1 font-serif">
-                  ...and {{ relatedPosts.length - 3 }} other manuscripts.
+                  ...以及其他 {{ relatedPosts.length - 3 }} 个文档。
                 </li>
               </ul>
             </div>
@@ -47,7 +47,7 @@
           
           <!-- Execution Options -->
           <div class="space-y-4 mb-8">
-            <h4 class="text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">Select Procedure</h4>
+            <h4 class="text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">选择操作方式</h4>
             
             <!-- Option 1: Cancel -->
             <label class="flex items-start gap-3 p-4 border transition-all cursor-pointer group hover:bg-white"
@@ -56,8 +56,8 @@
                 <input v-model="deleteOption" type="radio" value="cancel" class="accent-[#1a3c34] w-4 h-4" />
               </div>
               <div>
-                <span class="block font-serif font-bold text-[#1a3c34] text-sm group-hover:text-[#1a3c34]">Abort Procedure</span>
-                <p class="text-xs text-[#1a3c34]/60 mt-1">Do nothing. Review linked references first.</p>
+                <span class="block font-serif font-bold text-[#1a3c34] text-sm group-hover:text-[#1a3c34]">中止操作</span>
+                <p class="text-xs text-[#1a3c34]/60 mt-1">不执行任何操作，先查看关联引用。</p>
               </div>
             </label>
 
@@ -68,9 +68,9 @@
                 <input v-model="deleteOption" type="radio" value="resource_only" class="accent-[#1a3c34] w-4 h-4" />
               </div>
               <div>
-                <span class="block font-serif font-bold text-[#1a3c34] text-sm">Unlink & Archive</span>
+                <span class="block font-serif font-bold text-[#1a3c34] text-sm">取消链接并归档</span>
                 <p class="text-xs text-[#1a3c34]/60 mt-1">
-                  {{ relatedPosts && relatedPosts.length > 0 ? 'Delete resource only. Linked posts will show "Resource Removed".' : 'Delete the resource.' }}
+                  {{ relatedPosts && relatedPosts.length > 0 ? '仅删除资源，关联帖子将显示"资源已移除"。' : '删除该资源。' }}
                 </p>
               </div>
             </label>
@@ -83,10 +83,10 @@
               </div>
               <div>
                 <span class="block font-serif font-bold text-[#b03e3e] text-sm flex items-center gap-2">
-                  <AlertOctagon class="w-3 h-3" /> Cascade Purge
+                  <AlertOctagon class="w-3 h-3" /> 级联清除
                 </span>
                 <p class="text-xs text-[#b03e3e]/80 mt-1 font-medium">
-                  Delete resource AND all linked posts. Irreversible action.
+                  删除资源及所有关联帖子。此操作不可逆转。
                 </p>
               </div>
             </label>
@@ -98,7 +98,7 @@
               @click="handleCancel"
               class="px-6 py-2 text-[#1a3c34]/60 font-bold uppercase tracking-widest text-xs hover:text-[#1a3c34] transition-colors"
             >
-              Discard
+              取消
             </button>
             <button
               @click="handleConfirm"
@@ -106,8 +106,8 @@
               :class="confirmButtonClass"
               class="px-8 py-2.5 font-bold uppercase tracking-widest text-xs text-white shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span v-if="deleteOption === 'cascade'">Execute Purge</span>
-              <span v-else>Confirm</span>
+              <span v-if="deleteOption === 'cascade'">执行清除</span>
+              <span v-else>确认</span>
               <ArrowRight class="w-3 h-3" />
             </button>
           </div>
@@ -136,8 +136,8 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: 'Confirm Deletion',
-  confirmText: 'Confirm',
+  title: '确认删除',
+  confirmText: '确认',
   type: 'warning'
 })
 

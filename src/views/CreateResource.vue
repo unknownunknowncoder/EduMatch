@@ -87,40 +87,40 @@
 
             <!-- Description -->
             <div class="group">
-               <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">摘要 / 描述</label>
+               <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">摘要 / 描述（选填）</label>
                <textarea
                  v-model="formData.description"
                  rows="4"
                  class="w-full bg-[#f9f9f9] border border-[#0f281f]/10 rounded-sm p-4 text-[#0f281f] font-serif placeholder-slate-300 focus:outline-none focus:border-[#0f281f] transition-colors resize-none"
-                 placeholder="提供材料的简要摘要..."
+                 placeholder="提供材料的简要摘要...（选填）"
                ></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                <!-- Difficulty -->
                <div class="group">
-                  <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">复杂程度</label>
+                  <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">复杂程度（选填）</label>
                   <select
                     v-model="formData.difficulty"
                     class="w-full bg-transparent border-b border-[#0f281f]/20 focus:border-[#0f281f] px-0 py-2 text-[#0f281f] font-serif focus:outline-none transition-colors appearance-none cursor-pointer"
                   >
-                    <option value="" disabled selected>选择级别...</option>
-                    <option value="beginner">入门基础 (101)</option>
-                    <option value="intermediate">进阶提升 (201)</option>
-                    <option value="advanced">高阶研究 (301+)</option>
+                    <option value="" selected>选择级别...（选填）</option>
+                    <option value="beginner">入门基础</option>
+                    <option value="intermediate">进阶提升</option>
+                    <option value="advanced">高阶研究</option>
                   </select>
                </div>
 
                <!-- Duration -->
                <div class="group">
-                  <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">预计时长（小时）</label>
+                  <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">预计时长（小时）（选填）</label>
                   <input
                     v-model.number="formData.duration"
                     type="number"
                     min="0"
                     step="0.5"
                     class="w-full bg-transparent border-b border-[#0f281f]/20 focus:border-[#0f281f] px-0 py-2 text-[#0f281f] font-serif placeholder-slate-300 focus:outline-none transition-colors"
-                    placeholder="0.0"
+                    placeholder="0.0（选填）"
                   />
                </div>
             </div>
@@ -141,12 +141,12 @@
 
             <!-- Tags -->
             <div class="group">
-               <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">关键词 / 标签</label>
+               <label class="block text-xs font-bold text-[#0f281f]/70 uppercase tracking-widest mb-2">关键词 / 标签（选填）</label>
                <input
                  v-model="formData.tags"
                  type="text"
                  class="w-full bg-transparent border-b border-[#0f281f]/20 focus:border-[#0f281f] px-0 py-2 text-[#0f281f] font-serif placeholder-slate-300 focus:outline-none transition-colors"
-                 placeholder="用逗号分隔（例如：科学、数学、历史）"
+                 placeholder="用逗号分隔（例如：科学、数学、历史）（选填）"
                />
             </div>
           </div>
@@ -229,7 +229,7 @@ const handleSubmit = async () => {
     }
     
     if (!currentUserId) {
-      showToast('Authentication required to archive resources.', 'warning')
+      showToast('需要登录才能归档资源。', 'warning')
       isSubmitting.value = false
       return
     }
@@ -250,26 +250,25 @@ const handleSubmit = async () => {
     const createdResource = await supabaseService.createResource(resourceData)
     
     if (!createdResource || !createdResource.id) {
-      throw new Error('Archive creation failed: Invalid response.')
+      throw new Error('归档创建失败：无效响应。')
     }
     
-    showToast('Resource successfully archived.', 'success')
+    showToast('资源归档成功。', 'success')
     
     setTimeout(() => {
-      // 假设有一个资源详情页或列表页
-      // 这里跳回搜索页或个人中心可能更合适，视你路由而定
-      router.push('/search') 
+      // 跳转到首页
+      router.push('/') 
     }, 1500)
   } catch (error) {
     console.error('Submission failed:', error)
-    showToast('Failed to archive resource: ' + error.message, 'error')
+    showToast('归档资源失败: ' + error.message, 'error')
   } finally {
     isSubmitting.value = false
   }
 }
 
 const handleCancel = () => {
-  router.push('/search')
+  router.push('/')
 }
 </script>
 

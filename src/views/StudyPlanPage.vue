@@ -195,7 +195,7 @@
                 <!-- Description -->
                 <div>
                    <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-1">目标</label>
-                   <textarea v-model="newPlan.description" rows="3" class="w-full bg-white border border-[#1a3c34]/20 p-3 font-serif text-[#1a3c34] focus:outline-none focus:border-[#1a3c34] resize-none"></textarea>
+                   <textarea v-model="newPlan.description" rows="3" class="w-full bg-white border border-[#1a3c34]/20 p-3 font-serif text-[#1a3c34] focus:outline-none focus:border-[#1a3c34] resize-none" placeholder="（选填）"></textarea>
                 </div>
 
                 <!-- Dates & Hours -->
@@ -245,7 +245,7 @@
     <div v-if="showMyResourcesModal" class="fixed inset-0 z-[60] flex items-start justify-center pt-24 bg-[#1a3c34]/90 backdrop-blur-sm px-4">
        <div class="bg-[#f4f1ea] w-full max-w-lg shadow-2xl p-6 border-t-4 border-[#d4c5a3]">
           <div class="flex justify-between items-center mb-4">
-             <h3 class="text-lg font-serif font-bold text-[#1a3c34]">Select from Archive</h3>
+             <h3 class="text-lg font-serif font-bold text-[#1a3c34]">从资源库选择</h3>
              <button @click="showMyResourcesModal = false" class="text-[#1a3c34]/40 hover:text-[#1a3c34] hover:bg-[#1a3c34]/10 rounded-sm p-1 transition-all"><X class="w-5 h-5"/></button>
           </div>
           <div class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
@@ -826,8 +826,29 @@ const handleSubmitCheckin = async () => {
 }
 
 const fetchMyResources = async () => {
-   // Fetch logic...
-   myResources.value = [{id:'1', title:'Sample Resource', description:'...', type:'Book'}] // Mock
+   try {
+      isLoadingMyResources.value = true
+      const userStr = localStorage.getItem('currentUser')
+      if (!userStr) {
+         myResources.value = []
+         return
+      }
+      
+      const user = JSON.parse(userStr)
+      const resources = await dbStore.getUserResources(user.id)
+      myResources.value = (resources || []).map((r: any) => ({
+         id: r.id,
+         title: r.title,
+         description: r.description,
+         type: r.category || r.type || 'Other',
+         url: r.url
+      }))
+   } catch (error) {
+      console.error('Failed to fetch user resources:', error)
+      myResources.value = []
+   } finally {
+      isLoadingMyResources.value = false
+   }
 }
 
 const handleOpenResourceModal = () => { showMyResourcesModal.value = true; fetchMyResources() }
@@ -849,6 +870,7 @@ const handleDeletePlan = async () => {
    
    try {
       // 删除学习计划（由于有外键约束，相关的打卡记录会自动删除）
+      const supabaseService = getSupabaseService()
       await supabaseService.deleteStudyPlan(planToDelete.value.id)
       
       deleteConfirmDialog.value?.hide()
@@ -864,6 +886,7 @@ const handleDeletePlan = async () => {
 const updatePlanProgress = async (planId: string) => {
    try {
       // 获取该计划的所有打卡记录
+      const supabaseService = getSupabaseService()
       const checkins = await supabaseService.getStudyPlanCheckins(planId)
       
       if (checkins && checkins.length > 0) {

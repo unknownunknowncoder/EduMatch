@@ -24,10 +24,10 @@
             
             <div>
               <h3 class="text-xl font-serif font-bold text-[#1a3c34] mb-2 leading-none">
-                Confirm Deletion
+                确认删除
               </h3>
               <p class="text-[#1a3c34]/70 font-serif text-sm leading-relaxed">
-                {{ message || 'Are you sure you want to permanently remove this record? This action is irreversible.' }}
+                {{ message || '您确定要永久删除此记录吗？此操作不可逆转。' }}
               </p>
             </div>
           </div>
@@ -38,14 +38,14 @@
               @click="handleCancel"
               class="px-4 py-2 text-[#1a3c34]/50 font-bold uppercase tracking-widest text-xs hover:text-[#1a3c34] transition-colors"
             >
-              Preserve
+              保留
             </button>
             <button
               @click="handleConfirm"
               class="px-6 py-2.5 bg-[#b03e3e] text-white font-bold uppercase tracking-widest text-xs hover:bg-[#8a2c2c] transition-all shadow-md flex items-center gap-2 rounded-sm"
             >
               <Trash2 class="w-3 h-3" />
-              <span>Expunge</span>
+              <span>删除</span>
             </button>
           </div>
 

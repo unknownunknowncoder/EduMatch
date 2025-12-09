@@ -119,7 +119,7 @@
                 <button
                   @click.stop="showDeleteConfirm(post)"
                   class="p-2 text-red-400 hover:text-red-700 hover:bg-red-50 rounded-sm transition-colors"
-                  title="销毁记录"
+                  title="删除记录"
                 >
                   <Trash2 class="w-5 h-5" />
                 </button>
@@ -132,7 +132,7 @@
     <!-- 删除确认对话框 (组件需自行适配样式，或使用插槽) -->
     <DeleteConfirmDialog
       :show="showDeleteDialog"
-      :message="`确认要从档案中永久销毁「${selectedPost?.title}」吗？此操作不可逆。`"
+      :message="`确认要从档案中永久删除「${selectedPost?.title}」吗？此操作不可逆。`"
       @confirm="handleDeletePost"
       @cancel="hideDeleteConfirm"
     />
@@ -223,7 +223,7 @@ const handleDeletePost = async () => {
     myPosts.value = myPosts.value.filter(post => post.id !== postId)
     
     hideDeleteConfirm()
-    showToast(`手稿「${postTitle}」已成功销毁`, 'success')
+    showToast(`帖子「${postTitle}」已成功删除`, 'success')
     
   } catch (error) {
     console.error('❌ 删除帖子失败:', error)
@@ -266,7 +266,7 @@ const loadMyPosts = async () => {
         
         const transformedPost = {
           id: post.id,
-          title: post.title || '无标题手稿',
+          title: post.title || '无标题帖子',
           content: post.content || '',
           category: post.category || '未分类',
           tags: [],

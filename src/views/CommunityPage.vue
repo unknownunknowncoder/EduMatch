@@ -59,6 +59,7 @@
               <input 
                 v-model="searchKeyword"
                 @keyup.enter="performSearch"
+                @input="handleSearchInput"
                 :disabled="isSearching"
                 type="text" 
                 placeholder="关键词..." 
@@ -268,13 +269,27 @@
           
           <div class="p-10">
              <div class="text-center mb-8 pb-4 border-b border-[#1a3c34]/10">
-                <h2 class="text-3xl font-serif font-bold text-[#1a3c34]">新提交</h2>
+                <h2 class="text-3xl font-serif font-bold text-[#1a3c34]">发起讨论</h2>
              </div>
 
              <form @submit.prevent="submitPost" class="space-y-6">
                 <div>
                    <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">标题</label>
-                   <input v-model="newPostForm.title" type="text" class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif focus:border-[#1a3c34] focus:outline-none" placeholder="研究标题..." />
+                   <input 
+                     v-model="newPostForm.title" 
+                     @blur="validateTitle"
+                     @input="clearTitleError"
+                     type="text" 
+                     class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif focus:border-[#1a3c34] focus:outline-none" 
+                     :class="{'border-red-400 focus:border-red-400': titleError}"
+                     placeholder="研究标题..." 
+                   />
+                   <div v-if="titleError" class="mt-1 text-xs text-red-500 flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                      </svg>
+                      {{ titleError }}
+                   </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -299,13 +314,13 @@
 
                 <div>
                    <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">内容</label>
-                   <textarea v-model="newPostForm.content" rows="6" class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif leading-relaxed focus:border-[#1a3c34] focus:outline-none resize-none"></textarea>
+                   <textarea v-model="newPostForm.content" rows="6" class="w-full bg-white border border-[#1a3c34]/20 p-3 text-[#1a3c34] font-serif leading-relaxed focus:border-[#1a3c34] focus:outline-none resize-none" placeholder="分享您的想法...（选填）"></textarea>
                 </div>
 
                 <div>
                    <label class="block text-xs font-bold text-[#1a3c34]/60 uppercase tracking-widest mb-2">标签</label>
                    <div class="flex gap-2 mb-2">
-                      <input v-model="tagInput" class="flex-1 bg-white border border-[#1a3c34]/20 px-3 py-2 text-sm focus:border-[#1a3c34] focus:outline-none" placeholder="添加标签" />
+                      <input v-model="tagInput" class="flex-1 bg-white border border-[#1a3c34]/20 px-3 py-2 text-sm focus:border-[#1a3c34] focus:outline-none" placeholder="添加标签（选填）" />
                       <button type="button" @click="addTag" class="px-4 bg-[#1a3c34] text-white text-xs font-bold uppercase hover:bg-[#235246] transition-colors">添加</button>
                    </div>
                    <div class="flex flex-wrap gap-2">
@@ -378,6 +393,7 @@ const popularTags = ref<any[]>([]);
 const myResources = ref<LinkedResource[]>([]);
 const newPostForm = reactive({ title: '', content: '', category: '', tags: [] as string[], resourceId: '' as string | null });
 const tagInput = ref('');
+const titleError = ref('');
 
 // --- Computed ---
 const displayedPosts = computed(() => {
@@ -386,8 +402,21 @@ const displayedPosts = computed(() => {
 });
 
 // --- Methods ---
-const handleSearchInput = () => { if (!searchKeyword.value.trim()) clearSearch(); };
-const clearSearch = () => { searchKeyword.value = ''; showSearchResults.value = false; filteredPosts.value = []; currentPage.value = 1; updatePagination(); };
+const handleSearchInput = () => { 
+  if (!searchKeyword.value.trim()) {
+    clearSearch();
+    // 回到默认的最新发布排序
+    currentSort.value = 'latest';
+    applySorting();
+  }
+};
+const clearSearch = () => { 
+  searchKeyword.value = ''; 
+  showSearchResults.value = false; 
+  filteredPosts.value = []; 
+  currentPage.value = 1; 
+  updatePagination(); 
+};
 const performSearch = () => {
   const k = searchKeyword.value.trim().toLowerCase();
   if(!k) return clearSearch();
@@ -438,9 +467,29 @@ const openModal = async () => {
   try { const u = JSON.parse(userStr); if(u.id) await loadMyResources(u.id); } catch(e){}
   showCreatePostModal.value = true;
 };
-const closeCreatePostModal = () => { showCreatePostModal.value = false; Object.assign(newPostForm, {title:'', content:'', category:'', tags:[], resourceId:''}); tagInput.value=''; };
+const closeCreatePostModal = () => { 
+  showCreatePostModal.value = false; 
+  Object.assign(newPostForm, {title:'', content:'', category:'', tags:[], resourceId:''}); 
+  tagInput.value='';
+  titleError.value = '';
+};
 const addTag = () => { const t = tagInput.value.trim(); if(t && !newPostForm.tags.includes(t)) newPostForm.tags.push(t); tagInput.value=''; };
 const removeTag = (i: number) => newPostForm.tags.splice(i, 1);
+
+const validateTitle = () => {
+  if(!newPostForm.title.trim()) {
+    titleError.value = '请填写此字段';
+    return false;
+  }
+  titleError.value = '';
+  return true;
+};
+
+const clearTitleError = () => {
+  if(titleError.value && newPostForm.title.trim()) {
+    titleError.value = '';
+  }
+};
 
 const loadMyResources = async (uid: string) => {
   try {
@@ -550,7 +599,9 @@ const loadPopularTags = async () => {
 };
 
 const submitPost = async () => {
-  if(!newPostForm.title.trim()) return;
+  if(!validateTitle()) {
+    return;
+  }
   isSubmitting.value = true;
   try {
     const client = await dbStore.getClient();
