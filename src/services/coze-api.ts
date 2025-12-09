@@ -1,6 +1,6 @@
 /**
- * 扣子智能体API服务 - 直接调用扣子API
- * 通过代理服务器调用扣子API
+ * 扣子智能体API服务 - 本地代理服务器模式
+ * 通过本地代理服务器调用扣子API
  */
 
 export interface CozeSearchRequest {
@@ -35,14 +35,14 @@ class CozeAPIService {
   private proxyBaseUrl: string
 
   constructor() {
-    this.apiToken = import.meta.env.VITE_COZE_API_TOKEN || ''
-    this.botId = import.meta.env.VITE_COZE_BOT_ID || ''
-    this.proxyBaseUrl = import.meta.env.VITE_COZE_PROXY_URL || 'http://localhost:3003'
+    this.apiToken = import.meta.env.VITE_COZE_API_TOKEN || 'sat_yYSeGa7gzI2rIXcC1iwQn0mYcS79Gy2diASGU0E7NB0ydXg1V7nr1cUdh7BEuOfL'
+    this.botId = import.meta.env.VITE_COZE_BOT_ID || '7573579561607331840'
+    this.proxyBaseUrl = import.meta.env.VITE_COZE_PROXY_URL || 'http://localhost:3014'
     console.log('Coze API配置:', { 
       hasToken: !!this.apiToken, 
       hasBotId: !!this.botId,
       proxy: this.proxyBaseUrl,
-      note: '通过代理服务器调用扣子API'
+      note: '通过本地代理服务器调用扣子API'
     })
   }
 

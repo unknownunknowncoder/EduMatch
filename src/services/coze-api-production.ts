@@ -31,7 +31,7 @@ class CozeAPIService {
   private baseUrl: string
 
   constructor() {
-    this.apiToken = import.meta.env.VITE_COZE_API_TOKEN || ''
+    this.apiToken = import.meta.env.VITE_COZE_API_TOKEN || 'sat_yYSeGa7gzI2rIXcC1iwQn0mYcS79Gy2diASGU0E7NB0ydXg1V7nr1cUdh7BEuOfL'
     this.botId = import.meta.env.VITE_COZE_BOT_ID || ''
     
     // 根据环境选择不同的 API 端点

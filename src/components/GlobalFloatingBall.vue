@@ -8,8 +8,8 @@ import {
   Minimize2
 } from 'lucide-vue-next';
 
-// 导入 Coze API 服务 - 根据环境选择
-import { getCozeAPI } from '@/services/coze-api-prod';
+// 导入 Coze API 服务 - 使用本地代理服务器
+import { cozeAPIService } from '@/services/coze-api';
 
 const router = useRouter();
 
@@ -264,9 +264,8 @@ const sendMessage = async () => {
   setTimeout(() => { if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight; }, 100);
 
   try {
-    const cozeAPI = getCozeAPI();
-    console.log(`🚀 开始AI查询（Zeabur支持1分钟超时）: "${message}"`);
-    const response = await cozeAPI.searchResources({ query: message });
+    console.log(`🚀 开始AI查询（本地代理服务器）: "${message}"`);
+    const response = await cozeAPIService.searchResources({ query: message });
     console.log(`✅ AI查询完成，获得高质量推荐`);
 
     const mapResourceForChat = (rec: any) => {

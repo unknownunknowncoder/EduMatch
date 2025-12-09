@@ -23,7 +23,7 @@ require('dotenv').config();
 
 // 扣子API配置
 const COZE_API_URL = 'https://api.coze.cn/open_api/v2/chat';
-const COZE_API_TOKEN = process.env.VITE_COZE_API_TOKEN || process.env.COZE_API_TOKEN || 'sat_uvUYKEkkKh2rL1IfHmO8IkVGwmdyZBP5D7PoxYuw1PvpMFhjMGy5GQyRiz2lBrlH';
+const COZE_API_TOKEN = process.env.VITE_COZE_API_TOKEN || process.env.COZE_API_TOKEN || 'sat_yYSeGa7gzI2rIXcC1iwQn0mYcS79Gy2diASGU0E7NB0ydXg1V7nr1cUdh7BEuOfL';
 const COZE_BOT_ID = process.env.VITE_COZE_BOT_ID || process.env.COZE_BOT_ID || '7573579561607331840';
 
 console.log('🔧 代理服务器配置检查:');

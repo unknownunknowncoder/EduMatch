@@ -33,7 +33,7 @@ class CozeAPIService {
   private proxyBaseUrl: string
 
   constructor() {
-    this.apiToken = import.meta.env.VITE_COZE_API_TOKEN || ''
+    this.apiToken = import.meta.env.VITE_COZE_API_TOKEN || 'sat_yYSeGa7gzI2rIXcC1iwQn0mYcS79Gy2diASGU0E7NB0ydXg1V7nr1cUdh7BEuOfL'
     this.botId = import.meta.env.VITE_COZE_BOT_ID || ''
     this.proxyBaseUrl = import.meta.env.VITE_COZE_PROXY_URL || 'http://localhost:3003'
     console.log('Coze API配置:', { 
