@@ -1,17 +1,14 @@
 # EduMatch Dockerfile - 容器模式部署，彻底解决超时问题
-FROM node:18-alpine
+FROM node:20-alpine
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制依赖文件
-COPY package*.json ./
-
-# 安装依赖
-RUN npm ci --only=production
-
-# 复制所有代码
+# 复制所有文件
 COPY . .
+
+# 安装所有依赖（包括开发依赖，因为构建需要）
+RUN npm install
 
 # 构建前端
 RUN npm run build
