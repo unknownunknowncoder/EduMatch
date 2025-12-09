@@ -54,16 +54,16 @@ exports.handler = async (event) => {
       };
     }
 
-    // 扣子API调用，增加超时控制
+    // 扣子API调用，设置更长的超时时间，但要在Netlify限制内
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000); // 25秒超时
+    const timeout = setTimeout(() => controller.abort(), 50000); // 50秒超时（Netlify最大限制）
 
     const cozeApiUrl = `https://api.coze.cn/open_api/v2/chat`;
     const requestBody = {
       conversation_id: "",
       bot_id: bot_id || defaultBotId,
       user: user_id || `netlify_user_${Date.now()}`,
-      query: `请推荐${query}相关的优质学习资源，包括B站视频和中国大学MOOC课程。请以JSON格式返回，包含最推荐、其他推荐和学习建议。请确保返回有效且完整的JSON数据。`,
+      query: query, // 直接使用原始查询，避免额外的提示词增加处理时间
       chat_history: [],
       stream: false,
       custom_variables: {}
@@ -85,7 +85,7 @@ exports.handler = async (event) => {
         },
         body: JSON.stringify(requestBody),
         signal: controller.signal,
-        timeout: 25000
+        timeout: 50000
       });
 
       clearTimeout(timeout);

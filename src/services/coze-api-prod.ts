@@ -33,14 +33,14 @@ class CozeAPIServiceProduction {
   private baseUrl: string
 
   constructor() {
-    // 生产环境直接调用 Netlify Functions，开发环境使用本地 Functions
+    // 回到普通函数，但优化请求确保30秒内完成
     const isProduction = import.meta.env.PROD || import.meta.env.MODE === 'production'
-    this.baseUrl = isProduction ? '/api/coze' : 'http://localhost:9999/.netlify/functions/coze-api'
+    this.baseUrl = isProduction ? '/.netlify/functions/coze-api-fast' : 'http://localhost:9999/.netlify/functions/coze-api-fast'
     console.log('Coze API配置:', { 
       environment: isProduction ? 'production' : 'development',
       mode: import.meta.env.MODE,
       baseUrl: this.baseUrl,
-      note: '直接调用优化的 Netlify Functions (30秒超时)'
+      note: '使用优化版普通函数 - 确保30秒内完成'
     })
   }
 
@@ -48,49 +48,88 @@ class CozeAPIServiceProduction {
    * 搜索教育资源
    */
   async searchResources(request: CozeSearchRequest): Promise<CozeSearchResponse> {
-    try {
-      console.log('🔍 开始搜索资源:', request.query)
-      const startTime = Date.now()
-      
-      const response = await fetch(`${this.baseUrl}/chat`, {
+    const maxRetries = 2
+    let lastError: any = null
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔍 开始搜索资源 (尝试 ${attempt}/${maxRetries}):`, request.query)
+        const startTime = Date.now()
+        
+        // 创建 AbortController，确保30秒内完成
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 25000) // 25秒超时，给函数留5秒缓冲
+        
+      // 直接调用优化的函数，不需要 /chat 路径
+      const response = await fetch(`${this.baseUrl}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: request.query,
+          query: request.query, // 保持查询简洁
           bot_id: request.bot_id,
           user_id: request.conversation_id || `user_${Date.now()}`,
           stream: false
-        })
+        }),
+        signal: controller.signal
       })
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        const elapsed = Date.now() - startTime
-        console.error('Coze API 调用失败:', { 
-          status: response.status, 
-          errorText: errorText.substring(0, 200),
-          elapsed: `${elapsed}ms`
-        })
-        
-        if (response.status === 408) {
-          throw new Error('请求超时，请稍后重试')
-        }
-        throw new Error(`Coze API 调用失败: ${response.status}`)
-      }
+        clearTimeout(timeoutId)
 
-      const data = await response.json()
-      const elapsed = Date.now() - startTime
-      console.log(`✅ API调用成功，耗时: ${elapsed}ms`)
-      
-      // 解析扣子返回的数据
-      return this.parseCozeResponse(data)
-      
-    } catch (error) {
-      console.error('搜索教育资源失败:', error)
-      throw error
+        if (!response.ok) {
+          const errorText = await response.text()
+          const elapsed = Date.now() - startTime
+          console.error('Coze API 调用失败:', { 
+            status: response.status, 
+            errorText: errorText.substring(0, 200),
+            elapsed: `${elapsed}ms`
+          })
+          
+          if (response.status === 408) {
+            throw new Error('请求超时，请稍后重试')
+          }
+          throw new Error(`Coze API 调用失败: ${response.status}`)
+        }
+
+        const data = await response.json()
+        const elapsed = Date.now() - startTime
+        console.log(`✅ API调用成功，耗时: ${elapsed}ms`)
+        
+        // 解析扣子返回的数据
+        const result = this.parseCozeResponse(data)
+        
+        // 检查解析结果是否包含错误信息
+        if (result.top_recommendation.name.includes('API响应解析失败') || 
+            result.learning_advice.includes('系统暂时不可用') ||
+            result.learning_advice.includes('请稍后重试')) {
+          throw new Error('解析结果包含错误信息，可能需要重试')
+        }
+        
+        // 成功返回结果
+        return result
+        
+      } catch (error: any) {
+        lastError = error
+        console.error(`搜索教育资源失败 (尝试 ${attempt}/${maxRetries}):`, error)
+        
+        // 特殊处理请求中止错误
+        if (error.name === 'AbortError') {
+          lastError = new Error('AI响应超时，请稍后重试。扣子智能体正在为您处理中...')
+        }
+        
+        // 如果是最后一次尝试，抛出错误
+        if (attempt === maxRetries) {
+          break
+        }
+        
+        // 等待一段时间后重试
+        console.log(`⏳ 等待2秒后重试...`)
+        await new Promise(resolve => setTimeout(resolve, 2000))
+      }
     }
+    
+    throw lastError || new Error('搜索教育资源失败')
   }
 
   /**
@@ -188,10 +227,12 @@ class CozeAPIServiceProduction {
       }
       
       // 尝试解析JSON内容
+      console.log('📄 消息内容预览:', content.substring(0, 200))
       const jsonData = this.extractJsonFromContent(content)
       
       if (!jsonData) {
         console.log('⚠️ 无法解析JSON，返回基于文本的响应')
+        console.log('📄 完整消息内容:', content)
         return this.createTextBasedResponse(content)
       }
 
@@ -235,6 +276,18 @@ class CozeAPIServiceProduction {
         console.log('✅ 检测到中文字段格式')
         let topRecommendations = data['最推荐'] || []
         let otherRecommendations = data['其他推荐'] || []
+        let learningAdvice = data['学习建议'] || ''
+        
+        // 检测是否是错误响应数据
+        if (learningAdvice && (
+          learningAdvice.includes('网络连接暂时不稳定') || 
+          learningAdvice.includes('系统暂时不可用') ||
+          learningAdvice.includes('请稍后重试') ||
+          learningAdvice.includes('无法解析')
+        )) {
+          console.log('⚠️ 检测到错误响应数据，重新获取数据')
+          throw new Error('扣子API返回了错误响应，可能是网络超时导致的')
+        }
         
         // 如果其他推荐为空，把最推荐里除第一个之外的项目兜底放入其他推荐
         if ((!otherRecommendations || (Array.isArray(otherRecommendations) && otherRecommendations.length === 0)) 
@@ -261,7 +314,6 @@ class CozeAPIServiceProduction {
         }
         
         // 合并学习建议和权威资料
-        let learningAdvice = data['学习建议'] || ''
         if (data['权威资料与工具'] && Array.isArray(data['权威资料与工具'])) {
           const authoritativeResources = data['权威资料与工具'].map((item: any) => 
             `${item['网站/文档名称']}：${item['核心价值']}`
@@ -275,6 +327,12 @@ class CozeAPIServiceProduction {
         
         console.log('🎯 顶级推荐:', topRec?.['资源标题']?.substring(0, 50))
         console.log('📚 其他推荐数量:', otherRecommendations.length)
+        console.log('🔍 调试信息:', {
+          topRecommendations: Array.isArray(topRecommendations) ? topRecommendations.length : 'not array',
+          topRec: topRec ? 'exists' : 'null/undefined',
+          topRecKeys: topRec ? Object.keys(topRec) : [],
+          topRecTitle: topRec?.['资源标题']
+        })
         
         return {
           top_recommendation: {
@@ -285,7 +343,7 @@ class CozeAPIServiceProduction {
             study_data: topRec?.['学习数据'] || '推荐学习资源',
             brief_description: topRec?.['推荐理由'] || '优质学习资源',
             reason: topRec?.['推荐理由'] || 'AI推荐',
-            url: this.buildChineseUrl(topRec?.['访问/观看'], topRec?.['访问指引'], topRec?.['资源标题'])
+            url: this.buildChineseUrl(topRec?.['访问/观看'], undefined, topRec?.['资源标题'])
           },
           other_recommendations: otherRecommendations.slice(0, 4).map((item: any) => ({
             name: item['资源标题'] || item['网站/文档名称'] || '其他资源',
@@ -294,7 +352,7 @@ class CozeAPIServiceProduction {
             duration: this.extractChineseDuration(item['学习数据']),
             study_data: item['学习数据'] || item['核心价值'] || '学习资源',
             brief_description: item['推荐理由'] || '相关资源',
-            url: this.buildChineseUrl(item['访问/观看'], item['访问指引'], item['资源标题'])
+            url: this.buildChineseUrl(item['访问/观看'], undefined, item['资源标题'])
           })),
           learning_advice: learningAdvice
         }
@@ -427,20 +485,20 @@ class CozeAPIServiceProduction {
   /**
    * 处理中文URL构建
    */
-  private buildChineseUrl(accessUrl?: string, accessGuide?: string, title?: string): string {
+  private buildChineseUrl(accessWatch?: string, accessGuide?: string, title?: string): string {
     // 优先处理直接的URL
-    if (accessUrl && accessUrl.startsWith('http')) {
-      return accessUrl
+    if (accessWatch && accessWatch.startsWith('http')) {
+      return accessWatch
     }
     
     // 处理B站BV号
-    if (accessUrl && accessUrl.startsWith('BV')) {
-      return `https://www.bilibili.com/video/${accessUrl}`
+    if (accessWatch && accessWatch.startsWith('BV')) {
+      return `https://www.bilibili.com/video/${accessWatch}`
     }
     
     // 处理B站课程链接
-    if (accessUrl && accessUrl.includes('bilibili.com/cheese')) {
-      return accessUrl
+    if (accessWatch && accessWatch.includes('bilibili.com/cheese')) {
+      return accessWatch
     }
     
     // 根据标题生成搜索链接
@@ -485,24 +543,34 @@ class CozeAPIServiceProduction {
    */
   private extractJsonFromContent(content: string): any {
     try {
+      console.log('🔍 尝试解析JSON，内容长度:', content.length)
+      
       // 查找JSON块
       const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/)
       if (jsonMatch) {
+        console.log('✅ 找到JSON块，尝试解析')
         return JSON.parse(jsonMatch[1])
       }
       
       // 尝试直接解析整个内容
+      console.log('🔄 尝试直接解析整个内容')
       return JSON.parse(content)
-    } catch {
+    } catch (error) {
+      console.log('❌ JSON解析失败:', error)
       // 尝试查找对象模式
       const objectMatch = content.match(/\{[\s\S]*\}/)
       if (objectMatch) {
+        console.log('🔍 找到对象模式，尝试解析')
         try {
-          return JSON.parse(objectMatch[0])
-        } catch {
+          const result = JSON.parse(objectMatch[0])
+          console.log('✅ 对象模式解析成功')
+          return result
+        } catch (error) {
+          console.log('❌ 对象模式解析失败:', error)
           return null
         }
       }
+      console.log('❌ 未找到任何JSON对象')
       return null
     }
   }

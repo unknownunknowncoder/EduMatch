@@ -1,38 +1,14 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  functions = "netlify/functions"
-
-[build.environment]
-  NODE_VERSION = "18"
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
 [functions]
   directory = "netlify/functions"
-  node_bundler = "esbuild"
-  
-  # 增加Function超时时间到30秒
-  [functions."coze-api"]
-    timeout = 30
-  [functions."coze-api-timeout"]
-    timeout = 30
-  [functions."coze-chat"]
-    timeout = 30
 
 [[redirects]]
-  from = "/api/coze/*"
-  to = "/.netlify/functions/coze-chinese"
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
   status = 200
 
-[[redirects]]
-  from = "/api/chat"
-  to = "/.netlify/functions/coze-chinese"
-  status = 200
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
+[build.environment]
+  NODE_VERSION = "18"

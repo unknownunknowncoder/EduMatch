@@ -1,0 +1,35 @@
+# 依赖目录
+node_modules
+npm-debug.log*
+
+# 构建缓存
+.cache
+.temp
+.tmp
+
+# 开发文件
+.env.local
+.env.development
+
+# Git
+.git
+.gitignore
+
+# 编辑器
+.vscode
+.idea
+
+# 日志
+logs
+*.log
+
+# 测试覆盖率
+coverage
+
+# OS生成的文件
+.DS_Store
+Thumbs.db
+
+# 其他不需要的文件
+README.md
+*.md
