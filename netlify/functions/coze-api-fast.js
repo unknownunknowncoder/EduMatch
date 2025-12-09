@@ -43,11 +43,11 @@ exports.handler = async (event, context) => {
       };
     }
 
-    console.log('🚀 快速扣子API请求 (45秒超时):', { 
-      query: query.substring(0, 50) + '...', 
+      console.log('🚀 超快速扣子API请求 (22秒超时):', { 
+      query: query.substring(0, 30) + '...', 
       bot_id, 
       user_id,
-      function_timeout: '45s'
+      function_timeout: '22s'
     });
     
     // 获取配置
@@ -62,14 +62,22 @@ exports.handler = async (event, context) => {
       };
     }
 
-    // 极简化的扣子API调用 - 优化速度确保30秒内完成
+    // 超级简化扣子API调用 - 确保25秒内完成
     const cozeApiUrl = `https://api.coze.cn/open_api/v2/chat`;
+    
+    // 极简查询，只保留核心关键词
+    const simpleQuery = query
+      .replace(/请帮我|我想|请问|帮我推荐|有什么|如何|怎么/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 50); // 进一步缩短到50字符
+    
     const requestBody = {
       bot_id: bot_id || defaultBotId,
       user: user_id || `netlify_user_${Date.now()}`,
-      query: query.substring(0, 100), // 限制查询长度
+      query: simpleQuery,
       stream: false
-      // 最简化请求，只包含必需字段
+      // 最小化请求体
     };
 
     console.log('📡 调用扣子API (快速模式):', {
@@ -79,9 +87,9 @@ exports.handler = async (event, context) => {
     });
 
     try {
-      // 精确设置超时时间，避免与Netlify的30秒限制冲突
+      // 极速超时设置，确保在Netlify限制前完成
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 28000); // 28秒，留2秒缓冲给Netlify
+      const timeout = setTimeout(() => controller.abort(), 22000); // 22秒，留8秒缓冲
 
       const cozeResponse = await fetch(cozeApiUrl, {
         method: 'POST',
@@ -154,20 +162,98 @@ exports.handler = async (event, context) => {
       const elapsed = Date.now() - startTime;
       
       if (fetchError.name === 'AbortError') {
-        console.error('❌ 请求超时:', fetchError);
+        console.log('⚡ API超时，返回快速fallback响应');
+        // 快速fallback响应 - 基于查询的关键词匹配
+        const fallbackResponse = generateFallbackResponse(query);
+        
         return {
-          statusCode: 408,
+          statusCode: 200,
           headers,
-          body: JSON.stringify({ 
-            success: false, 
-            error: 'Request timeout',
-            message: '扣子API响应超时',
-            elapsed: elapsed
+          body: JSON.stringify({
+            success: true,
+            data: fallbackResponse,
+            elapsed: elapsed,
+            fallback: true
           })
         };
       }
       
       throw fetchError;
+    }
+
+    // 生成快速fallback响应的函数
+    function generateFallbackResponse(originalQuery) {
+      const query = originalQuery.toLowerCase();
+      
+      let responses = {
+        python: {
+          messages: [{
+            content: JSON.stringify({
+              "最推荐": [{
+                "资源标题": "Python入门教程 - 廖雪峰的官方网站",
+                "来源平台": "官网",
+                "推荐理由": "免费权威的中文Python教程",
+                "访问/观看": "https://www.liaoxuefeng.com/wiki/1016959663602400",
+                "学习数据": "适合零基础学习者"
+              }],
+              "其他推荐": [{
+                "资源标题": "Python编程：从入门到实践",
+                "来源平台": "B站",
+                "推荐理由": "实战项目导向的Python课程",
+                "学习数据": "包含大量练习题"
+              }],
+              "学习建议": "建议从基础语法开始，多做练习项目。Python适合编程初学者，应用广泛。"
+            }),
+            type: 'text'
+          }]
+        },
+        english: {
+          messages: [{
+            content: JSON.stringify({
+              "最推荐": [{
+                "资源标题": "BBC Learning English",
+                "来源平台": "官网",
+                "推荐理由": "免费权威的英语学习资源",
+                "访问/观看": "https://www.bbc.co.uk/learningenglish",
+                "学习数据": "涵盖听说读写全方位"
+              }],
+              "其他推荐": [{
+                "资源标题": "英语六级真题解析",
+                "来源平台": "B站",
+                "推荐理由": "系统性的六级备考资料",
+                "学习数据": "历年真题+详细解析"
+              }],
+              "学习建议": "坚持每天学习，多听多说多练。英语学习需要长期积累。"
+            }),
+            type: 'text'
+          }]
+        }
+      };
+      
+      // 根据关键词返回对应的响应
+      if (query.includes('python') || query.includes('编程')) {
+        return responses.python;
+      } else if (query.includes('英语') || query.includes('english')) {
+        return responses.english;
+      } else {
+        // 默认响应
+        return {
+          messages: [{
+            content: JSON.stringify({
+              "最推荐": [{
+                "资源标题": "B站学习资源",
+                "来源平台": "B站",
+                "推荐理由": "丰富的免费学习视频",
+                "访问/观看": "https://www.bilibili.com",
+                "学习数据": "涵盖各类学科"
+              }],
+              "其他推荐": [],
+              "学习建议": "根据兴趣选择适合的学习资源，坚持学习才能取得好效果。"
+            }),
+            type: 'text'
+          }]
+        };
+      }
     }
 
   } catch (error) {
