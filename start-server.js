@@ -30,6 +30,16 @@ app.use(cors({
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// 健康检查端点（Zeabur 需要这个）
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    port: PORT,
+    environment: NODE_ENV
+  })
+})
+
 // 扣子API代理端点
 app.post('/api/coze/chat', async (req, res) => {
   try {

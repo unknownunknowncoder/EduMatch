@@ -4,7 +4,13 @@ FROM node:20-alpine
 # 设置工作目录
 WORKDIR /app
 
-# 复制所有文件
+# 先复制 package 文件，利用 Docker 缓存层
+COPY package*.json ./
+
+# 安装依赖（包括开发依赖）
+RUN npm install --include=dev && echo "依赖安装完成"
+
+# 然后复制其他文件
 COPY . .
 
 # 安装所有依赖（包括开发依赖，因为构建需要）
@@ -24,5 +30,16 @@ EXPOSE 3014
 ENV NODE_ENV=production
 ENV PORT=3014
 
-# 启动命令 - 启动 Express 服务器
-CMD ["node", "start-server.js"]
+# 复制启动脚本
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# 设置环境变量
+ENV NODE_ENV=production
+ENV PORT=3014
+
+# 暴露端口
+EXPOSE 3014
+
+# 使用启动脚本
+ENTRYPOINT ["docker-entrypoint.sh"]
