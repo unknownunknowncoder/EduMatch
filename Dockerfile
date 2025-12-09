@@ -13,6 +13,9 @@ RUN npm install --include=dev
 # 构建前端
 RUN npm run build
 
+# 验证构建结果
+RUN ls -la dist/ && ls -la dist/index.html
+
 # 暴露端口（与服务器代码中的 PORT 环境变量对应）
 EXPOSE 3014
 

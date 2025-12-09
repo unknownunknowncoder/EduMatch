@@ -7,6 +7,7 @@
 
 import express from 'express'
 import cors from 'cors'
+import fs from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 import { config } from 'dotenv'
@@ -147,6 +148,11 @@ app.use((err, req, res, next) => {
 // 启动服务器
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🚀 EduMatch服务器启动成功！`)
+  console.log(`📡 监听端口: ${PORT}`)
+  console.log(`🌐 访问地址: http://0.0.0.0:${PORT}`)
+  console.log(`📁 工作目录: ${__dirname}`)
+  console.log(`📄 静态文件检查: ${fs.existsSync(join(__dirname, 'dist', 'index.html'))}`)
+})
   console.log(`📍 环境: ${NODE_ENV}`)
   console.log(`🌐 地址: http://localhost:${PORT}`)
   console.log(`🔗 API代理: http://localhost:${PORT}/api/coze/chat`)
